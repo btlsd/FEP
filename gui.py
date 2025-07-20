@@ -22,9 +22,11 @@ def draw_screen(player, npcs=NPCS):
     """Print a simple status window and location information."""
     print(f"{player.day}일차 {TIME_OF_DAY[player.time]}")
     print(health_message(player))
-    print(f"체력 {player.health}/{player.max_health} "+
-          f"배고픔 {player.hunger} 에너지 {player.energy}/{player.max_energy} "+
-          f"돈 {player.money}원")
+    print(
+        f"체력 {player.health}/{player.max_health} "
+        + f"배고픔 {player.hunger} 에너지 {player.energy}/{player.max_energy} "
+        + f"돈 {player.money}원 무게 {player.current_weight()}/{player.carrying_capacity()}"
+    )
     print("-" * 30)
 
     location = player.location

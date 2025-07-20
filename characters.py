@@ -1,5 +1,13 @@
 import random
 
+from items import (
+    CLOTHES_WITH_POCKETS,
+    BASIC_BAG,
+    BROKEN_PART,
+    Item,
+    Equipment,
+)
+
 from locations import (
     NATIONS,
     DEFAULT_LOCATION_BY_NATION,
@@ -111,6 +119,14 @@ class Player:
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
         self.time = 0  # 0=아침,1=낮,2=밤
 
+        # Inventory and equipment
+        self.base_capacity = 5
+        self.inventory = []
+        self.equipment = {
+            "clothing": CLOTHES_WITH_POCKETS,
+            "bag": None,
+        }
+
     def status(self):
         print(f"\n{self.day}일차 {TIME_OF_DAY[self.time]}")
         print(f"{self.name}의 상태:")
@@ -128,7 +144,10 @@ class Player:
         print(f"지각: {self.perception}")
         print(f"인내심: {self.endurance}")
         print(f"매력: {self.charisma}")
-        print(f"지능: {self.intelligence}\n")
+        print(f"지능: {self.intelligence}")
+        print(
+            f"소지 무게: {self.current_weight()}/{self.carrying_capacity()}\n"
+        )
 
     def is_alive(self):
         return self.health > 0
@@ -144,4 +163,34 @@ class Player:
             self.energy = 0
         if self.health > self.max_health:
             self.health = self.max_health
+
+    # Inventory helpers
+    def carrying_capacity(self):
+        cap = self.base_capacity
+        for eq in self.equipment.values():
+            if eq:
+                cap += eq.capacity
+        return cap
+
+    def current_weight(self):
+        return sum(item.weight for item in self.inventory)
+
+    def can_carry(self, item):
+        return self.current_weight() + item.weight <= self.carrying_capacity()
+
+    def add_item(self, item):
+        if self.can_carry(item):
+            self.inventory.append(item)
+            print(f"{item.name}을(를) 획득했습니다.")
+        else:
+            print(f"{item.name}은(는) 너무 무거워서 들 수 없습니다.")
+
+    def show_inventory(self):
+        if not self.inventory:
+            print("소지품이 없습니다.")
+        else:
+            print("소지품:")
+            for it in self.inventory:
+                print(f"- {it.name} (무게 {it.weight})")
+            print(f"총 무게 {self.current_weight()}/{self.carrying_capacity()}")
 

@@ -6,6 +6,7 @@ from locations import (
 )
 
 from characters import NPCS, Player
+from items import BROKEN_PART
 from gui import draw_screen
 
 class Game:
@@ -61,13 +62,18 @@ class Game:
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
         roll = random.randint(1, 100)
-        if roll <= 30 + self.player.perception:
+        if roll <= 20 + self.player.perception:
+            event = "find_item"
+        elif roll <= 50 + self.player.perception:
             event = "find_money"
-        elif roll <= 80:
+        elif roll <= 85:
             event = "nothing"
         else:
             event = "injury"
-        if event == "find_money":
+        if event == "find_item":
+            item = BROKEN_PART
+            self.player.add_item(item)
+        elif event == "find_money":
             found = random.randint(5, 20) + self.player.charisma
             self.player.money += found
             print(f"탐험 중에 {found}원을 발견했습니다.")
@@ -172,11 +178,21 @@ class Game:
         print("2. 식사")
         print("3. 잠자기")
         print("4. 탐험")
+        print("5. 소지품 확인")
         choice = input("> ").strip()
-        actions = {"1": self.work, "2": self.eat, "3": self.sleep, "4": self.explore}
+        actions = {
+            "1": self.work,
+            "2": self.eat,
+            "3": self.sleep,
+            "4": self.explore,
+            "5": self.player.show_inventory,
+        }
         action = actions.get(choice)
         if action:
-            self.step(action)
+            if action is self.player.show_inventory:
+                action()
+            else:
+                self.step(action)
         else:
             print("잘못된 선택입니다.")
 
