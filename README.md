@@ -22,3 +22,10 @@ Characters have five core attributes:
 - **Intelligence**
 
 These values influence activities like working and exploring.
+
+### NPC Interactions
+
+게임에는 개성 있는 여러 캐릭터가 존재합니다. 각 캐릭터는 호감도를
+가지고 있으며 시간대에 따라 다른 장소에서 생활합니다. 플레이어는
+동일한 장소에 있을 때 대화하거나 거래하고, 필요하면 돈을 빌리거나
+전투를 벌일 수 있습니다.
