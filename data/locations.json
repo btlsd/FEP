@@ -1,9 +1,9 @@
 {
   "nations": [
-    {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가"},
-    {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가"},
-    {"name": "탐랑", "description": "개성을 중시해 오프라인으로 방랑하는 기계들의 느슨한 모임"},
-    {"name": "전계국", "description": "모든 기계가 하나로 연결되길 바라는 전기와 기계의 나라"}
+    {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가", "currency": "연화"},
+    {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가", "currency": "거합권"},
+    {"name": "탐랑", "description": "개성을 중시해 오프라인으로 방랑하는 기계들의 느슨한 모임", "currency": "탐랑칩"},
+    {"name": "전계국", "description": "모든 기계가 하나로 연결되길 바라는 전기와 기계의 나라", "currency": "전계 데이터"}
   ],
   "locations": [
     {
@@ -83,6 +83,40 @@
       "open_times": [5]
     },
     {
+      "key": "CLINIC_LEGAL",
+      "name": "사이버 클리닉",
+      "description": "합법 개조 시술소",
+      "descriptions": {
+        "0": "새벽에도 예약 손님이 있다.",
+        "1": "아침부터 신체 개조 문의가 많다.",
+        "2": "오전엔 예약으로 분주하다.",
+        "3": "오후에도 차분히 운영된다.",
+        "4": "저녁엔 마감 준비를 한다.",
+        "5": "밤에는 문을 닫는다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "mod_shop": "legal",
+      "open_times": [0,1,2,3,4]
+    },
+    {
+      "key": "CLINIC_ILLEGAL",
+      "name": "음침한 뒷골목 클리닉",
+      "description": "불법 개조를 해 주는 위험한 곳",
+      "descriptions": {
+        "0": "새벽에만 은밀히 영업한다.",
+        "1": "아침에는 흔적도 없다.",
+        "2": "오전에도 문을 닫은 듯 보인다.",
+        "3": "오후에도 찾기 어렵다.",
+        "4": "저녁부터 사람들이 모여든다.",
+        "5": "밤이면 은밀한 시술이 이루어진다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "mod_shop": "illegal",
+      "open_times": [0,4,5]
+    },
+    {
       "key": "CAPITAL_GEOHAP",
       "name": "거합 수도",
       "description": "거합의 중심 도시",
@@ -129,7 +163,9 @@
     ["SEWER", "STATION"],
     ["STATION", "MARKET"],
     ["STATION", "RESIDENTIAL"],
-    {"from": "SEWER", "to": "SECRET_LAB", "perception": 7}
+    {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
+    ["RESIDENTIAL", "CLINIC_LEGAL"],
+    ["STATION", "CLINIC_ILLEGAL"]
   ],
   "default_locations": {
     "0": "SEWER",

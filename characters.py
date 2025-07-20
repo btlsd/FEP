@@ -11,6 +11,7 @@ from equipment import (
 
 from locations import (
     NATIONS,
+    NATION_BY_NAME,
     DEFAULT_LOCATION_BY_NATION,
     LOCATIONS,
 )
@@ -48,6 +49,10 @@ class Character:
             self.location = schedule.get(0, next(iter(schedule.values())))
         else:
             self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
+        if origin and origin in NATION_BY_NAME:
+            self.currency = NATION_BY_NAME[origin].currency
+        else:
+            self.currency = self.location.nation.currency
         self.affinity = 50
         self.shop = shop or {}
         self.health = 50
@@ -66,10 +71,10 @@ class Character:
     def trade(self, player):
         if self.job != "상인" or not self.shop:
             price = 5
-            if player.money < price:
+            currency = self.currency
+            if not player.spend_money(price, currency):
                 print("돈이 부족합니다.")
                 return
-            player.money -= price
             player.satiety = min(player.max_satiety, player.satiety + 20 + player.endurance)
             player.stamina = min(player.max_stamina, player.stamina + 10 + player.strength // 2)
             print(f"{self.name}에게서 음식을 구입했습니다.")
@@ -85,20 +90,29 @@ class Character:
         if choice == "1":
             print("구입할 물건을 선택하세요:")
             for i, (item, price) in enumerate(items, start=1):
-                print(f"{i}. {item.name} - {price}원")
+                print(f"{i}. {item.name} - {price}{self.currency}")
             sel = input("> ").strip()
             if sel.isdigit():
                 idx = int(sel) - 1
                 if 0 <= idx < len(items):
                     item, price = items[idx]
-                    if player.money < price:
-                        print("돈이 부족합니다.")
-                    elif not player.can_carry(item):
+                    pay_price = price
+                    pay_currency = self.currency
+                    if not player.has_money(price, pay_currency):
+                        pay_price = int(price * 1.2)
+                        for cur in player.money:
+                            if cur != pay_currency and player.has_money(pay_price, cur):
+                                pay_currency = cur
+                                break
+                        else:
+                            print("돈이 부족합니다.")
+                            return
+                    if not player.can_carry(item):
                         print("무게 때문에 들 수 없습니다.")
-                    else:
-                        player.money -= price
-                        player.add_item(item)
-                        print("거래가 완료되었습니다.")
+                        return
+                    player.spend_money(pay_price, pay_currency)
+                    player.add_item(item)
+                    print(f"{pay_currency}로 {pay_price} 지불했습니다.")
                 else:
                     print("잘못된 선택입니다.")
             else:
@@ -145,9 +159,10 @@ class Character:
     def lend_money(self, player):
         if self.affinity >= 60:
             amount = 10
-            player.money += amount
+            currency = self.location.nation.currency
+            player.add_money(amount, currency)
             self.affinity -= 5
-            print(f"{self.name}은(는) {amount}원을 빌려주었습니다.")
+            print(f"{self.name}은(는) {amount}{currency}을 빌려주었습니다.")
         else:
             print(f"{self.name}은(는) 돈을 빌려주지 않습니다.")
 
@@ -212,7 +227,8 @@ class Player:
         self.stamina = self.max_stamina
         self.satiety = self.max_satiety
         self.cleanliness = self.max_cleanliness
-        self.money = 20
+        # 각 국가별 화폐를 기록한다
+        self.money = {NATIONS[0].currency: 20}
         self.experience = 0
         self.day = 1
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -232,6 +248,19 @@ class Player:
         # installed body modifications by slot
         self.mods = {}
 
+    # Money helpers
+    def add_money(self, amount, currency):
+        self.money[currency] = self.money.get(currency, 0) + amount
+
+    def spend_money(self, amount, currency):
+        if self.money.get(currency, 0) >= amount:
+            self.money[currency] -= amount
+            return True
+        return False
+
+    def has_money(self, amount, currency):
+        return self.money.get(currency, 0) >= amount
+
     def status(self):
         print(f"\n{self.day}일차 {TIME_OF_DAY[self.time]}")
         print(f"{self.name}의 상태:")
@@ -239,7 +268,8 @@ class Player:
         print(f"포만감: {self.satiety}/{self.max_satiety}")
         print(f"기력: {self.stamina}/{self.max_stamina}")
         print(f"청결도: {self.cleanliness}/{self.max_cleanliness}")
-        print(f"돈: {self.money}원")
+        money_str = ", ".join(f"{amt}{cur}" for cur, amt in self.money.items())
+        print(f"보유 화폐: {money_str}")
         print(f"경험치: {self.experience}")
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
         nearby = [c.name for c in NPCS if c.location == self.location]
@@ -339,11 +369,24 @@ class Player:
 
     # Body modification helpers
     def install_mod(self, mod):
+        loc = self.location
+        if not getattr(loc, "mod_shop", None):
+            print("이곳에서는 개조 시술을 받을 수 없습니다.")
+            return
         if mod.required_item and mod.required_item not in self.inventory:
             print(f"{mod.required_item.name}이(가) 없어 개조를 진행할 수 없습니다.")
             return
         if mod.required_item and mod.required_item in self.inventory:
             self.inventory.remove(mod.required_item)
+        if loc.mod_shop == "illegal":
+            roll = random.random()
+            if roll < 0.2:
+                print("시술이 실패해 부상을 입었습니다!")
+                self.health -= 10
+                return
+            elif roll < 0.4:
+                print("가품 부품이 사용되어 효과가 없습니다.")
+                return
         current = self.mods.get(mod.slot)
         if current:
             print(f"{current.name}을(를) 제거하고 {mod.name}을(를) 장착합니다.")

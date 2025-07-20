@@ -30,20 +30,22 @@ class Game:
             print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
             return
         income = 10 + self.player.intelligence // 2 + self.player.strength // 2
-        self.player.money += income
+        currency = self.player.location.nation.currency
+        self.player.add_money(income, currency)
         stamina_cost = max(10, 20 - self.player.strength)
         satiety_cost = max(5, 10 - self.player.endurance // 2)
         self.player.stamina -= stamina_cost
         self.player.satiety -= satiety_cost
         self.player.cleanliness -= 5
         self.player.experience += 1
-        print(f"일해서 {income}원을 벌었습니다.")
+        print(f"일해서 {income}{currency}를 벌었습니다.")
 
     def eat(self):
-        if self.player.money < 5:
+        price = 5
+        currency = self.player.location.nation.currency
+        if not self.player.spend_money(price, currency):
             print("음식을 살 돈이 부족합니다.")
             return
-        self.player.money -= 5
         gain_satiety = 20 + self.player.endurance
         gain_stamina = 10 + self.player.strength // 2
         self.player.satiety = min(self.player.max_satiety, self.player.satiety + gain_satiety)
@@ -64,10 +66,10 @@ class Game:
 
     def wash(self):
         cost = 2
-        if self.player.money < cost:
+        currency = self.player.location.nation.currency
+        if not self.player.spend_money(cost, currency):
             print("씻을 돈이 부족합니다.")
             return
-        self.player.money -= cost
         gain = 30 + self.player.charisma
         self.player.cleanliness = min(self.player.max_cleanliness, self.player.cleanliness + gain)
         self.player.stamina -= 5
@@ -91,8 +93,9 @@ class Game:
             self.player.add_item(item)
         elif event == "find_money":
             found = random.randint(5, 20) + self.player.charisma
-            self.player.money += found
-            print(f"탐험 중에 {found}원을 발견했습니다.")
+            currency = self.player.location.nation.currency
+            self.player.add_money(found, currency)
+            print(f"탐험 중에 {found}{currency}을 발견했습니다.")
         elif event == "injury":
             damage = random.randint(5, 15)
             self.player.health -= damage
@@ -116,6 +119,12 @@ class Game:
             print(f"숨겨진 장소 {dest.name}을(를) 발견했습니다!")
 
     def modify_body(self):
+        shop_type = getattr(self.player.location, "mod_shop", None)
+        if not shop_type:
+            print("이곳에서는 개조 시술을 받을 수 없습니다.")
+            return
+        if shop_type == "illegal":
+            print("불법 시술소입니다. 실패하거나 가품을 사용할 위험이 있습니다.")
         print("시술할 개조를 선택하세요:")
         for i, mod in enumerate(BODY_MODS, start=1):
             req = f" - 필요 부품: {mod.required_item.name}" if mod.required_item else ""

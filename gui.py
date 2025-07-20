@@ -27,7 +27,9 @@ def draw_screen(player, npcs=NPCS):
         + f"포만감 {player.satiety}/{player.max_satiety} "
         + f"기력 {player.stamina}/{player.max_stamina} "
         + f"청결 {player.cleanliness}/{player.max_cleanliness} "
-        + f"돈 {player.money}원 무게 "
+        + "화폐 "
+        + ", ".join(f"{amt}{cur}" for cur, amt in player.money.items())
+        + " 무게 "
         + (
             str(player.estimated_weight())
             if player.perception >= 10
