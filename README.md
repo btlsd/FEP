@@ -16,7 +16,7 @@ During the game you will be prompted in Korean to choose among four main categor
 3. **행동** – 일하기, 식사, 잠자기, 탐험 등의 활동을 수행합니다.
 4. **메뉴** – 게임 종료 등 기타 기능을 선택합니다.
 
-The world contains several distinct countries: a human-focused nation, a large ecological federation of many species, an offline machine state, and an online machine network. Manage your character's stats and survive as long as possible while visiting these places.
+이 세계에는 네 개의 주요 국가가 존재합니다: **인간개척국**, **자연연방국**, **비활성기계국**, 그리고 **연결기계국**입니다. 게임에서는 이러한 나라들을 여행하며 각기 다른 문화를 경험할 수 있습니다.
 
 ### Player Stats
 
@@ -47,7 +47,7 @@ These values influence activities like working and exploring.
 
 모든 장소 정의는 `locations.py`에 분리되어 있어 간단히 수정하거나
 추가할 수 있습니다. 게임을 시작하면 "시스템 초기화" 메시지 후
-휴먼 프론티어의 지하 거대한 하수도에서 눈을 뜨게 되며, 연결된 장소로
+인간개척국의 지하 거대한 하수도에서 눈을 뜨게 되며, 연결된 장소로
 이동하며 탐험할 수 있습니다. `장소 이동` 옵션을 사용하여 현재 위치와
 연결된 다른 지역으로 갈 수 있습니다.
 

@@ -31,16 +31,16 @@ class Location:
 
 # Nations
 NATIONS = [
-    Nation("휴먼 프론티어", "인간 위주의 국가"),
-    Nation("자연 연합", "여러 종들이 의견을 모아 운영하는 생태계 중심의 국가"),
-    Nation("오프라인 기계 국가", "개체가 오프라인 상태로 존재하는 기계들의 국가"),
-    Nation("온라인 기계 네트워크", "개체가 온라인 상태로 연결된 기계 국가"),
+    Nation("인간개척국", "인간 위주의 국가"),
+    Nation("자연연방국", "여러 종들이 의견을 모아 운영하는 생태계 중심의 국가"),
+    Nation("비활성기계국", "개체가 오프라인 상태로 존재하는 기계들의 국가"),
+    Nation("연결기계국", "개체가 온라인 상태로 연결된 기계 국가"),
 ]
 
 # Locations for the human nation
 SEWER = Location(
     "거대한 하수도",
-    "휴먼 프론티어 수도 지하를 흐르는 광대한 하수도",
+    "인간개척국 수도 지하를 흐르는 광대한 하수도",
     NATIONS[0],
 )
 STATION = Location(
@@ -73,7 +73,7 @@ SEWER.connect(SECRET_LAB, required_perception=7)
 # Default locations for each nation when first arrived
 DEFAULT_LOCATION_BY_NATION = {
     NATIONS[0]: SEWER,
-    NATIONS[1]: Location("연합 수도", "자연 연합의 중심 도시", NATIONS[1]),
+    NATIONS[1]: Location("연합 수도", "자연연방국의 중심 도시", NATIONS[1]),
     NATIONS[2]: Location("기계 도시", "오프라인 기계들의 집합", NATIONS[2]),
     NATIONS[3]: Location("디지털 허브", "온라인 기계들의 중심", NATIONS[3]),
 }
