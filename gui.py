@@ -5,7 +5,7 @@ Displays player status, current location information, and available
 movement options in Korean.
 """
 
-from characters import NPCS, TIME_OF_DAY
+from characters import NPCS, TIME_OF_DAY, WEEKDAYS
 
 
 def health_message(player):
@@ -20,7 +20,7 @@ def health_message(player):
 
 def draw_screen(player, npcs=NPCS):
     """Print a simple status window and location information."""
-    print(f"{player.day}일차 {TIME_OF_DAY[player.time]}")
+    print(f"{player.day}일차 {WEEKDAYS[player.weekday]}요일 {TIME_OF_DAY[player.time]}")
     print(health_message(player))
     print(
         f"체력 {player.health}/{player.max_health} "

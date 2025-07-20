@@ -20,6 +20,7 @@ LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
 # 새벽, 아침, 오전, 오후, 저녁, 밤의 여섯 구간
 TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
+WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
 
 class Character:
     def __init__(
@@ -233,6 +234,7 @@ class Player:
         self.money = {NATIONS[0].currency: 20}
         self.experience = 0
         self.day = 1
+        self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
         # 시간은 0~5까지의 4시간 간격 구간으로 취급한다
         self.time = 0  # 0=새벽,1=아침,2=오전,3=오후,4=저녁,5=밤
@@ -274,7 +276,7 @@ class Player:
         return self.money.get(currency, 0) >= amount
 
     def status(self):
-        print(f"\n{self.day}일차 {TIME_OF_DAY[self.time]}")
+        print(f"\n{self.day}일차 {WEEKDAYS[self.weekday]}요일 {TIME_OF_DAY[self.time]}")
         print(f"{self.name}의 상태:")
         print(f"건강: {self.health}/{self.max_health}")
         print(f"포만감: {self.satiety}/{self.max_satiety}")
@@ -307,6 +309,7 @@ class Player:
 
     def end_day(self):
         self.day += 1
+        self.weekday = (self.weekday + 1) % 7
         self.satiety -= 5
         self.cleanliness -= 10
         if self.satiety <= 0:

@@ -28,6 +28,9 @@ class Game:
             self.player.end_day()
 
     def work(self):
+        if self.player.weekday not in {0, 1, 3, 4}:
+            print("오늘은 휴일이라 일을 할 수 없습니다.")
+            return
         if self.player.stamina < 20 or self.player.satiety < 20:
             print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
             return
@@ -153,8 +156,22 @@ class Game:
             self.player.job = "임시 노동자"
             print("당신은 임시 노동자로 등록되었습니다.")
         elif choice == "2":
-            self.player.job = "교육 과정 수강 중"
-            print("교육 프로그램에 등록했습니다.")
+            print("어떤 과정을 듣겠습니까?")
+            trainings = [
+                "도시 계획자",
+                "군사 요원",
+                "토지 개관자",
+                "로봇 관리사",
+                "창작자",
+            ]
+            for i, j in enumerate(trainings, start=1):
+                print(f"{i}. {j}")
+            sel = input("> ").strip()
+            if sel.isdigit() and 1 <= int(sel) <= len(trainings):
+                self.player.job = trainings[int(sel) - 1] + " 교육 중"
+                print(f"{self.player.job}으로 등록했습니다.")
+            else:
+                print("등록을 취소했습니다.")
         else:
             print("결정을 미루었습니다.")
 
