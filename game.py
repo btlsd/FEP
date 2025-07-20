@@ -27,34 +27,42 @@ TRAININGS = {
     "도시 계획자": {
         "cert": CITY_PLANNER_CERT,
         "req": {"intelligence": 7},
+        "gov": False,
     },
     "군사 요원": {
         "cert": MILITARY_CERT,
         "req": {"strength": 7, "endurance": 6},
+        "gov": True,
     },
     "토지 개관자": {
         "cert": LAND_SURVEY_CERT,
         "req": {"perception": 7},
+        "gov": True,
     },
-    "로봇 관리사": {
+    "로봇 관리자": {
         "cert": ROBOT_MANAGER_CERT,
         "req": {"intelligence": 6},
+        "gov": True,
     },
     "창작자": {
         "cert": CREATOR_CERT,
         "req": {"intelligence": 6, "charisma": 6},
+        "gov": False,
     },
     "사회복지사": {
         "cert": SOCIAL_WORK_CERT,
         "req": {"charisma": 7},
+        "gov": False,
     },
     "탐정": {
         "cert": DETECTIVE_CERT,
         "req": {"perception": 7, "intelligence": 7},
+        "gov": False,
     },
     "경비": {
         "cert": SECURITY_CERT,
         "req": {"strength": 6, "agility": 6},
+        "gov": False,
     },
 }
 
@@ -202,8 +210,19 @@ class Game:
             self.player.job = "임시 노동자"
             print("당신은 임시 노동자로 등록되었습니다.")
         elif choice == "2":
+            print("어떤 분류의 직업을 원합니까?")
+            print("1. 정부 소속 직업")
+            print("2. 일반 직업")
+            cat = input("> ").strip()
+            if cat not in {"1", "2"}:
+                print("잘못된 선택입니다.")
+                return
+            want_gov = cat == "1"
+            jobs = [j for j, info in TRAININGS.items() if info.get("gov") == want_gov]
+            if not jobs:
+                print("해당 분류의 과정이 없습니다.")
+                return
             print("어떤 과정을 듣겠습니까?")
-            jobs = list(TRAININGS.keys())
             for i, j in enumerate(jobs, start=1):
                 print(f"{i}. {j}")
             sel = input("> ").strip()
@@ -213,6 +232,8 @@ class Game:
                 req = info["req"]
                 meets = all(getattr(self.player, stat) >= val for stat, val in req.items())
                 self.player.job = job
+                if info.get("gov"):
+                    print("정부 소속 과정으로 지정 숙소와 생활 패턴을 따라야 합니다.")
                 if meets:
                     cert = info["cert"]
                     self.player.inventory.append(cert)
