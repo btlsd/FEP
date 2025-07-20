@@ -21,11 +21,27 @@ LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
 
 class Character:
-    def __init__(self, name, personality, affiliation, job, schedule, agility=5):
+    def __init__(
+        self,
+        name,
+        personality,
+        affiliation,
+        job,
+        schedule,
+        agility=5,
+        age=None,
+        gender=None,
+        origin=None,
+        status=None,
+    ):
         self.name = name
-        self.personality = personality
+        self.personality = personality or {}
         self.affiliation = affiliation
         self.job = job
+        self.age = age
+        self.gender = gender
+        self.origin = origin
+        self.status = status
         self.schedule = schedule  # time index -> Location
         if schedule:
             self.location = schedule.get(0, next(iter(schedule.values())))
@@ -39,12 +55,9 @@ class Character:
         self.location = self.schedule.get(time_idx, self.location)
 
     def talk(self, player):
-        if self.affinity >= 70:
-            print(f"{self.name}은(는) 반갑게 당신을 맞이합니다.")
-        elif self.affinity >= 30:
-            print(f"{self.name}은(는) 무난하게 대화에 응합니다.")
-        else:
-            print(f"{self.name}은(는) 시큰둥한 반응을 보입니다.")
+        from dialogues import greeting
+
+        print(greeting(self, player))
         gain = max(1, player.charisma // 2)
         self.affinity = min(100, self.affinity + gain)
 
@@ -84,11 +97,15 @@ def _load_npcs():
         npcs.append(
             Character(
                 entry["name"],
-                entry.get("personality", ""),
+                entry.get("personality", {}),
                 entry.get("affiliation", ""),
                 entry.get("job", ""),
                 schedule,
                 agility=entry.get("agility", 5),
+                age=entry.get("age"),
+                gender=entry.get("gender"),
+                origin=entry.get("origin"),
+                status=entry.get("status"),
             )
         )
     return npcs
