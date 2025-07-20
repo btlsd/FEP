@@ -50,8 +50,8 @@ class Character:
             print("돈이 부족합니다.")
             return
         player.money -= price
-        player.hunger = min(100, player.hunger + 20)
-        player.energy = min(player.max_energy, player.energy + 10)
+        player.satiety = min(player.max_satiety, player.satiety + 20 + player.endurance)
+        player.stamina = min(player.max_stamina, player.stamina + 10 + player.strength // 2)
         print(f"{self.name}에게서 음식을 구입했습니다.")
 
     def lend_money(self, player):
@@ -98,11 +98,14 @@ class Player:
         self.agility = 5
 
         self.max_health = 100 + self.endurance * 10
-        self.max_energy = 100 + self.endurance * 5
+        self.max_stamina = 100 + self.endurance * 5
+        self.max_satiety = 100 + self.endurance * 2
+        self.max_cleanliness = 100 + self.charisma * 2
 
         self.health = self.max_health
-        self.hunger = 100
-        self.energy = self.max_energy
+        self.stamina = self.max_stamina
+        self.satiety = self.max_satiety
+        self.cleanliness = self.max_cleanliness
         self.money = 20
         self.experience = 0
         self.day = 1
@@ -121,8 +124,9 @@ class Player:
         print(f"\n{self.day}일차 {TIME_OF_DAY[self.time]}")
         print(f"{self.name}의 상태:")
         print(f"건강: {self.health}/{self.max_health}")
-        print(f"배고픔: {self.hunger}")
-        print(f"에너지: {self.energy}/{self.max_energy}")
+        print(f"포만감: {self.satiety}/{self.max_satiety}")
+        print(f"기력: {self.stamina}/{self.max_stamina}")
+        print(f"청결도: {self.cleanliness}/{self.max_cleanliness}")
         print(f"돈: {self.money}원")
         print(f"경험치: {self.experience}")
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
@@ -145,15 +149,18 @@ class Player:
 
     def end_day(self):
         self.day += 1
-        self.hunger -= 5
-        if self.hunger <= 0:
-            self.health += self.hunger
-            self.hunger = 0
-        if self.energy <= 0:
-            self.health += self.energy
-            self.energy = 0
+        self.satiety -= 5
+        self.cleanliness -= 10
+        if self.satiety <= 0:
+            self.health += self.satiety
+            self.satiety = 0
+        if self.stamina <= 0:
+            self.health += self.stamina
+            self.stamina = 0
         if self.health > self.max_health:
             self.health = self.max_health
+        if self.cleanliness < 0:
+            self.cleanliness = 0
 
     # Inventory helpers
     def carrying_capacity(self):

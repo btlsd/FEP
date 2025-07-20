@@ -24,7 +24,9 @@ def draw_screen(player, npcs=NPCS):
     print(health_message(player))
     print(
         f"체력 {player.health}/{player.max_health} "
-        + f"배고픔 {player.hunger} 에너지 {player.energy}/{player.max_energy} "
+        + f"포만감 {player.satiety}/{player.max_satiety} "
+        + f"기력 {player.stamina}/{player.max_stamina} "
+        + f"청결 {player.cleanliness}/{player.max_cleanliness} "
         + f"돈 {player.money}원 무게 {player.current_weight()}/{player.carrying_capacity()}"
     )
     print("-" * 30)

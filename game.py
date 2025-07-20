@@ -25,13 +25,16 @@ class Game:
             self.player.end_day()
 
     def work(self):
-        if self.player.energy < 20 or self.player.hunger < 20:
-            print("에너지가 부족하거나 너무 배가 고파서 일할 수 없습니다.")
+        if self.player.stamina < 20 or self.player.satiety < 20:
+            print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
             return
         income = 10 + self.player.intelligence // 2 + self.player.strength // 2
         self.player.money += income
-        self.player.energy -= 20
-        self.player.hunger -= 10
+        stamina_cost = max(10, 20 - self.player.strength)
+        satiety_cost = max(5, 10 - self.player.endurance // 2)
+        self.player.stamina -= stamina_cost
+        self.player.satiety -= satiety_cost
+        self.player.cleanliness -= 5
         self.player.experience += 1
         print(f"일해서 {income}원을 벌었습니다.")
 
@@ -40,24 +43,36 @@ class Game:
             print("음식을 살 돈이 부족합니다.")
             return
         self.player.money -= 5
-        self.player.hunger += 20
-        if self.player.hunger > 100:
-            self.player.hunger = 100
-        self.player.energy += 10
-        if self.player.energy > self.player.max_energy:
-            self.player.energy = self.player.max_energy
+        gain_satiety = 20 + self.player.endurance
+        gain_stamina = 10 + self.player.strength // 2
+        self.player.satiety = min(self.player.max_satiety, self.player.satiety + gain_satiety)
+        self.player.stamina = min(self.player.max_stamina, self.player.stamina + gain_stamina)
         heal = self.player.endurance
         self.player.health = min(self.player.health + heal, self.player.max_health)
         print(f"식사를 했습니다. 체력이 {heal} 회복되었습니다.")
 
     def sleep(self):
-        self.player.energy = self.player.max_energy
-        self.player.hunger -= 10
-        if self.player.hunger < 0:
-            self.player.hunger = 0
+        gain_stamina = self.player.endurance * 5 + 20
+        self.player.stamina = min(self.player.max_stamina, self.player.stamina + gain_stamina)
+        self.player.satiety -= 10
+        if self.player.satiety < 0:
+            self.player.satiety = 0
         heal = 10 + self.player.endurance
         self.player.health = min(self.player.health + heal, self.player.max_health)
         print(f"잠을 자고 기력이 회복되었습니다. 체력이 {heal} 회복되었습니다.")
+
+    def wash(self):
+        cost = 2
+        if self.player.money < cost:
+            print("씻을 돈이 부족합니다.")
+            return
+        self.player.money -= cost
+        gain = 30 + self.player.charisma
+        self.player.cleanliness = min(self.player.max_cleanliness, self.player.cleanliness + gain)
+        self.player.stamina -= 5
+        if self.player.stamina < 0:
+            self.player.stamina = 0
+        print("씻고 나니 상쾌합니다.")
 
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
@@ -83,6 +98,11 @@ class Game:
             print(f"탐험 중 부상을 입어 체력이 {damage} 감소했습니다.")
         else:
             print("탐험 중 아무 일도 일어나지 않았습니다.")
+
+        stamina_cost = max(5, 15 - self.player.endurance)
+        self.player.stamina -= stamina_cost
+        self.player.satiety -= 5
+        self.player.cleanliness -= 5
 
         # check for hidden paths
         loc = self.player.location
@@ -184,6 +204,7 @@ class Game:
         print("3. 잠자기")
         print("4. 탐험")
         print("5. 소지품 확인")
+        print("6. 씻기")
         choice = input("> ").strip()
         actions = {
             "1": self.work,
@@ -191,6 +212,7 @@ class Game:
             "3": self.sleep,
             "4": self.explore,
             "5": self.player.show_inventory,
+            "6": self.wash,
         }
         action = actions.get(choice)
         if action:

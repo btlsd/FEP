@@ -25,12 +25,18 @@ Characters have six core attributes:
 
 - **Strength**
 - **Perception**
-- **Endurance** – affects maximum health and energy as well as recovery rates
+- **Endurance** – affects maximum health and 기력 as well as recovery rates
 - **Charisma**
 - **Intelligence**
 - **Agility** – higher agility lets your turn gauge fill faster in battle
 
-These values influence activities like working and exploring.
+These values influence activities like working and exploring. From these base attributes the game derives secondary stats used in daily life:
+
+- **포만감** – how full you are, decreases with time and activities
+- **기력** – stamina for actions, mainly restored by sleeping
+- **청결도** – gets lower over time or when exploring, restored by washing
+
+The maximum values and recovery rates of these secondary stats scale with the primary attributes such as Endurance or Charisma.
 
 ### NPC Interactions
 
@@ -72,8 +78,8 @@ These values influence activities like working and exploring.
 훨씬 많은 물건을 운반할 수 있습니다. 카트의 경우 크기에 따라 건물 내부로
 들어갈 수 있는지 여부가 달라집니다(대형 카트는 실내 진입이 어렵습니다).
 아이템마다 무게가 정해져 있어 현재 들고 있는 총 무게가 용량을 초과하면
-새로운 물건을 넣을 수 없습니다. `행동` 메뉴에서 **소지품 확인**을 통해
-현재 가지고 있는 물건과 무게를 살펴볼 수 있습니다.
+새로운 물건을 넣을 수 없습니다. `행동` 메뉴에서 **소지품 확인**이나
+**씻기** 등을 선택해 일상적인 관리도 할 수 있습니다.
 
 ### 전투
 
