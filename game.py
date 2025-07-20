@@ -22,6 +22,42 @@ from items import (
 from equipment import BODY_MODS
 from gui import draw_screen
 
+# 각 직업별 요구 능력치와 자격증 매핑
+TRAININGS = {
+    "도시 계획자": {
+        "cert": CITY_PLANNER_CERT,
+        "req": {"intelligence": 7},
+    },
+    "군사 요원": {
+        "cert": MILITARY_CERT,
+        "req": {"strength": 7, "endurance": 6},
+    },
+    "토지 개관자": {
+        "cert": LAND_SURVEY_CERT,
+        "req": {"perception": 7},
+    },
+    "로봇 관리사": {
+        "cert": ROBOT_MANAGER_CERT,
+        "req": {"intelligence": 6},
+    },
+    "창작자": {
+        "cert": CREATOR_CERT,
+        "req": {"intelligence": 6, "charisma": 6},
+    },
+    "사회복지사": {
+        "cert": SOCIAL_WORK_CERT,
+        "req": {"charisma": 7},
+    },
+    "탐정": {
+        "cert": DETECTIVE_CERT,
+        "req": {"perception": 7, "intelligence": 7},
+    },
+    "경비": {
+        "cert": SECURITY_CERT,
+        "req": {"strength": 6, "agility": 6},
+    },
+}
+
 class Game:
     def __init__(self, player):
         self.player = player
@@ -167,38 +203,27 @@ class Game:
             print("당신은 임시 노동자로 등록되었습니다.")
         elif choice == "2":
             print("어떤 과정을 듣겠습니까?")
-            trainings = [
-                "도시 계획자",
-                "군사 요원",
-                "토지 개관자",
-                "로봇 관리사",
-                "창작자",
-                "사회복지사",
-                "탐정",
-                "경비",
-            ]
-            for i, j in enumerate(trainings, start=1):
+            jobs = list(TRAININGS.keys())
+            for i, j in enumerate(jobs, start=1):
                 print(f"{i}. {j}")
             sel = input("> ").strip()
-            if sel.isdigit() and 1 <= int(sel) <= len(trainings):
-                job = trainings[int(sel) - 1]
-                cert_map = {
-                    "도시 계획자": CITY_PLANNER_CERT,
-                    "군사 요원": MILITARY_CERT,
-                    "토지 개관자": LAND_SURVEY_CERT,
-                    "로봇 관리사": ROBOT_MANAGER_CERT,
-                    "창작자": CREATOR_CERT,
-                    "사회복지사": SOCIAL_WORK_CERT,
-                    "탐정": DETECTIVE_CERT,
-                    "경비": SECURITY_CERT,
-                }
-                cert = cert_map[job]
+            if sel.isdigit() and 1 <= int(sel) <= len(jobs):
+                job = jobs[int(sel) - 1]
+                info = TRAININGS[job]
+                req = info["req"]
+                meets = all(getattr(self.player, stat) >= val for stat, val in req.items())
                 self.player.job = job
-                self.player.inventory.append(cert)
-                nations = (
-                    "범국가" if cert.universal else ", ".join(cert.valid_nations or [])
-                )
-                print(f"{job} 자격증을 취득했습니다. (인정 국가: {nations})")
+                if meets:
+                    cert = info["cert"]
+                    self.player.inventory.append(cert)
+                    nations = (
+                        "범국가" if cert.universal else ", ".join(cert.valid_nations or [])
+                    )
+                    print(f"{job} 자격증을 취득했습니다. (인정 국가: {nations})")
+                else:
+                    req_text = ", ".join(f"{k} {v}+" for k, v in req.items())
+                    print("교육은 마쳤지만 요구 능력치가 부족해 시험에 불합격했습니다.")
+                    print(f"필요 능력치: {req_text}. 다음 시험 때 다시 도전하세요.")
             else:
                 print("등록을 취소했습니다.")
         else:
