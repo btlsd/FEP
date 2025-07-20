@@ -1,9 +1,9 @@
 {
   "nations": [
-    {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가", "currency": "연화"},
-    {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가", "currency": "거합권"},
-    {"name": "탐랑", "description": "개성을 중시해 오프라인으로 방랑하는 기계들의 느슨한 모임", "currency": "탐랑칩"},
-    {"name": "전계국", "description": "모든 기계가 하나로 연결되길 바라는 전기와 기계의 나라", "currency": "전계 데이터"}
+    {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가", "currency": "연화", "transport": "자동운행 차량과 열차"},
+    {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가", "currency": "거합권", "transport": "거대한 동식물 이용"},
+    {"name": "탐랑", "description": "개성을 중시해 오프라인으로 방랑하는 기계들의 느슨한 모임", "currency": "탐랑칩", "transport": "개인 제작 탈것"},
+    {"name": "전계국", "description": "모든 기계가 하나로 연결되길 바라는 전기와 기계의 나라", "currency": "전계 데이터", "transport": "제트 수송선"}
   ],
   "locations": [
     {
@@ -35,6 +35,7 @@
       },
       "nation": 0,
       "indoors": true,
+      "station": true,
       "open_times": [0,1,2,3,4]
     },
     {
@@ -128,7 +129,8 @@
         "4": "저녁에는 하루 정리를 위해 분주하다.",
         "5": "밤에는 대부분 휴식을 취한다."
       },
-      "nation": 1
+      "nation": 1,
+      "station": true
     },
     {
       "key": "BASE_TAMRANG",
@@ -142,7 +144,8 @@
         "4": "저녁에는 떠날 준비로 분주하다.",
         "5": "밤이 되면 거점은 거의 비어 있다."
       },
-      "nation": 2
+      "nation": 2,
+      "station": true
     },
     {
       "key": "HUB_CHONKYE",
@@ -156,7 +159,8 @@
         "4": "저녁에는 에너지 수급을 위해 일부 구역이 정비된다.",
         "5": "밤에도 중앙에서 명령이 전달된다."
       },
-      "nation": 3
+      "nation": 3,
+      "station": true
     }
   ],
   "connections": [

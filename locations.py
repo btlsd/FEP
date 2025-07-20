@@ -3,14 +3,25 @@ import os
 
 
 class Nation:
-    def __init__(self, name, description, currency="화폐"):
+    def __init__(self, name, description, currency="화폐", transport="도보"):
         self.name = name
         self.description = description
         self.currency = currency
+        self.transport = transport
 
 
 class Location:
-    def __init__(self, name, description, nation, indoors=False, descriptions=None, open_times=None, mod_shop=None):
+    def __init__(
+        self,
+        name,
+        description,
+        nation,
+        indoors=False,
+        descriptions=None,
+        open_times=None,
+        mod_shop=None,
+        station=False,
+    ):
         self.name = name
         self.description = description
         self.nation = nation
@@ -22,6 +33,7 @@ class Location:
         # list of allowed time indexes (0~5)
         self.open_times = open_times if open_times is not None else list(range(6))
         self.mod_shop = mod_shop  # "legal" or "illegal"
+        self.station = station
 
     def get_description(self, time_idx):
         # descriptions keys might be strings in JSON
@@ -47,7 +59,15 @@ def _load_data():
 data = _load_data()
 
 # Nations
-NATIONS = [Nation(n["name"], n["description"], n.get("currency", "화폐")) for n in data["nations"]]
+NATIONS = [
+    Nation(
+        n["name"],
+        n["description"],
+        n.get("currency", "화폐"),
+        n.get("transport", "도보"),
+    )
+    for n in data["nations"]
+]
 NATION_BY_NAME = {n.name: n for n in NATIONS}
 
 # Locations
@@ -62,6 +82,7 @@ for entry in data["locations"]:
         entry.get("descriptions"),
         entry.get("open_times"),
         entry.get("mod_shop"),
+        entry.get("station", False),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc

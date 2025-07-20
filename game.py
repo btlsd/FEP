@@ -159,7 +159,7 @@ class Game:
                     print("지금은 그곳에 들어갈 수 없습니다.")
                     return
                 self.player.location = dest
-                print(f"{self.player.location.name}으로 이동했습니다.")
+                print(f"도보로 {self.player.location.name}으로 이동했습니다.")
                 return
         print("잘못된 선택입니다.")
 
@@ -197,6 +197,9 @@ class Game:
             print("잘못된 선택입니다.")
 
     def travel(self):
+        if not self.player.location.station:
+            print("먼 이동을 하려면 정거장에 있어야 합니다.")
+            return
         print("이동할 국가를 선택하세요:")
         for i, nation in enumerate(NATIONS, start=1):
             print(f"{i}. {nation.name} - {nation.description}")
@@ -206,7 +209,9 @@ class Game:
             if 0 <= idx < len(NATIONS):
                 nation = NATIONS[idx]
                 self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
-                print(f"{nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다.")
+                print(
+                    f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
+                )
                 return
         print("잘못된 선택입니다.")
 
