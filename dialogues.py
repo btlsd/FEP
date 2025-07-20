@@ -1,6 +1,5 @@
 import json
 import os
-import random
 
 
 def _load_dialogues():
@@ -11,30 +10,61 @@ def _load_dialogues():
 
 _DIALOGUES = _load_dialogues()
 
+AGE_BRACKETS = [
+    ("아기", 0, 3),
+    ("미취학 아동", 3, 7),
+    ("저학년", 7, 10),
+    ("고학년", 10, 13),
+    ("청소년", 13, 19),
+    ("청년", 19, 30),
+    ("성년", 30, 50),
+    ("중년", 50, 65),
+    ("노년", 65, 200),
+]
+
+
+def _age_group(age):
+    for name, start, end in AGE_BRACKETS:
+        if start <= age < end:
+            return name
+    return "노년"
+
+
+def _personality_code(p):
+    if not p:
+        return None
+    code = ""
+    for key in "OCEAN":
+        code += "H" if p.get(key, 50) >= 50 else "L"
+    return code
+
+
 def greeting(npc, player):
     d = _DIALOGUES.get("greetings", {})
-    candidates = []
-    # job-specific
-    if npc.job and npc.job in d.get("job", {}):
-        candidates.append(d["job"][npc.job])
-    # gender-specific
+    parts = []
     if npc.gender and npc.gender in d.get("gender", {}):
-        candidates.append(d["gender"][npc.gender])
-    # origin-specific
+        parts.append(d["gender"][npc.gender])
+
+    if npc.age is not None:
+        group = _age_group(npc.age)
+        if group in d.get("age", {}):
+            parts.append(d["age"][group])
+
+    if npc.job and npc.job in d.get("job", {}):
+        parts.append(d["job"][npc.job])
+
     if npc.origin and npc.origin in d.get("origin", {}):
-        candidates.append(d["origin"][npc.origin])
-    # age-related
-    if hasattr(npc, "age") and npc.age is not None and npc.age >= 60 and "age_old" in d:
-        candidates.append(d["age_old"])
-    # personality based on extraversion
-    extr = 50
-    if npc.personality and isinstance(npc.personality, dict):
-        extr = npc.personality.get("E", 50)
-    if extr >= 60 and "high_E" in d.get("personality", {}):
-        candidates.append(d["personality"]["high_E"])
-    elif extr <= 40 and "low_E" in d.get("personality", {}):
-        candidates.append(d["personality"]["low_E"])
-    # default
-    candidates.append(d.get("default", "안녕하세요."))
-    text = random.choice(candidates)
-    return text.format(player=player.name)
+        parts.append(d["origin"][npc.origin])
+
+    if npc.status and npc.status in d.get("status", {}):
+        parts.append(d["status"][npc.status])
+
+    code = _personality_code(npc.personality)
+    if code and code in d.get("personality", {}):
+        parts.append(d["personality"][code])
+
+    if not parts:
+        parts.append(d.get("default", "안녕하세요."))
+
+    text = " ".join(parts)
+    return text.format(player=player.name, npc=npc.name)

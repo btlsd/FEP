@@ -51,10 +51,11 @@ The maximum values and recovery rates of these secondary stats scale with the pr
 파일에 기록되어 있으며 로딩 시 `characters.py`가 이를 읽어 들입니다.
 JSON 형식이라 새로운 NPC를 손쉽게 추가하거나 수정할 수 있습니다.
 
-각 NPC는 성격(Big Five OCEAN 지표), 나이, 성별, 직업, 지위, 출신 국가 등의
-속성을 지니며, 인사말 역시 이러한 정보를 바탕으로 결정됩니다. 대사
-패턴은 `data/dialogues.json`에 저장되어 있고 `dialogues.py` 모듈이 이를 읽어
-적절한 말을 선택합니다.
+각 NPC는 성격(Big Five OCEAN 지표), 나이, 성별, 직업, 지위, 출신 국가 등 다
+양한 속성을 지니며, 인사말 역시 이러한 정보를 조합해 생성됩니다. 
+`data/dialogues.json`에는 성별, 나이대, 직업, 출신 국가, 지위별 문구는 물론
+Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 대사가 준비돼
+있습니다. `dialogues.py`가 이를 읽어 NPC 특성에 맞는 인사말을 만들어 줍니다.
 
 ### 장소
 
