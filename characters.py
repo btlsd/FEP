@@ -39,6 +39,7 @@ class Character:
         shop=None,
         blueprints=None,
         blueprint_drop=None,
+        inventory=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -61,6 +62,7 @@ class Character:
         self.shop = shop or {}
         self.blueprints = blueprints or {}
         self.blueprint_drop = blueprint_drop
+        self.inventory = inventory or []
         self.health = 50
         self.agility = agility
 
@@ -188,6 +190,10 @@ def _load_npcs():
         if "blueprints" in entry:
             from items import _ITEMS
             blueprints = {key: price for key, price in entry["blueprints"].items() if key in _ITEMS}
+        inventory = None
+        if "inventory" in entry:
+            from items import _ITEMS
+            inventory = [_ITEMS[key] for key in entry["inventory"] if key in _ITEMS]
         npcs.append(
             Character(
                 entry["name"],
@@ -203,6 +209,7 @@ def _load_npcs():
                 shop=shop,
                 blueprints=blueprints,
                 blueprint_drop=entry.get("blueprint_drop"),
+                inventory=inventory,
             )
         )
     return npcs

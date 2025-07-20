@@ -25,6 +25,8 @@ class Location:
         international=False,
         job_office=False,
         printer=False,
+        restricted=False,
+        locked_relic=False,
     ):
         self.name = name
         self.description = description
@@ -42,6 +44,8 @@ class Location:
         self.international = international
         self.job_office = job_office
         self.printer = printer
+        self.restricted = restricted
+        self.locked_relic = locked_relic
 
     def get_description(self, time_idx):
         # descriptions keys might be strings in JSON
@@ -95,6 +99,8 @@ for entry in data["locations"]:
         entry.get("international", False),
         entry.get("job_office", False),
         entry.get("printer", False),
+        entry.get("restricted", False),
+        entry.get("locked_relic", False),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc

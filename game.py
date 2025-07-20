@@ -23,6 +23,12 @@ from equipment import BODY_MODS
 from gui import draw_screen
 from utils import choose_option
 import json
+import os
+
+_act_path = os.path.join(os.path.dirname(__file__), "data", "actions.json")
+with open(_act_path, encoding="utf-8") as f:
+    _ACTION_DATA = json.load(f).get("actions", [])
+ACTIONS = {a["key"]: a["name"] for a in _ACTION_DATA}
 
 # 각 직업별 요구 능력치와 자격증 매핑
 TRAININGS = {
@@ -218,6 +224,63 @@ class Game:
             return
         self.player.install_mod(BODY_MODS[idx])
 
+    def wait(self):
+        print("가만히 시간을 보냅니다.")
+
+    def stealth(self):
+        self.player.add_flag("stealth")
+        print("은신 상태로 주변을 살핍니다.")
+
+    def pickpocket(self):
+        targets = [c for c in self.characters if c.location == self.player.location and c.inventory]
+        if not targets:
+            print("소매치기할 대상이 없습니다.")
+            return
+        idx = choose_option([t.name for t in targets])
+        if idx is None:
+            return
+        npc = targets[idx]
+        chance = 30 + self.player.agility + self.player.perception
+        if self.player.has_flag("stealth"):
+            chance += 20
+        if random.randint(1, 100) <= chance:
+            item = random.choice(npc.inventory)
+            npc.inventory.remove(item)
+            self.player.add_item(item)
+            print(f"{npc.name}에게서 {item.name}을 훔쳤습니다.")
+        else:
+            print(f"{npc.name}에게 들켰습니다!")
+            npc.affinity = max(0, npc.affinity - 10)
+        self.player.flags.discard("stealth")
+        self.player.stamina -= 5
+
+    def lockpick(self):
+        loc = self.player.location
+        if not getattr(loc, "locked_relic", False) or self.player.has_flag("relic_unlocked"):
+            print("따야 할 자물쇠가 없습니다.")
+            return
+        chance = 40 + self.player.agility + self.player.intelligence
+        if random.randint(1, 100) <= chance:
+            print("자물쇠를 따는 데 성공했습니다.")
+            self.player.add_flag("relic_unlocked")
+        else:
+            print("자물쇠따기에 실패했습니다.")
+        self.player.stamina -= 5
+
+    def hack(self):
+        chance = 30 + self.player.intelligence * 2
+        if self.player.has_flag("stealth"):
+            chance += 10
+        if random.randint(1, 100) <= chance:
+            gain = 5
+            currency = self.player.location.nation.currency
+            self.player.add_money(gain, currency)
+            print(f"해킹에 성공해 {gain}{currency}을 얻었습니다.")
+        else:
+            print("해킹에 실패했습니다.")
+        self.player.flags.discard("stealth")
+        self.player.stamina -= 5
+
     def print_item(self):
         if not getattr(self.player.location, "printer", False):
             print("프린터가 없는 장소입니다.")
@@ -290,6 +353,20 @@ class Game:
             print("교육은 마쳤지만 요구 능력치가 부족해 시험에 불합격했습니다.")
             print(f"필요 능력치: {req_text}. 다음 시험 때 다시 도전하세요.")
 
+    def attempt_enter(self, dest):
+        if getattr(dest, "restricted", False) and not self.player.has_flag(f"access_{getattr(dest,'key',dest.name)}"):
+            chance = 70
+            if self.player.has_flag("stealth"):
+                chance = 40
+            if random.randint(1, 100) <= chance:
+                print("경비에게 발각되어 들어갈 수 없습니다!")
+                self.player.flags.discard("stealth")
+                return False
+            else:
+                print("몰래 침입에 성공했습니다.")
+                self.player.flags.discard("stealth")
+        return True
+
     def move_walk(self):
         current = self.player.location
         options = [
@@ -311,7 +388,10 @@ class Game:
         if dest.open_times and self.player.time not in dest.open_times:
             print("지금은 그곳에 들어갈 수 없습니다.")
             return
+        if not self.attempt_enter(dest):
+            return
         self.player.location = dest
+        self.player.flags.discard("stealth")
         print(f"도보로 {self.player.location.name}으로 이동했습니다.")
 
     def move_station(self):
@@ -330,7 +410,10 @@ class Game:
         if dest.open_times and self.player.time not in dest.open_times:
             print("지금은 그곳에 들어갈 수 없습니다.")
             return
+        if not self.attempt_enter(dest):
+            return
         self.player.location = dest
+        self.player.flags.discard("stealth")
         print(f"{dest.name}으로 이동했습니다.")
 
     def interact(self):
@@ -412,6 +495,12 @@ class Game:
             "씻기",
             "신체 개조",
         ]
+        added = []
+        for key in ACTIONS:
+            name = ACTIONS[key]
+            if name not in opts:
+                opts.append(name)
+                added.append(key)
         if getattr(self.player.location, "printer", False):
             opts.append("프린팅")
         if getattr(self.player.location, "job_office", False):
@@ -428,6 +517,17 @@ class Game:
             self.wash,
             self.modify_body,
         ]
+        extra_map = {
+            "wait": self.wait,
+            "sleep": self.sleep,
+            "stealth": self.stealth,
+            "pickpocket": self.pickpocket,
+            "lockpick": self.lockpick,
+            "hack": self.hack,
+            "explore": self.explore,
+        }
+        for key in added:
+            actions.append(extra_map.get(key, self.wait))
         if getattr(self.player.location, "printer", False):
             actions.append(self.print_item)
         if getattr(self.player.location, "job_office", False):

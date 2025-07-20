@@ -107,7 +107,9 @@
       },
       "nation": 0,
       "indoors": true,
-      "open_times": [5]
+      "open_times": [5],
+      "restricted": true,
+      "locked_relic": true
     },
     {
       "key": "CLINIC_LEGAL",

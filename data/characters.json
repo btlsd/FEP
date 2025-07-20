@@ -12,6 +12,7 @@
       "schedule": {"0": "RESIDENTIAL", "1": "MARKET", "2": "MARKET", "3": "MARKET", "4": "RESIDENTIAL", "5": "RESIDENTIAL"},
       "agility": 5
       ,
+      "inventory": ["BROKEN_PART"],
       "shop": {
         "IR_EYE_LEFT_PART": 15,
         "BROKEN_PART": 3
@@ -45,6 +46,7 @@
       "schedule": {"0": "CLINIC_LEGAL", "1": "CLINIC_LEGAL", "2": "CLINIC_LEGAL", "3": "CLINIC_LEGAL", "4": "CLINIC_LEGAL", "5": "RESIDENTIAL"},
       "agility": 5
       ,
+      "inventory": ["BRAIN_INTERFACE_CHIP"],
       "blueprints": {"BRAIN_INTERFACE_CHIP": 50}
     },
     {
@@ -58,6 +60,7 @@
       "status": "평민",
       "schedule": {"0": "CLINIC_ILLEGAL", "4": "CLINIC_ILLEGAL", "5": "CLINIC_ILLEGAL"},
       "agility": 5,
+      "inventory": ["PREC_EYE_RIGHT_PART"],
       "blueprint_drop": "PREC_EYE_RIGHT_PART"
     },
     {
@@ -71,6 +74,7 @@
       "status": "평민",
       "schedule": {"0": "SHELTER", "1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "SHELTER", "5": "SHELTER"},
       "agility": 5
+      ,"inventory": ["BOARDING_PASS"]
     },
     {
       "name": "상담가 민호",
