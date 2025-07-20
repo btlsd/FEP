@@ -8,7 +8,17 @@ from locations import (
 )
 
 from characters import NPCS, Player
-from items import BROKEN_PART
+from items import (
+    BROKEN_PART,
+    CITY_PLANNER_CERT,
+    MILITARY_CERT,
+    LAND_SURVEY_CERT,
+    ROBOT_MANAGER_CERT,
+    CREATOR_CERT,
+    SOCIAL_WORK_CERT,
+    DETECTIVE_CERT,
+    SECURITY_CERT,
+)
 from equipment import BODY_MODS
 from gui import draw_screen
 
@@ -163,13 +173,32 @@ class Game:
                 "토지 개관자",
                 "로봇 관리사",
                 "창작자",
+                "사회복지사",
+                "탐정",
+                "경비",
             ]
             for i, j in enumerate(trainings, start=1):
                 print(f"{i}. {j}")
             sel = input("> ").strip()
             if sel.isdigit() and 1 <= int(sel) <= len(trainings):
-                self.player.job = trainings[int(sel) - 1] + " 교육 중"
-                print(f"{self.player.job}으로 등록했습니다.")
+                job = trainings[int(sel) - 1]
+                cert_map = {
+                    "도시 계획자": CITY_PLANNER_CERT,
+                    "군사 요원": MILITARY_CERT,
+                    "토지 개관자": LAND_SURVEY_CERT,
+                    "로봇 관리사": ROBOT_MANAGER_CERT,
+                    "창작자": CREATOR_CERT,
+                    "사회복지사": SOCIAL_WORK_CERT,
+                    "탐정": DETECTIVE_CERT,
+                    "경비": SECURITY_CERT,
+                }
+                cert = cert_map[job]
+                self.player.job = job
+                self.player.inventory.append(cert)
+                nations = (
+                    "범국가" if cert.universal else ", ".join(cert.valid_nations or [])
+                )
+                print(f"{job} 자격증을 취득했습니다. (인정 국가: {nations})")
             else:
                 print("등록을 취소했습니다.")
         else:

@@ -7,4 +7,13 @@
   "BROKEN_PART": {"name": "부서진 부품", "weight": 2, "volume": 2}
   ,
   "BOARDING_PASS": {"name": "탑승권", "weight": 0.1, "volume": 0.1}
+  ,
+  "CITY_PLANNER_CERT": {"name": "도시 계획자 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["인류연합국"]},
+  "MILITARY_CERT": {"name": "군사 요원 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["인류연합국", "전계국"]},
+  "LAND_SURVEY_CERT": {"name": "토지 개관자 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["거합"]},
+  "ROBOT_MANAGER_CERT": {"name": "로봇 관리사 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["탐랑", "전계국"]},
+  "CREATOR_CERT": {"name": "창작자 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["인류연합국", "거합", "탐랑"]},
+  "SOCIAL_WORK_CERT": {"name": "사회복지사 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["인류연합국"]},
+  "DETECTIVE_CERT": {"name": "탐정 자격증", "weight": 0.1, "volume": 0.1, "universal": true},
+  "SECURITY_CERT": {"name": "경비 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["전계국", "인류연합국"]}
 }
