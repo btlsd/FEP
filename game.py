@@ -6,6 +6,7 @@ from locations import (
 )
 
 from characters import NPCS, Player
+from gui import draw_screen
 
 class Game:
     def __init__(self, player):
@@ -158,7 +159,7 @@ class Game:
         }
         while self.player.is_alive():
             self.update_characters()
-            self.player.status()
+            draw_screen(self.player, self.characters)
             print("행동을 선택하세요:")
             print("1. 일하기")
             print("2. 식사")
