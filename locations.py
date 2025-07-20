@@ -21,6 +21,7 @@ class Location:
         open_times=None,
         mod_shop=None,
         station=False,
+        international=False,
     ):
         self.name = name
         self.description = description
@@ -34,6 +35,7 @@ class Location:
         self.open_times = open_times if open_times is not None else list(range(6))
         self.mod_shop = mod_shop  # "legal" or "illegal"
         self.station = station
+        self.international = international
 
     def get_description(self, time_idx):
         # descriptions keys might be strings in JSON
@@ -83,6 +85,7 @@ for entry in data["locations"]:
         entry.get("open_times"),
         entry.get("mod_shop"),
         entry.get("station", False),
+        entry.get("international", False),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc

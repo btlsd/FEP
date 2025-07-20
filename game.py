@@ -197,8 +197,16 @@ class Game:
             print("잘못된 선택입니다.")
 
     def travel(self):
-        if not self.player.location.station:
-            print("먼 이동을 하려면 정거장에 있어야 합니다.")
+        if not self.player.location.station or not self.player.location.international:
+            print("국가 간 이동을 할 수 있는 정거장이 아닙니다.")
+            return
+        from items import BOARDING_PASS
+        if BOARDING_PASS in self.player.inventory:
+            use_ticket = True
+        elif self.player.has_flag("transport_pass"):
+            use_ticket = False
+        else:
+            print("탑승권이 없어 이동할 수 없습니다.")
             return
         print("이동할 국가를 선택하세요:")
         for i, nation in enumerate(NATIONS, start=1):
@@ -209,11 +217,22 @@ class Game:
             if 0 <= idx < len(NATIONS):
                 nation = NATIONS[idx]
                 self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
+                if use_ticket:
+                    self.player.inventory.remove(BOARDING_PASS)
                 print(
                     f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
                 )
                 return
         print("잘못된 선택입니다.")
+
+    def board(self):
+        if not self.player.location.station:
+            print("여기서는 탑승할 수 없습니다.")
+            return
+        if self.player.location.international:
+            self.travel()
+        else:
+            print("이 정거장에서는 국가 간 이동을 할 수 없습니다.")
 
     def step(self, action):
         action()
@@ -221,12 +240,13 @@ class Game:
 
     def choose_move(self):
         print("1. 장소 이동")
-        print("2. 국가 이동")
+        if self.player.location.station:
+            print("2. 탑승")
         choice = input("> ").strip()
         if choice == "1":
             self.step(self.move)
-        elif choice == "2":
-            self.step(self.travel)
+        elif choice == "2" and self.player.location.station:
+            self.step(self.board)
         else:
             print("잘못된 선택입니다.")
 

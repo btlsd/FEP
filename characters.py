@@ -239,14 +239,23 @@ class Player:
         self.base_capacity = 5
         self.inventory = []
         # 테스트용으로 기본 개조 부품 하나를 지급
-        from items import IR_EYE_LEFT_PART
+        from items import IR_EYE_LEFT_PART, BOARDING_PASS
         self.inventory.append(IR_EYE_LEFT_PART)
+        self.inventory.append(BOARDING_PASS)
         self.equipment = {
             "clothing": CLOTHES_WITH_POCKETS,
             "bag": None,
         }
         # installed body modifications by slot
         self.mods = {}
+        self.flags = set()
+
+    # Flag helpers
+    def has_flag(self, flag):
+        return flag in self.flags
+
+    def add_flag(self, flag):
+        self.flags.add(flag)
 
     # Money helpers
     def add_money(self, amount, currency):

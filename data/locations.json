@@ -39,6 +39,24 @@
       "open_times": [0,1,2,3,4]
     },
     {
+      "key": "AIRPORT",
+      "name": "국가간 공항",
+      "description": "다른 나라로 가는 항공기가 오가는 공항",
+      "descriptions": {
+        "0": "새벽에도 항공편이 드물게 있다.",
+        "1": "아침 비행기로 분주하다.",
+        "2": "오전에는 여행객들로 붐빈다.",
+        "3": "오후에도 출발과 도착이 이어진다.",
+        "4": "저녁엔 귀국객이 많다.",
+        "5": "밤에는 일부 노선만 운영된다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "station": true,
+      "international": true,
+      "open_times": [0,1,2,3,4,5]
+    },
+    {
       "key": "MARKET",
       "name": "중앙 시장",
       "description": "사람들로 붐비는 시장거리",
@@ -130,7 +148,8 @@
         "5": "밤에는 대부분 휴식을 취한다."
       },
       "nation": 1,
-      "station": true
+      "station": true,
+      "international": true
     },
     {
       "key": "BASE_TAMRANG",
@@ -145,7 +164,8 @@
         "5": "밤이 되면 거점은 거의 비어 있다."
       },
       "nation": 2,
-      "station": true
+      "station": true,
+      "international": true
     },
     {
       "key": "HUB_CHONKYE",
@@ -160,13 +180,15 @@
         "5": "밤에도 중앙에서 명령이 전달된다."
       },
       "nation": 3,
-      "station": true
+      "station": true,
+      "international": true
     }
   ],
   "connections": [
     ["SEWER", "STATION"],
     ["STATION", "MARKET"],
     ["STATION", "RESIDENTIAL"],
+    ["STATION", "AIRPORT"],
     {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
     ["RESIDENTIAL", "CLINIC_LEGAL"],
     ["STATION", "CLINIC_ILLEGAL"]
