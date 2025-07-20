@@ -1,0 +1,30 @@
+{
+  "nations": [
+    {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가"},
+    {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가"},
+    {"name": "탐랑", "description": "개성을 중시해 오프라인으로 방랑하는 기계들의 느슨한 모임"},
+    {"name": "전계국", "description": "모든 기계가 하나로 연결되길 바라는 전기와 기계의 나라"}
+  ],
+  "locations": [
+    {"key": "SEWER", "name": "거대한 하수도", "description": "인류연합국 수도 지하를 흐르는 광대한 하수도", "nation": 0, "indoors": true},
+    {"key": "STATION", "name": "지하 정거장", "description": "도시 각지로 통하는 낡은 정거장", "nation": 0, "indoors": true},
+    {"key": "MARKET", "name": "중앙 시장", "description": "사람들로 붐비는 시장 거리", "nation": 0},
+    {"key": "RESIDENTIAL", "name": "주거 지구", "description": "평범한 주거 지역", "nation": 0},
+    {"key": "SECRET_LAB", "name": "비밀 실험실", "description": "하수도 깊숙한 곳에 숨겨진 연구 시설", "nation": 0, "indoors": true},
+    {"key": "CAPITAL_GEOHAP", "name": "거합 수도", "description": "거합의 중심 도시", "nation": 1},
+    {"key": "BASE_TAMRANG", "name": "탐랑 거점", "description": "오프라인 기계들의 집합", "nation": 2},
+    {"key": "HUB_CHONKYE", "name": "전계 허브", "description": "모든 기계가 연결된 중심", "nation": 3}
+  ],
+  "connections": [
+    ["SEWER", "STATION"],
+    ["STATION", "MARKET"],
+    ["STATION", "RESIDENTIAL"],
+    {"from": "SEWER", "to": "SECRET_LAB", "perception": 7}
+  ],
+  "default_locations": {
+    "0": "SEWER",
+    "1": "CAPITAL_GEOHAP",
+    "2": "BASE_TAMRANG",
+    "3": "HUB_CHONKYE"
+  }
+}

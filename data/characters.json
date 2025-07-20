@@ -1,0 +1,20 @@
+{
+  "npcs": [
+    {
+      "name": "상인 정",
+      "personality": "친절한",
+      "affiliation": "인류연합국 상인조합",
+      "job": "상인",
+      "schedule": {"0": "MARKET", "1": "MARKET", "2": "RESIDENTIAL"},
+      "agility": 5
+    },
+    {
+      "name": "로봇 42",
+      "personality": "차가운",
+      "affiliation": "전계국",
+      "job": "경비",
+      "schedule": {"0": "STATION", "1": "STATION", "2": "STATION"},
+      "agility": 5
+    }
+  ]
+}
