@@ -5,10 +5,11 @@ class Nation:
 
 
 class Location:
-    def __init__(self, name, description, nation):
+    def __init__(self, name, description, nation, indoors=False):
         self.name = name
         self.description = description
         self.nation = nation
+        self.indoors = indoors
         self.connections = []  # always visible connections
         self.hidden_connections = {}  # other Location -> required perception
 
@@ -51,11 +52,13 @@ SEWER = Location(
     "거대한 하수도",
     "인류연합국 수도 지하를 흐르는 광대한 하수도",
     NATIONS[0],
+    indoors=True,
 )
 STATION = Location(
     "지하 정거장",
     "도시 각지로 통하는 낡은 정거장",
     NATIONS[0],
+    indoors=True,
 )
 MARKET = Location(
     "중앙 시장",
@@ -71,6 +74,7 @@ SECRET_LAB = Location(
     "비밀 실험실",
     "하수도 깊숙한 곳에 숨겨진 연구 시설",
     NATIONS[0],
+    indoors=True,
 )
 
 # Connect locations

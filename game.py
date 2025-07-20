@@ -106,7 +106,12 @@ class Game:
         if choice.isdigit():
             idx = int(choice) - 1
             if 0 <= idx < len(current.connections):
-                self.player.location = current.connections[idx]
+                dest = current.connections[idx]
+                bag = self.player.equipment.get("bag")
+                if bag and not bag.can_enter_buildings and dest.indoors:
+                    print("대형 카트로는 그곳에 들어갈 수 없습니다.")
+                    return
+                self.player.location = dest
                 print(f"{self.player.location.name}으로 이동했습니다.")
                 return
         print("잘못된 선택입니다.")
