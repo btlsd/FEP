@@ -1,5 +1,19 @@
 import random
 
+
+class Nation:
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+
+NATIONS = [
+    Nation("휴먼 프론티어", "인간 위주의 국가"),
+    Nation("자연 연합", "여러 종들이 의견을 모아 운영하는 생태계 중심의 국가"),
+    Nation("오프라인 기계 국가", "개체가 오프라인 상태로 존재하는 기계들의 국가"),
+    Nation("온라인 기계 네트워크", "개체가 온라인 상태로 연결된 기계 국가"),
+]
+
 class Player:
     def __init__(self, name):
         self.name = name
@@ -9,6 +23,7 @@ class Player:
         self.money = 20
         self.experience = 0
         self.day = 1
+        self.location = NATIONS[0]
 
     def status(self):
         print(f"\n{self.day}일차")
@@ -17,7 +32,8 @@ class Player:
         print(f"배고픔: {self.hunger}")
         print(f"에너지: {self.energy}")
         print(f"돈: {self.money}원")
-        print(f"경험치: {self.experience}\n")
+        print(f"경험치: {self.experience}")
+        print(f"현재 위치: {self.location.name}\n")
 
     def is_alive(self):
         return self.health > 0
@@ -67,6 +83,7 @@ class Game:
         print("잠을 자고 기력이 회복되었습니다.")
 
     def explore(self):
+        print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
         event = random.choice(["find_money", "nothing", "injury"])
         if event == "find_money":
             found = random.randint(5, 20)
@@ -79,12 +96,26 @@ class Game:
         else:
             print("탐험 중 아무 일도 일어나지 않았습니다.")
 
+    def travel(self):
+        print("이동할 국가를 선택하세요:")
+        for i, nation in enumerate(NATIONS, start=1):
+            print(f"{i}. {nation.name} - {nation.description}")
+        choice = input("> ").strip()
+        if choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(NATIONS):
+                self.player.location = NATIONS[idx]
+                print(f"{self.player.location.name}으로 이동했습니다.")
+                return
+        print("잘못된 선택입니다.")
+
     def play(self):
         actions = {
             "1": self.work,
             "2": self.eat,
             "3": self.sleep,
             "4": self.explore,
+            "5": self.travel,
             "q": None,
         }
         while self.player.is_alive():
@@ -94,6 +125,7 @@ class Game:
             print("2. 식사")
             print("3. 잠자기")
             print("4. 탐험")
+            print("5. 이동")
             print("q. 종료")
             choice = input("> ").strip()
             if choice == "q":
