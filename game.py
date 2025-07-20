@@ -11,13 +11,13 @@ class Player:
         self.day = 1
 
     def status(self):
-        print(f"\nDay {self.day}")
-        print(f"{self.name}'s Status:")
-        print(f"Health: {self.health}")
-        print(f"Hunger: {self.hunger}")
-        print(f"Energy: {self.energy}")
-        print(f"Money: ${self.money}")
-        print(f"Experience: {self.experience}\n")
+        print(f"\n{self.day}일차")
+        print(f"{self.name}의 상태:")
+        print(f"건강: {self.health}")
+        print(f"배고픔: {self.hunger}")
+        print(f"에너지: {self.energy}")
+        print(f"돈: {self.money}원")
+        print(f"경험치: {self.experience}\n")
 
     def is_alive(self):
         return self.health > 0
@@ -38,17 +38,17 @@ class Game:
 
     def work(self):
         if self.player.energy < 20 or self.player.hunger < 20:
-            print("Not enough energy or too hungry to work.")
+            print("에너지가 부족하거나 너무 배가 고파서 일할 수 없습니다.")
             return
         self.player.money += 10
         self.player.energy -= 20
         self.player.hunger -= 10
         self.player.experience += 1
-        print("You worked and earned $10.")
+        print("일해서 10원을 벌었습니다.")
 
     def eat(self):
         if self.player.money < 5:
-            print("Not enough money to buy food.")
+            print("음식을 살 돈이 부족합니다.")
             return
         self.player.money -= 5
         self.player.hunger += 20
@@ -57,27 +57,27 @@ class Game:
         self.player.energy += 10
         if self.player.energy > 100:
             self.player.energy = 100
-        print("You had a meal.")
+        print("식사를 했습니다.")
 
     def sleep(self):
         self.player.energy = 100
         self.player.hunger -= 10
         if self.player.hunger < 0:
             self.player.hunger = 0
-        print("You slept and feel rested.")
+        print("잠을 자고 기력이 회복되었습니다.")
 
     def explore(self):
         event = random.choice(["find_money", "nothing", "injury"])
         if event == "find_money":
             found = random.randint(5, 20)
             self.player.money += found
-            print(f"You found ${found} while exploring.")
+            print(f"탐험 중에 {found}원을 발견했습니다.")
         elif event == "injury":
             damage = random.randint(5, 15)
             self.player.health -= damage
-            print(f"You got hurt while exploring and lost {damage} health.")
+            print(f"탐험 중 부상을 입어 체력이 {damage} 감소했습니다.")
         else:
-            print("Nothing happened during your exploration.")
+            print("탐험 중 아무 일도 일어나지 않았습니다.")
 
     def play(self):
         actions = {
@@ -89,28 +89,28 @@ class Game:
         }
         while self.player.is_alive():
             self.player.status()
-            print("Choose an action:")
-            print("1. Work")
-            print("2. Eat")
-            print("3. Sleep")
-            print("4. Explore")
-            print("q. Quit")
+            print("행동을 선택하세요:")
+            print("1. 일하기")
+            print("2. 식사")
+            print("3. 잠자기")
+            print("4. 탐험")
+            print("q. 종료")
             choice = input("> ").strip()
             if choice == "q":
-                print("Goodbye!")
+                print("게임을 종료합니다.")
                 break
             action = actions.get(choice)
             if action:
                 action()
             else:
-                print("Invalid choice")
+                print("잘못된 선택입니다.")
             self.player.end_day()
         if not self.player.is_alive():
-            print("You have collapsed from poor health. Game over.")
+            print("건강이 나빠 쓰러졌습니다. 게임 오버.")
 
 
 def main():
-    name = input("Enter your character's name: ")
+    name = input("캐릭터 이름을 입력하세요: ")
     player = Player(name)
     game = Game(player)
     game.play()
