@@ -9,13 +9,24 @@ class Location:
         self.name = name
         self.description = description
         self.nation = nation
-        self.connections = []  # list of other Location objects
+        self.connections = []  # always visible connections
+        self.hidden_connections = {}  # other Location -> required perception
 
-    def connect(self, other):
-        if other not in self.connections:
-            self.connections.append(other)
-        if self not in other.connections:
-            other.connections.append(self)
+    def connect(self, other, required_perception=None):
+        """Connect two locations.
+
+        If ``required_perception`` is given, the path starts hidden and is
+        revealed only when the player performs an exploration with perception
+        greater or equal to that value.
+        """
+        if required_perception is None:
+            if other not in self.connections:
+                self.connections.append(other)
+            if self not in other.connections:
+                other.connections.append(self)
+        else:
+            self.hidden_connections[other] = required_perception
+            other.hidden_connections[self] = required_perception
 
 
 # Nations
@@ -47,11 +58,17 @@ RESIDENTIAL = Location(
     "평범한 주거 지역",
     NATIONS[0],
 )
+SECRET_LAB = Location(
+    "비밀 실험실",
+    "하수도 깊숙한 곳에 숨겨진 연구 시설",
+    NATIONS[0],
+)
 
 # Connect locations
 SEWER.connect(STATION)
 STATION.connect(MARKET)
 STATION.connect(RESIDENTIAL)
+SEWER.connect(SECRET_LAB, required_perception=7)
 
 # Default locations for each nation when first arrived
 DEFAULT_LOCATION_BY_NATION = {
@@ -67,5 +84,6 @@ LOCATIONS = [
     STATION,
     MARKET,
     RESIDENTIAL,
+    SECRET_LAB,
     *DEFAULT_LOCATION_BY_NATION.values(),
 ]

@@ -78,6 +78,16 @@ class Game:
         else:
             print("탐험 중 아무 일도 일어나지 않았습니다.")
 
+        # check for hidden paths
+        loc = self.player.location
+        discovered = [dest for dest, req in loc.hidden_connections.items() if self.player.perception >= req]
+        for dest in discovered:
+            loc.connections.append(dest)
+            dest.connections.append(loc)
+            del loc.hidden_connections[dest]
+            del dest.hidden_connections[loc]
+            print(f"숨겨진 장소 {dest.name}을(를) 발견했습니다!")
+
     def move(self):
         current = self.player.location
         if not current.connections:
