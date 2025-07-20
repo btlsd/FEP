@@ -146,36 +146,58 @@ class Game:
         action()
         self.advance_time()
 
+    def choose_move(self):
+        print("1. 장소 이동")
+        print("2. 국가 이동")
+        choice = input("> ").strip()
+        if choice == "1":
+            self.step(self.move)
+        elif choice == "2":
+            self.step(self.travel)
+        else:
+            print("잘못된 선택입니다.")
+
+    def choose_action(self):
+        print("1. 일하기")
+        print("2. 식사")
+        print("3. 잠자기")
+        print("4. 탐험")
+        choice = input("> ").strip()
+        actions = {"1": self.work, "2": self.eat, "3": self.sleep, "4": self.explore}
+        action = actions.get(choice)
+        if action:
+            self.step(action)
+        else:
+            print("잘못된 선택입니다.")
+
+    def open_menu(self):
+        print("1. 종료")
+        print("이전 메뉴로 돌아가려면 엔터를 누르세요")
+        choice = input("> ").strip()
+        if choice == "1":
+            print("게임을 종료합니다.")
+            return False
+        return True
+
     def play(self):
-        actions = {
-            "1": self.work,
-            "2": self.eat,
-            "3": self.sleep,
-            "4": self.explore,
-            "5": self.move,
-            "6": self.travel,
-            "7": self.interact,
-            "q": None,
-        }
         while self.player.is_alive():
             self.update_characters()
             draw_screen(self.player, self.characters)
-            print("행동을 선택하세요:")
-            print("1. 일하기")
-            print("2. 식사")
-            print("3. 잠자기")
-            print("4. 탐험")
-            print("5. 장소 이동")
-            print("6. 국가 이동")
-            print("7. 캐릭터와 상호작용")
-            print("q. 종료")
+            print("무엇을 하시겠습니까?")
+            print("1. 이동")
+            print("2. NPC 선택")
+            print("3. 행동")
+            print("4. 메뉴")
             choice = input("> ").strip()
-            if choice == "q":
-                print("게임을 종료합니다.")
-                break
-            action = actions.get(choice)
-            if action:
-                self.step(action)
+            if choice == "1":
+                self.choose_move()
+            elif choice == "2":
+                self.step(self.interact)
+            elif choice == "3":
+                self.choose_action()
+            elif choice == "4":
+                if not self.open_menu():
+                    break
             else:
                 print("잘못된 선택입니다.")
         if not self.player.is_alive():

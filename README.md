@@ -9,7 +9,14 @@ life simulation game set in a far-future Seoul and beyond. All in-game text is i
 python game.py
 ```
 
-During the game you will be prompted in Korean to choose actions such as working, eating, sleeping, exploring, or traveling between nations. The world contains several distinct countries: a human-focused nation, a large ecological federation of many species, an offline machine state, and an online machine network. Manage your character's stats and survive as long as possible while visiting these places.
+During the game you will be prompted in Korean to choose among four main categories:
+
+1. **이동** – 장소나 국가를 바꿉니다.
+2. **NPC 선택** – 같은 장소에 있는 인물과 상호작용합니다.
+3. **행동** – 일하기, 식사, 잠자기, 탐험 등의 활동을 수행합니다.
+4. **메뉴** – 게임 종료 등 기타 기능을 선택합니다.
+
+The world contains several distinct countries: a human-focused nation, a large ecological federation of many species, an offline machine state, and an online machine network. Manage your character's stats and survive as long as possible while visiting these places.
 
 ### Player Stats
 
