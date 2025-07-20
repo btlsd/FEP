@@ -144,6 +144,40 @@
       "open_times": [0,4,5]
     },
     {
+      "key": "SHELTER",
+      "name": "쉘터",
+      "description": "노숙자를 위한 임시 거주 시설",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽의 쉘터는 조용히 잠든 사람들로 가득하다.",
+        "1": "아침에는 무료 배식 준비가 이루어진다.",
+        "2": "오전에는 상담을 받으려는 이들이 모인다.",
+        "3": "오후에는 봉사자들이 분주하다.",
+        "4": "저녁에는 따뜻한 불빛 아래 사람들이 모여든다.",
+        "5": "밤에는 경비가 순찰을 돈다."
+      },
+      "nation": 0,
+      "indoors": true
+    },
+    {
+      "key": "JOB_CENTER",
+      "name": "직업소개소",
+      "description": "일자리를 알선하는 연합 기관",
+      "zone": "상업 지구",
+      "descriptions": {
+        "0": "새벽엔 닫혀 있다.",
+        "1": "아침부터 구직자들이 문 앞에 늘어선다.",
+        "2": "오전에는 면접 안내 방송이 계속된다.",
+        "3": "오후에도 상담이 이어진다.",
+        "4": "저녁이 되면 문을 닫을 준비를 한다.",
+        "5": "밤에는 불이 꺼져 있다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "job_office": true,
+      "open_times": [1,2,3,4]
+    },
+    {
       "key": "CAPITAL_GEOHAP",
       "name": "거합 수도",
       "description": "거합의 중심 도시",
@@ -292,6 +326,8 @@
     ["STATION", "AIRPORT"],
     {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
     ["RESIDENTIAL", "CLINIC_LEGAL"],
+    ["RESIDENTIAL", "SHELTER"],
+    ["MARKET", "JOB_CENTER"],
     ["STATION", "CLINIC_ILLEGAL"],
     ["CAPITAL_GEOHAP", "GEOHAP_MARKET"],
     ["CAPITAL_GEOHAP", "GEOHAP_RESIDENTIAL"],

@@ -208,15 +208,17 @@ def _load_npcs():
 NPCS = _load_npcs()
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, gender="none", stats=None):
         self.name = name
+        self.gender = gender
+        stats = stats or {}
         # 기본 능력치
-        self.strength = 5
-        self.perception = 5
-        self.endurance = 5
-        self.charisma = 5
-        self.intelligence = 5
-        self.agility = 5
+        self.strength = stats.get("strength", 5)
+        self.perception = stats.get("perception", 5)
+        self.endurance = stats.get("endurance", 5)
+        self.charisma = stats.get("charisma", 5)
+        self.intelligence = stats.get("intelligence", 5)
+        self.agility = stats.get("agility", 5)
 
         self.max_health = 100 + self.endurance * 10
         self.max_stamina = 100 + self.endurance * 5
@@ -249,6 +251,7 @@ class Player:
         # installed body modifications by slot
         self.mods = {}
         self.flags = set()
+        self.job = None
 
     # Flag helpers
     def has_flag(self, flag):
@@ -281,6 +284,8 @@ class Player:
         print(f"보유 화폐: {money_str}")
         print(f"경험치: {self.experience}")
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
+        print(f"직업: {self.job or '없음'}")
+        print(f"성별: {self.gender}")
         nearby = [c.name for c in NPCS if c.location == self.location]
         if nearby:
             print("주변 인물: " + ", ".join(nearby))

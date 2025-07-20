@@ -52,6 +52,30 @@
       "status": "평민",
       "schedule": {"0": "CLINIC_ILLEGAL", "4": "CLINIC_ILLEGAL", "5": "CLINIC_ILLEGAL"},
       "agility": 5
+    },
+    {
+      "name": "은하",
+      "age": 30,
+      "gender": "female",
+      "origin": "인류연합국",
+      "personality": {"O": 70, "C": 70, "E": 60, "A": 90, "N": 20},
+      "affiliation": "연합 사회복지국",
+      "job": "사회복지사",
+      "status": "평민",
+      "schedule": {"0": "SHELTER", "1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "SHELTER", "5": "SHELTER"},
+      "agility": 5
+    },
+    {
+      "name": "상담가 민호",
+      "age": 35,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 50, "C": 60, "E": 65, "A": 70, "N": 30},
+      "affiliation": "직업소개소",
+      "job": "상담가",
+      "status": "평민",
+      "schedule": {"1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "JOB_CENTER"},
+      "agility": 5
     }
   ]
 }

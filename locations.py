@@ -23,6 +23,7 @@ class Location:
         mod_shop=None,
         station=False,
         international=False,
+        job_office=False,
     ):
         self.name = name
         self.description = description
@@ -38,6 +39,7 @@ class Location:
         self.mod_shop = mod_shop  # "legal" or "illegal"
         self.station = station
         self.international = international
+        self.job_office = job_office
 
     def get_description(self, time_idx):
         # descriptions keys might be strings in JSON
@@ -89,6 +91,7 @@ for entry in data["locations"]:
         entry.get("mod_shop"),
         entry.get("station", False),
         entry.get("international", False),
+        entry.get("job_office", False),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc

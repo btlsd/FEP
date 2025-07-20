@@ -4,6 +4,7 @@ from locations import (
     NATIONS,
     DEFAULT_LOCATION_BY_NATION,
     LOCATIONS,
+    SHELTER,
 )
 
 from characters import NPCS, Player
@@ -138,6 +139,24 @@ class Game:
                 self.player.install_mod(BODY_MODS[idx])
                 return
         print("잘못된 선택입니다.")
+
+    def find_job(self):
+        if not getattr(self.player.location, "job_office", False):
+            print("이곳에서는 직업을 소개받을 수 없습니다.")
+            return
+        print("원하는 일을 선택하세요:")
+        print("1. 단순 노동")
+        print("2. 직업 교육 프로그램")
+        print("3. 아직 결정하지 않는다")
+        choice = input("> ").strip()
+        if choice == "1":
+            self.player.job = "임시 노동자"
+            print("당신은 임시 노동자로 등록되었습니다.")
+        elif choice == "2":
+            self.player.job = "교육 과정 수강 중"
+            print("교육 프로그램에 등록했습니다.")
+        else:
+            print("결정을 미루었습니다.")
 
     def move_walk(self):
         current = self.player.location
@@ -288,6 +307,8 @@ class Game:
         print("5. 소지품 확인")
         print("6. 씻기")
         print("7. 신체 개조")
+        if getattr(self.player.location, "job_office", False):
+            print("8. 직업 찾기")
         choice = input("> ").strip()
         actions = {
             "1": self.work,
@@ -297,6 +318,7 @@ class Game:
             "5": self.player.show_inventory,
             "6": self.wash,
             "7": self.modify_body,
+            "8": self.find_job,
         }
         action = actions.get(choice)
         if action:
@@ -342,11 +364,31 @@ class Game:
 
 
 def main():
-    name = input("캐릭터 이름을 입력하세요: ")
-    print("시스템 초기화 중...")
-    print("...")
-    player = Player(name)
-    print("눈을 뜨니 당신은 거대한 하수도에 누워 있습니다.")
+    print("...의식을 차리니 기억이 전혀 나지 않습니다.")
+    print("머릿속 인터페이스는 손상된 채로 깜빡거립니다.")
+    input("계속하려면 엔터를 누르세요...")
+    helper = next((c for c in NPCS if c.name == "은하"), None)
+    if helper:
+        print(f"{helper.name}이 당신을 발견해 도와줍니다. 인류연합국 스캔을 시작합니다.")
+    name = input("새로운 이름을 정하세요: ")
+    gender = input("성별을 입력하세요 (male/female/none): ")
+    points = 10
+    base = {"strength":5,"perception":5,"endurance":5,"charisma":5,"intelligence":5,"agility":5}
+    for key in list(base.keys()):
+        while True:
+            val = input(f"{key} 추가 포인트(남은 {points}): ")
+            if val.isdigit():
+                val = int(val)
+                if 0 <= val <= points:
+                    base[key] += val
+                    points -= val
+                    break
+            print("잘못된 입력입니다.")
+    player = Player(name, gender, base)
+    player.location = SHELTER
+    if helper:
+        helper.location = SHELTER
+        print(f"{helper.name}의 안내로 {SHELTER.name}에 도착했습니다.")
     game = Game(player)
     game.play()
 
