@@ -33,6 +33,7 @@ class Character:
         gender=None,
         origin=None,
         status=None,
+        shop=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -48,6 +49,7 @@ class Character:
         else:
             self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
         self.affinity = 50
+        self.shop = shop or {}
         self.health = 50
         self.agility = agility
 
@@ -62,14 +64,83 @@ class Character:
         self.affinity = min(100, self.affinity + gain)
 
     def trade(self, player):
-        price = 5
-        if player.money < price:
-            print("돈이 부족합니다.")
+        if self.job != "상인" or not self.shop:
+            price = 5
+            if player.money < price:
+                print("돈이 부족합니다.")
+                return
+            player.money -= price
+            player.satiety = min(player.max_satiety, player.satiety + 20 + player.endurance)
+            player.stamina = min(player.max_stamina, player.stamina + 10 + player.strength // 2)
+            print(f"{self.name}에게서 음식을 구입했습니다.")
             return
-        player.money -= price
-        player.satiety = min(player.max_satiety, player.satiety + 20 + player.endurance)
-        player.stamina = min(player.max_stamina, player.stamina + 10 + player.strength // 2)
-        print(f"{self.name}에게서 음식을 구입했습니다.")
+
+        from dialogues import merchant_intro
+
+        print(merchant_intro(self, player))
+        print("1. 현금 거래")
+        print("2. 물물 교환")
+        choice = input("> ").strip()
+        items = list(self.shop.items())
+        if choice == "1":
+            print("구입할 물건을 선택하세요:")
+            for i, (item, price) in enumerate(items, start=1):
+                print(f"{i}. {item.name} - {price}원")
+            sel = input("> ").strip()
+            if sel.isdigit():
+                idx = int(sel) - 1
+                if 0 <= idx < len(items):
+                    item, price = items[idx]
+                    if player.money < price:
+                        print("돈이 부족합니다.")
+                    elif not player.can_carry(item):
+                        print("무게 때문에 들 수 없습니다.")
+                    else:
+                        player.money -= price
+                        player.add_item(item)
+                        print("거래가 완료되었습니다.")
+                else:
+                    print("잘못된 선택입니다.")
+            else:
+                print("거래를 취소했습니다.")
+        elif choice == "2":
+            if not player.inventory:
+                print("교환할 물건이 없습니다.")
+                return
+            print("제시할 물건을 선택하세요:")
+            for i, it in enumerate(player.inventory, start=1):
+                print(f"{i}. {it.name}")
+            sel = input("> ").strip()
+            if not sel.isdigit():
+                print("거래를 취소했습니다.")
+                return
+            give_idx = int(sel) - 1
+            if not (0 <= give_idx < len(player.inventory)):
+                print("잘못된 선택입니다.")
+                return
+            offered = player.inventory.pop(give_idx)
+            print("받을 물건을 선택하세요:")
+            for i, (item, _) in enumerate(items, start=1):
+                print(f"{i}. {item.name}")
+            sel = input("> ").strip()
+            if sel.isdigit():
+                idx = int(sel) - 1
+                if 0 <= idx < len(items):
+                    item = items[idx][0]
+                    if not player.can_carry(item):
+                        print("무게 때문에 들 수 없습니다.")
+                        player.inventory.append(offered)
+                    else:
+                        player.add_item(item)
+                        print("교환이 완료되었습니다.")
+                else:
+                    player.inventory.append(offered)
+                    print("잘못된 선택입니다.")
+            else:
+                player.inventory.append(offered)
+                print("거래를 취소했습니다.")
+        else:
+            print("거래를 취소했습니다.")
 
     def lend_money(self, player):
         if self.affinity >= 60:
@@ -94,6 +165,13 @@ def _load_npcs():
     npcs = []
     for entry in raw.get("npcs", []):
         schedule = {int(k): loc_map[v] for k, v in entry.get("schedule", {}).items()}
+        shop = None
+        if "shop" in entry:
+            shop = {}
+            from items import _ITEMS
+            for key, price in entry["shop"].items():
+                if key in _ITEMS:
+                    shop[_ITEMS[key]] = price
         npcs.append(
             Character(
                 entry["name"],
@@ -106,6 +184,7 @@ def _load_npcs():
                 gender=entry.get("gender"),
                 origin=entry.get("origin"),
                 status=entry.get("status"),
+                shop=shop,
             )
         )
     return npcs

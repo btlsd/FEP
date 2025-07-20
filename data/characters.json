@@ -11,6 +11,11 @@
       "status": "평민",
       "schedule": {"0": "RESIDENTIAL", "1": "MARKET", "2": "MARKET", "3": "MARKET", "4": "RESIDENTIAL", "5": "RESIDENTIAL"},
       "agility": 5
+      ,
+      "shop": {
+        "IR_EYE_LEFT_PART": 15,
+        "BROKEN_PART": 3
+      }
     },
     {
       "name": "로봇 42",

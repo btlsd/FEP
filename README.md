@@ -44,6 +44,10 @@ The maximum values and recovery rates of these secondary stats scale with the pr
 가지고 있으며 시간대에 따라 다른 장소에서 생활합니다. 플레이어는
 동일한 장소에 있을 때 대화하거나 거래하고, 필요하면 돈을 빌리거나
 전투를 벌일 수 있습니다.
+상인 NPC는 보통 키오스크를 통해 거래하지만, 낙후된 지역에서는
+직접 대화로 현금이나 물건을 주고받는 방식의 거래가 이루어집니다.
+이때 구입 가능한 품목과 가격은 `characters.json`의 `shop` 항목으로
+관리됩니다.
 
 ### 캐릭터 정의
 

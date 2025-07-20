@@ -68,3 +68,9 @@ def greeting(npc, player):
 
     text = " ".join(parts)
     return text.format(player=player.name, npc=npc.name)
+
+
+def merchant_intro(npc, player):
+    d = _DIALOGUES.get("merchant_trade", {})
+    line = d.get("intro", "무엇을 찾으십니까?")
+    return line.format(player=player.name, npc=npc.name)
