@@ -20,7 +20,7 @@ from locations import (
 TIME_OF_DAY = ["아침", "낮", "밤"]
 
 class Character:
-    def __init__(self, name, personality, affiliation, job, schedule):
+    def __init__(self, name, personality, affiliation, job, schedule, agility=5):
         self.name = name
         self.personality = personality
         self.affiliation = affiliation
@@ -29,6 +29,7 @@ class Character:
         self.location = schedule.get(0, SEWER)
         self.affinity = 50
         self.health = 50
+        self.agility = agility
 
     def update_location(self, time_idx):
         self.location = self.schedule.get(time_idx, self.location)
@@ -63,21 +64,9 @@ class Character:
             print(f"{self.name}은(는) 돈을 빌려주지 않습니다.")
 
     def fight(self, player):
-        print(f"{self.name}과(와) 전투를 시작합니다!")
-        while player.health > 0 and self.health > 0:
-            dmg_to_npc = random.randint(5, 10) + player.strength
-            self.health -= dmg_to_npc
-            print(f"{self.name}에게 {dmg_to_npc}의 피해를 주었습니다.")
-            if self.health <= 0:
-                break
-            dmg_to_player = random.randint(5, 10)
-            player.health -= dmg_to_player
-            print(f"{self.name}의 공격! {dmg_to_player}의 피해를 받았습니다.")
-        if self.health <= 0:
-            print(f"{self.name}을(를) 쓰러뜨렸습니다!")
-            self.affinity = max(0, self.affinity - 20)
-        else:
-            print("당신이 쓰러졌습니다...")
+        from battle import start_battle
+
+        start_battle(player, self)
 
 
 NPCS = [
@@ -106,6 +95,7 @@ class Player:
         self.endurance = 5
         self.charisma = 5
         self.intelligence = 5
+        self.agility = 5
 
         self.max_health = 100 + self.endurance * 10
         self.max_energy = 100 + self.endurance * 5
@@ -145,6 +135,7 @@ class Player:
         print(f"인내심: {self.endurance}")
         print(f"매력: {self.charisma}")
         print(f"지능: {self.intelligence}")
+        print(f"민첩: {self.agility}")
         print(
             f"소지 무게: {self.current_weight()}/{self.carrying_capacity()}\n"
         )

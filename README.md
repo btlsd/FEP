@@ -21,13 +21,14 @@ During the game you will be prompted in Korean to choose among four main categor
 
 ### Player Stats
 
-Characters have five core attributes:
+Characters have six core attributes:
 
 - **Strength**
 - **Perception**
 - **Endurance** – affects maximum health and energy as well as recovery rates
 - **Charisma**
 - **Intelligence**
+- **Agility** – higher agility lets your turn gauge fill faster in battle
 
 These values influence activities like working and exploring.
 
@@ -73,3 +74,10 @@ These values influence activities like working and exploring.
 아이템마다 무게가 정해져 있어 현재 들고 있는 총 무게가 용량을 초과하면
 새로운 물건을 넣을 수 없습니다. `행동` 메뉴에서 **소지품 확인**을 통해
 현재 가지고 있는 물건과 무게를 살펴볼 수 있습니다.
+
+### 전투
+
+NPC와 싸우게 되면 전투는 턴제로 진행됩니다. 각 참여자는 "턴 게이지"
+가 0이 될 때마다 차례가 돌아옵니다. 민첩(**Agility**) 수치가 높을수록
+턴 게이지가 더 빨리 소모되어 보다 자주 행동할 수 있습니다. 전투 로직은
+`battle.py`에 구현되어 있습니다.
