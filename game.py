@@ -21,7 +21,7 @@ class Game:
 
     def advance_time(self):
         self.player.time += 1
-        if self.player.time > 2:
+        if self.player.time > 5:
             self.player.time = 0
             self.player.end_day()
 
@@ -145,6 +145,9 @@ class Game:
                 bag = self.player.equipment.get("bag")
                 if bag and not bag.can_enter_buildings and dest.indoors:
                     print("대형 카트로는 그곳에 들어갈 수 없습니다.")
+                    return
+                if dest.open_times and self.player.time not in dest.open_times:
+                    print("지금은 그곳에 들어갈 수 없습니다.")
                     return
                 self.player.location = dest
                 print(f"{self.player.location.name}으로 이동했습니다.")

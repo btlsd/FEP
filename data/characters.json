@@ -5,7 +5,7 @@
       "personality": "친절한",
       "affiliation": "인류연합국 상인조합",
       "job": "상인",
-      "schedule": {"0": "MARKET", "1": "MARKET", "2": "RESIDENTIAL"},
+      "schedule": {"0": "RESIDENTIAL", "1": "MARKET", "2": "MARKET", "3": "MARKET", "4": "RESIDENTIAL", "5": "RESIDENTIAL"},
       "agility": 5
     },
     {
@@ -13,7 +13,7 @@
       "personality": "차가운",
       "affiliation": "전계국",
       "job": "경비",
-      "schedule": {"0": "STATION", "1": "STATION", "2": "STATION"},
+      "schedule": {"0": "STATION", "1": "STATION", "2": "STATION", "3": "STATION", "4": "STATION", "5": "STATION"},
       "agility": 5
     }
   ]

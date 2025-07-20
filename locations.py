@@ -9,13 +9,21 @@ class Nation:
 
 
 class Location:
-    def __init__(self, name, description, nation, indoors=False):
+    def __init__(self, name, description, nation, indoors=False, descriptions=None, open_times=None):
         self.name = name
         self.description = description
         self.nation = nation
         self.indoors = indoors
         self.connections = []
         self.hidden_connections = {}
+        # optional dict of time_index -> description
+        self.descriptions = descriptions or {}
+        # list of allowed time indexes (0~5)
+        self.open_times = open_times if open_times is not None else list(range(6))
+
+    def get_description(self, time_idx):
+        # descriptions keys might be strings in JSON
+        return self.descriptions.get(time_idx) or self.descriptions.get(str(time_idx)) or self.description
 
     def connect(self, other, required_perception=None):
         if required_perception is None:
@@ -43,7 +51,14 @@ NATIONS = [Nation(n["name"], n["description"]) for n in data["nations"]]
 _locations = {}
 for entry in data["locations"]:
     nation = NATIONS[entry["nation"]]
-    loc = Location(entry["name"], entry["description"], nation, entry.get("indoors", False))
+    loc = Location(
+        entry["name"],
+        entry.get("description", ""),
+        nation,
+        entry.get("indoors", False),
+        entry.get("descriptions"),
+        entry.get("open_times"),
+    )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc
 

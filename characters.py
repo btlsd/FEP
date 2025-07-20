@@ -17,7 +17,8 @@ from locations import (
 
 LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
-TIME_OF_DAY = ["아침", "낮", "밤"]
+# 새벽, 아침, 오전, 오후, 저녁, 밤의 여섯 구간
+TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
 
 class Character:
     def __init__(self, name, personality, affiliation, job, schedule, agility=5):
@@ -119,7 +120,8 @@ class Player:
         self.experience = 0
         self.day = 1
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
-        self.time = 0  # 0=아침,1=낮,2=밤
+        # 시간은 0~5까지의 4시간 간격 구간으로 취급한다
+        self.time = 0  # 0=새벽,1=아침,2=오전,3=오후,4=저녁,5=밤
 
         # Inventory and equipment
         self.base_capacity = 5
