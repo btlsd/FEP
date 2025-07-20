@@ -38,6 +38,7 @@
       "nation": 0,
       "indoors": true,
       "station": true,
+      "printer": true,
       "open_times": [0,1,2,3,4]
     },
     {
@@ -73,7 +74,8 @@
         "5": "밤의 시장은 불이 꺼져 사람이 없다."
       },
       "nation": 0,
-      "open_times": [1,2,3,4]
+      "open_times": [1,2,3,4],
+      "printer": true
     },
     {
       "key": "RESIDENTIAL",
@@ -175,7 +177,8 @@
       "nation": 0,
       "indoors": true,
       "job_office": true,
-      "open_times": [1,2,3,4]
+      "open_times": [1,2,3,4],
+      "printer": true
     },
     {
       "key": "CAPITAL_GEOHAP",

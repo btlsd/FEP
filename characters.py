@@ -37,6 +37,8 @@ class Character:
         origin=None,
         status=None,
         shop=None,
+        blueprints=None,
+        blueprint_drop=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -57,6 +59,8 @@ class Character:
             self.currency = self.location.nation.currency
         self.affinity = 50
         self.shop = shop or {}
+        self.blueprints = blueprints or {}
+        self.blueprint_drop = blueprint_drop
         self.health = 50
         self.agility = agility
 
@@ -86,7 +90,8 @@ class Character:
 
         print(merchant_intro(self, player))
         items = list(self.shop.items())
-        choice = choose_option(["현금 거래", "물물 교환"])
+        bp_items = list(self.blueprints.items())
+        choice = choose_option(["현금 거래", "물물 교환", "설계도 구매"])
         if choice is None:
             print("거래를 취소했습니다.")
             return
@@ -113,7 +118,7 @@ class Character:
             player.spend_money(pay_price, pay_currency)
             player.add_item(item)
             print(f"{pay_currency}로 {pay_price} 지불했습니다.")
-        else:
+        elif choice == 1:
             if not player.inventory:
                 print("교환할 물건이 없습니다.")
                 return
@@ -134,6 +139,20 @@ class Character:
                 return
             player.add_item(item)
             print("교환이 완료되었습니다.")
+        else:
+            if not bp_items:
+                print("구매할 설계도가 없습니다.")
+                return
+            from items import _ITEMS
+            idx = choose_option([f"{_ITEMS[key].name} 설계도 - {price}{self.currency}" for key, price in bp_items])
+            if idx is None:
+                print("거래를 취소했습니다.")
+                return
+            key, price = bp_items[idx]
+            if not player.spend_money(price, self.currency):
+                print("돈이 부족합니다.")
+                return
+            player.add_blueprint_progress(key, 100)
 
     def lend_money(self, player):
         if self.affinity >= 60:
@@ -147,8 +166,7 @@ class Character:
 
     def fight(self, player):
         from battle import start_battle
-
-        start_battle(player, self)
+        return start_battle(player, self)
 
 
 def _load_npcs():
@@ -166,6 +184,10 @@ def _load_npcs():
             for key, price in entry["shop"].items():
                 if key in _ITEMS:
                     shop[_ITEMS[key]] = price
+        blueprints = None
+        if "blueprints" in entry:
+            from items import _ITEMS
+            blueprints = {key: price for key, price in entry["blueprints"].items() if key in _ITEMS}
         npcs.append(
             Character(
                 entry["name"],
@@ -179,6 +201,8 @@ def _load_npcs():
                 origin=entry.get("origin"),
                 status=entry.get("status"),
                 shop=shop,
+                blueprints=blueprints,
+                blueprint_drop=entry.get("blueprint_drop"),
             )
         )
     return npcs
@@ -232,6 +256,8 @@ class Player:
         self.mods = {}
         self.flags = set()
         self.job = None
+        # blueprint progress by item key
+        self.blueprints = {}
 
     # Flag helpers
     def has_flag(self, flag):
@@ -344,6 +370,23 @@ class Player:
         else:
             print(f"{item.name}은(는) 너무 무거워서 들 수 없습니다.")
 
+    # Blueprint helpers
+    def add_blueprint_progress(self, item_key, amount):
+        from items import _ITEMS
+
+        item = _ITEMS[item_key]
+        progress = self.blueprints.get(item_key, 0) + amount
+        if progress > 100:
+            progress = 100
+        self.blueprints[item_key] = progress
+        if progress >= 100:
+            print(f"{item.name} 설계도가 완성되었습니다!")
+        else:
+            print(f"{item.name} 설계도 진행률 {progress}%")
+
+    def has_blueprint(self, item_key):
+        return self.blueprints.get(item_key, 0) >= 100
+
     def show_inventory(self):
         if not self.inventory:
             print("소지품이 없습니다.")
@@ -361,6 +404,12 @@ class Player:
             else:
                 total_text = str(total)
             print(f"총 무게 {total_text}/{self.carrying_capacity()}")
+        if self.blueprints:
+            from items import _ITEMS
+            print("설계도:")
+            for key, prog in self.blueprints.items():
+                name = _ITEMS[key].name
+                print(f"- {name} {prog}%")
 
     # Body modification helpers
     def install_mod(self, mod):
@@ -433,6 +482,7 @@ class Player:
             "mods": {slot: mod.name for slot, mod in self.mods.items()},
             "flags": list(self.flags),
             "job": self.job,
+            "blueprints": self.blueprints,
         }
 
     @classmethod
@@ -466,5 +516,6 @@ class Player:
         player.recalc_derived_stats()
         player.flags = set(data.get("flags", []))
         player.job = data.get("job")
+        player.blueprints = data.get("blueprints", {})
         return player
 

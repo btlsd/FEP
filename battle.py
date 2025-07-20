@@ -27,6 +27,8 @@ def start_battle(player, npc):
             gauges[npc] = 100
     if player.health <= 0:
         print("당신이 쓰러졌습니다...")
+        return False
     else:
         print(f"{npc.name}을(를) 쓰러뜨렸습니다!")
         npc.affinity = max(0, npc.affinity - 20)
+        return True

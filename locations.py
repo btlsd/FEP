@@ -24,6 +24,7 @@ class Location:
         station=False,
         international=False,
         job_office=False,
+        printer=False,
     ):
         self.name = name
         self.description = description
@@ -40,6 +41,7 @@ class Location:
         self.station = station
         self.international = international
         self.job_office = job_office
+        self.printer = printer
 
     def get_description(self, time_idx):
         # descriptions keys might be strings in JSON
@@ -92,6 +94,7 @@ for entry in data["locations"]:
         entry.get("station", False),
         entry.get("international", False),
         entry.get("job_office", False),
+        entry.get("printer", False),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc

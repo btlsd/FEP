@@ -3,12 +3,21 @@ import os
 
 
 class Item:
-    def __init__(self, name, weight, volume=1, valid_nations=None, universal=False):
+    def __init__(
+        self,
+        name,
+        weight,
+        volume=1,
+        valid_nations=None,
+        universal=False,
+        printable=False,
+    ):
         self.name = name
         self.weight = weight
         self.volume = volume
         self.valid_nations = valid_nations
         self.universal = universal
+        self.printable = printable
 
 
 def _load_items():
@@ -23,6 +32,7 @@ def _load_items():
             val.get("volume", 1),
             val.get("valid_nations"),
             val.get("universal", False),
+            val.get("printable", False),
         )
     return items
 

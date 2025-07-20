@@ -218,6 +218,36 @@ class Game:
             return
         self.player.install_mod(BODY_MODS[idx])
 
+    def print_item(self):
+        if not getattr(self.player.location, "printer", False):
+            print("프린터가 없는 장소입니다.")
+            return
+        from items import _ITEMS
+        available = [key for key, p in self.player.blueprints.items() if p >= 100 and _ITEMS[key].printable]
+        if not available:
+            print("사용 가능한 설계도가 없습니다.")
+            return
+        idx = choose_option([_ITEMS[key].name for key in available])
+        if idx is None:
+            return
+        key = available[idx]
+        item = _ITEMS[key]
+        cost = max(1, int(item.weight * 2))
+        currency = self.player.location.nation.currency
+        if not self.player.spend_money(cost, currency):
+            print("재료비가 부족합니다.")
+            return
+        self.player.add_item(item)
+        print(f"{item.name}을(를) 프린팅했습니다. 비용 {cost}{currency}")
+
+    def scan_remains(self, npc):
+        key = getattr(npc, "blueprint_drop", None)
+        if not key:
+            print("스캔할 만한 잔해가 없습니다.")
+            return
+        progress = random.randint(20, 60)
+        self.player.add_blueprint_progress(key, progress)
+
     def find_job(self):
         if not getattr(self.player.location, "job_office", False):
             print("이곳에서는 직업을 소개받을 수 없습니다.")
@@ -322,7 +352,11 @@ class Game:
         elif action_idx == 2:
             npc.lend_money(self.player)
         elif action_idx == 3:
-            npc.fight(self.player)
+            win = npc.fight(self.player)
+            if win:
+                scan = choose_option(["잔해 스캔", "그만두기"])
+                if scan == 0:
+                    self.scan_remains(npc)
 
     def travel(self):
         if not self.player.location.station or not self.player.location.international:
@@ -378,6 +412,8 @@ class Game:
             "씻기",
             "신체 개조",
         ]
+        if getattr(self.player.location, "printer", False):
+            opts.append("프린팅")
         if getattr(self.player.location, "job_office", False):
             opts.append("직업 찾기")
         idx = choose_option(opts)
@@ -392,6 +428,8 @@ class Game:
             self.wash,
             self.modify_body,
         ]
+        if getattr(self.player.location, "printer", False):
+            actions.append(self.print_item)
         if getattr(self.player.location, "job_office", False):
             actions.append(self.find_job)
         action = actions[idx]
