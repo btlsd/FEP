@@ -76,14 +76,14 @@ NPCS = [
     Character(
         "상인 정",
         "친절한",
-        "인간개척국 상인조합",
+        "인류연합국 상인조합",
         "상인",
         {0: MARKET, 1: MARKET, 2: RESIDENTIAL},
     ),
     Character(
         "로봇 42",
         "차가운",
-        "연결기계국",
+        "전계국",
         "경비",
         {0: STATION, 1: STATION, 2: STATION},
     ),
