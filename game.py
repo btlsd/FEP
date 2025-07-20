@@ -22,6 +22,7 @@ from items import (
 from equipment import BODY_MODS
 from gui import draw_screen
 from utils import choose_option
+import json
 
 # 각 직업별 요구 능력치와 자격증 매핑
 TRAININGS = {
@@ -71,6 +72,28 @@ class Game:
     def __init__(self, player):
         self.player = player
         self.characters = NPCS
+
+    def save(self, filename="save.json"):
+        data = {
+            "player": self.player.to_dict(),
+            "npcs": {c.name: {"affinity": c.affinity} for c in self.characters},
+        }
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"{filename}에 저장했습니다.")
+
+    def load(self, filename="save.json"):
+        try:
+            with open(filename, encoding="utf-8") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            print("세이브 파일이 없습니다.")
+            return
+        self.player = Player.from_dict(data.get("player", {}))
+        for c in self.characters:
+            if c.name in data.get("npcs", {}):
+                c.affinity = data["npcs"][c.name].get("affinity", c.affinity)
+        print("불러오기 완료.")
 
     def update_characters(self):
         for npc in self.characters:
@@ -378,8 +401,14 @@ class Game:
             self.step(action)
 
     def open_menu(self):
-        idx = choose_option(["종료"])
+        idx = choose_option(["저장", "불러오기", "종료"])
         if idx is None:
+            return True
+        if idx == 0:
+            self.save()
+            return True
+        if idx == 1:
+            self.load()
             return True
         print("게임을 종료합니다.")
         return False

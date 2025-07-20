@@ -105,3 +105,20 @@ BODY_MODS = [
     POWER_ARM,
     LIGHT_LEG,
 ]
+
+# Lookup dictionaries for saving/loading
+EQUIPMENT_BY_NAME = {
+    eq.name: eq
+    for eq in [
+        CLOTHES_WITH_POCKETS,
+        BASIC_BAG,
+        MEDIUM_BAG,
+        LARGE_BAG,
+        TRAVEL_SUITCASE,
+        SMALL_CART,
+        MEDIUM_CART,
+        LARGE_CART,
+    ]
+}
+
+BODY_MODS_BY_NAME = {mod.name: mod for mod in BODY_MODS}

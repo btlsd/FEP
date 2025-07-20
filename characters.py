@@ -403,3 +403,68 @@ class Player:
             setattr(self, stat, getattr(self, stat) - value)
         self.recalc_derived_stats()
 
+    # Saving and loading
+    def to_dict(self):
+        from items import item_key
+
+        return {
+            "name": self.name,
+            "gender": self.gender,
+            "stats": {
+                "strength": self.strength,
+                "perception": self.perception,
+                "endurance": self.endurance,
+                "charisma": self.charisma,
+                "intelligence": self.intelligence,
+                "agility": self.agility,
+            },
+            "health": self.health,
+            "stamina": self.stamina,
+            "satiety": self.satiety,
+            "cleanliness": self.cleanliness,
+            "money": self.money,
+            "experience": self.experience,
+            "day": self.day,
+            "weekday": self.weekday,
+            "time": self.time,
+            "location": getattr(self.location, "key", self.location.name),
+            "inventory": [item_key(it) for it in self.inventory],
+            "equipment": {slot: eq.name if eq else None for slot, eq in self.equipment.items()},
+            "mods": {slot: mod.name for slot, mod in self.mods.items()},
+            "flags": list(self.flags),
+            "job": self.job,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        from items import _ITEMS
+        from equipment import EQUIPMENT_BY_NAME, BODY_MODS_BY_NAME
+
+        player = cls(data["name"], data.get("gender", "none"), data.get("stats"))
+        player.health = data.get("health", player.max_health)
+        player.stamina = data.get("stamina", player.max_stamina)
+        player.satiety = data.get("satiety", player.max_satiety)
+        player.cleanliness = data.get("cleanliness", player.max_cleanliness)
+        player.money = data.get("money", {})
+        player.experience = data.get("experience", 0)
+        player.day = data.get("day", 1)
+        player.weekday = data.get("weekday", 0)
+        player.time = data.get("time", 0)
+        player.location = LOCATIONS_BY_KEY.get(data.get("location"), player.location)
+        player.inventory = [_ITEMS[key] for key in data.get("inventory", []) if key in _ITEMS]
+        player.equipment = {
+            slot: EQUIPMENT_BY_NAME.get(name) if name else None
+            for slot, name in data.get("equipment", {}).items()
+        }
+        player.mods = {}
+        for slot, name in data.get("mods", {}).items():
+            mod = BODY_MODS_BY_NAME.get(name)
+            if mod:
+                player.mods[slot] = mod
+                for stat, val in mod.stat_changes.items():
+                    setattr(player, stat, getattr(player, stat) + val)
+        player.recalc_derived_stats()
+        player.flags = set(data.get("flags", []))
+        player.job = data.get("job")
+        return player
+

@@ -28,6 +28,12 @@ def _load_items():
 
 
 _ITEMS = _load_items()
+_KEY_BY_ITEM = {v: k for k, v in _ITEMS.items()}
+
+def item_key(item):
+    """Return the key string for a given item object."""
+    return _KEY_BY_ITEM.get(item)
+
 globals().update(_ITEMS)
 
-__all__ = ["Item"] + list(_ITEMS.keys())
+__all__ = ["Item", "item_key"] + list(_ITEMS.keys())
