@@ -7,7 +7,7 @@ from locations import (
     SHELTER,
 )
 
-from characters import NPCS, Player
+from characters import NPCS, Player, Character
 from items import (
     BROKEN_PART,
     CITY_PLANNER_CERT,
@@ -110,6 +110,8 @@ class Game:
         if self.player.time > 5:
             self.player.time = 0
             self.player.end_day()
+            if self.player.kidnap_due:
+                self.handle_kidnap()
 
     def work(self):
         if self.player.weekday not in {0, 1, 3, 4}:
@@ -468,6 +470,67 @@ class Game:
             f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
         )
 
+    def handle_kidnap(self):
+        p = self.player
+        print("\n정부 요원들이 당신을 은밀히 납치하려 합니다!")
+        detect = 20 + p.perception * 2 + p.intelligence + p.agility
+        if random.randint(1, 100) <= detect:
+            print("로봇들의 접근을 감지했습니다.")
+            choice = choose_option(["숨는다", "맞서 싸운다"], allow_back=False)
+            if choice == 0:
+                chance = 30 + p.agility * 3 + p.perception * 2
+                if random.randint(1, 100) <= chance:
+                    print("겨우 몸을 숨겨 납치를 피했습니다.")
+                    p.arrears = 2
+                    p.kidnap_due = False
+                    return
+                else:
+                    print("숨는 데 실패했습니다!")
+            # fight sequence
+            bot = Character("납치 로봇", {}, p.location.nation.name, "로봇", {}, agility=6)
+            bot.health = 40
+            win = bot.fight(p)
+            if not win:
+                self.resolve_kidnap()
+                return
+            strong = Character("강화 로봇", {}, p.location.nation.name, "로봇", {}, agility=8)
+            strong.health = 60
+            print("더 강한 로봇이 나타났습니다!")
+            win2 = strong.fight(p)
+            if win2:
+                commander = Character("지휘관 백", {}, p.location.nation.name, "지휘관", {})
+                print("지휘관 백이 다가와 당신에게 특수부대 편입을 제안합니다.")
+                if p.intelligence >= 8:
+                    print("로봇들의 설계가 인류연합국식임을 간파했습니다.")
+                choice = choose_option(["편입한다", "거절한다"], allow_back=False)
+                if choice == 0:
+                    p.job = "특수부대 요원"
+                    p.add_flag("special_force")
+                    print("당신은 특수부대에 편입되었습니다.")
+                else:
+                    print("제안을 거절했습니다. 하지만 정부는 당신을 주시합니다.")
+                p.arrears = 0
+                p.kidnap_due = False
+            else:
+                self.resolve_kidnap()
+        else:
+            print("눈치채지 못한 채 납치당했습니다!")
+            self.resolve_kidnap()
+
+    def resolve_kidnap(self):
+        p = self.player
+        top = max(p.strength, p.intelligence, p.charisma)
+        if top == p.strength:
+            print("전계국 실험체로 팔려갔습니다...")
+        elif top == p.intelligence:
+            print("탐랑으로 끌려가 동료가 되었습니다...")
+        elif top == p.charisma:
+            print("거합에서 애완동물 취급을 받게 되었습니다...")
+        else:
+            print("당신은 추방당했습니다...")
+        p.health = 0
+        self.running = False
+
     def step(self, action):
         action()
         self.advance_time()
@@ -565,8 +628,13 @@ class Game:
         return False
 
     def play(self):
-        while self.player.is_alive():
+        self.running = True
+        while self.player.is_alive() and self.running:
             self.update_characters()
+            if self.player.kidnap_due:
+                self.handle_kidnap()
+                if not self.running:
+                    break
             draw_screen(self.player, self.characters)
             idx = choose_option(["이동", "NPC 선택", "행동", "메뉴"], allow_back=False)
             if idx == 0:

@@ -250,6 +250,8 @@ class Player:
         self.home = SHELTER
         self.loan_balance = 0
         self.monthly_rent = 0
+        self.arrears = 0
+        self.kidnap_due = False
         self.month_day = 1
         self.month = 1
         self.season = 0
@@ -408,8 +410,12 @@ class Player:
         if total > 0:
             if not self.spend_money(total, currency):
                 print(f"생활비 {total}{currency}를 지불할 돈이 부족합니다.")
+                self.arrears += 1
+                if self.arrears >= 3:
+                    self.kidnap_due = True
             else:
                 print(f"생활비 {total}{currency}를 납부했습니다.")
+                self.arrears = 0
         self.shower_count = 0
         self.appliance_usage = 0
 
@@ -559,6 +565,8 @@ class Player:
             "home": getattr(self.home, "key", self.home.name),
             "loan": self.loan_balance,
             "rent": self.monthly_rent,
+            "arrears": self.arrears,
+            "kidnap_due": self.kidnap_due,
             "month_day": self.month_day,
             "month": self.month,
             "season": self.season,
@@ -589,6 +597,8 @@ class Player:
         player.home = LOCATIONS_BY_KEY.get(data.get("home"), SHELTER)
         player.loan_balance = data.get("loan", 0)
         player.monthly_rent = data.get("rent", 0)
+        player.arrears = data.get("arrears", 0)
+        player.kidnap_due = data.get("kidnap_due", False)
         player.month_day = data.get("month_day", 1)
         player.month = data.get("month", 1)
         player.season = data.get("season", 0)

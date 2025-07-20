@@ -87,6 +87,18 @@
       "status": "평민",
       "schedule": {"1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "JOB_CENTER"},
       "agility": 5
+    },
+    {
+      "name": "지휘관 백",
+      "age": 40,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 40, "C": 80, "E": 60, "A": 50, "N": 30},
+      "affiliation": "인류연합국 군", 
+      "job": "지휘관",
+      "status": "특수",
+      "schedule": {"0": "SPECIAL_BASE", "1": "SPECIAL_BASE", "2": "SPECIAL_BASE", "3": "SPECIAL_BASE", "4": "SPECIAL_BASE"},
+      "agility": 6
     }
   ]
 }

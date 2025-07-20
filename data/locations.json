@@ -199,6 +199,23 @@
       "printer": true
     },
     {
+      "key": "SPECIAL_BASE",
+      "name": "특수부대 기지",
+      "description": "정부의 특수부대가 주둔하는 비밀 기지",
+      "zone": "군사 구역",
+      "descriptions": {
+        "0": "새벽에도 경계가 삼엄하다.",
+        "1": "아침에는 훈련 준비가 이루어진다.",
+        "2": "오전에는 요란한 구호가 울려 퍼진다.",
+        "3": "오후에도 강도 높은 훈련이 계속된다.",
+        "4": "저녁이면 요원들이 휴식을 취한다.",
+        "5": "밤에는 외부인 접근이 철저히 통제된다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "restricted": true
+    },
+    {
       "key": "CAPITAL_GEOHAP",
       "name": "거합 수도",
       "description": "거합의 중심 도시",
@@ -351,6 +368,7 @@
     ["RESIDENTIAL", "SHELTER"],
     ["MARKET", "JOB_CENTER"],
     ["STATION", "CLINIC_ILLEGAL"],
+    ["STATION", "SPECIAL_BASE"],
     ["CAPITAL_GEOHAP", "GEOHAP_MARKET"],
     ["CAPITAL_GEOHAP", "GEOHAP_RESIDENTIAL"],
     ["BASE_TAMRANG", "TAMRANG_MARKET"],
