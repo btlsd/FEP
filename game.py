@@ -120,14 +120,16 @@ class Game:
             return
         income = 10 + self.player.intelligence // 2 + self.player.strength // 2
         currency = self.player.location.nation.currency
-        self.player.add_money(income, currency)
+        tax = int(income * 0.2)
+        net = income - tax
+        self.player.add_money(net, currency)
         stamina_cost = max(10, 20 - self.player.strength)
         satiety_cost = max(5, 10 - self.player.endurance // 2)
         self.player.stamina -= stamina_cost
         self.player.satiety -= satiety_cost
         self.player.cleanliness -= 5
         self.player.experience += 1
-        print(f"일해서 {income}{currency}를 벌었습니다.")
+        print(f"일해서 {net}{currency}를 벌었습니다. (세금 {tax}{currency})")
 
     def eat(self):
         price = 5
@@ -164,6 +166,7 @@ class Game:
         self.player.stamina -= 5
         if self.player.stamina < 0:
             self.player.stamina = 0
+        self.player.shower_count += 1
         print("씻고 나니 상쾌합니다.")
 
     def explore(self):
@@ -320,7 +323,7 @@ class Game:
             print("결정을 미루었습니다.")
             return
         if idx == 0:
-            self.player.job = "임시 노동자"
+            self.player.start_job("임시 노동자")
             print("당신은 임시 노동자로 등록되었습니다.")
             return
         # training path
@@ -340,7 +343,7 @@ class Game:
         info = TRAININGS[job]
         req = info["req"]
         meets = all(getattr(self.player, stat) >= val for stat, val in req.items())
-        self.player.job = job
+        self.player.start_job(job)
         if info.get("gov"):
             print("정부 소속 과정으로 지정 숙소와 생활 패턴을 따라야 합니다.")
         if meets:

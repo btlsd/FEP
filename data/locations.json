@@ -164,6 +164,22 @@
       "indoors": true
     },
     {
+      "key": "APARTMENT",
+      "name": "임대 아파트",
+      "description": "정부가 제공한 임대 주택",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽에는 주변이 조용하다.",
+        "1": "아침에는 출근 준비로 분주하다.",
+        "2": "오전에는 대부분이 일터에 나가 있다.",
+        "3": "오후에는 아이들 노는 소리가 들린다.",
+        "4": "저녁이면 퇴근한 주민들이 모여든다.",
+        "5": "밤에는 불빛이 하나둘 꺼진다."
+      },
+      "nation": 0,
+      "indoors": true
+    },
+    {
       "key": "JOB_CENTER",
       "name": "직업소개소",
       "description": "일자리를 알선하는 연합 기관",
@@ -331,6 +347,7 @@
     ["STATION", "AIRPORT"],
     {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
     ["RESIDENTIAL", "CLINIC_LEGAL"],
+    ["RESIDENTIAL", "APARTMENT"],
     ["RESIDENTIAL", "SHELTER"],
     ["MARKET", "JOB_CENTER"],
     ["STATION", "CLINIC_ILLEGAL"],

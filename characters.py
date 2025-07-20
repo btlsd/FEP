@@ -14,6 +14,8 @@ from locations import (
     NATION_BY_NAME,
     DEFAULT_LOCATION_BY_NATION,
     LOCATIONS,
+    SHELTER,
+    APARTMENT,
 )
 from utils import choose_option
 
@@ -245,6 +247,14 @@ class Player:
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
+        self.home = SHELTER
+        self.loan_balance = 0
+        self.monthly_rent = 0
+        self.month_day = 1
+        self.month = 1
+        self.season = 0
+        self.shower_count = 0
+        self.appliance_usage = 0
         # 시간은 0~5까지의 4시간 간격 구간으로 취급한다
         self.time = 0  # 0=새벽,1=아침,2=오전,3=오후,4=저녁,5=밤
 
@@ -310,6 +320,9 @@ class Player:
         print(f"보유 화폐: {money_str}")
         print(f"경험치: {self.experience}")
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
+        print(f"거주지: {self.home.name}")
+        if self.loan_balance:
+            print(f"대출 잔액: {self.loan_balance}{self.home.nation.currency}")
         print(f"직업: {self.job or '없음'}")
         print(f"성별: {self.gender}")
         nearby = [c.name for c in NPCS if c.location == self.location]
@@ -333,7 +346,8 @@ class Player:
             print("개조: " + ", ".join(m.name for m in self.mods.values()))
         est = self.estimated_weight()
         est_text = str(est) if self.perception >= 10 else f"약 {est}"
-        print(f"소지 무게: {est_text}/{self.carrying_capacity()}\n")
+        print(f"소지 무게: {est_text}/{self.carrying_capacity()}")
+        print()
 
     def is_alive(self):
         return self.health > 0
@@ -341,6 +355,7 @@ class Player:
     def end_day(self):
         self.day += 1
         self.weekday = (self.weekday + 1) % 7
+        self.month_day += 1
         self.satiety -= 5
         self.cleanliness -= 10
         if self.satiety <= 0:
@@ -354,6 +369,12 @@ class Player:
         if self.cleanliness < 0:
             self.cleanliness = 0
         self.recalc_derived_stats()
+        if self.month_day > 30:
+            self.month_day = 1
+            self.month += 1
+            if self.month % 3 == 1:
+                self.season = (self.season + 1) % 4
+            self.process_monthly_costs()
 
     def recalc_derived_stats(self):
         self.max_health = 100 + self.endurance * 10
@@ -364,6 +385,33 @@ class Player:
         self.stamina = min(self.stamina, self.max_stamina)
         self.satiety = min(self.satiety, self.max_satiety)
         self.cleanliness = min(self.cleanliness, self.max_cleanliness)
+
+    def start_job(self, job):
+        self.job = job
+        if self.home == SHELTER:
+            cur = self.location.nation.currency
+            self.loan_balance = 50
+            self.monthly_rent = 5
+            self.add_money(50, cur)
+            self.home = APARTMENT
+            self.location = APARTMENT
+            print(f"정부 지원으로 50{cur}을 빌리고 임대 아파트에 입주했습니다.")
+
+    def process_monthly_costs(self):
+        currency = self.home.nation.currency
+        loan_payment = min(10, self.loan_balance)
+        self.loan_balance -= loan_payment
+        utilities = self.shower_count * 0.5 + self.appliance_usage * 0.5
+        if self.season in (1, 3):
+            utilities += 5
+        total = loan_payment + self.monthly_rent + utilities
+        if total > 0:
+            if not self.spend_money(total, currency):
+                print(f"생활비 {total}{currency}를 지불할 돈이 부족합니다.")
+            else:
+                print(f"생활비 {total}{currency}를 납부했습니다.")
+        self.shower_count = 0
+        self.appliance_usage = 0
 
     # Inventory helpers
     def carrying_capacity(self):
@@ -508,6 +556,12 @@ class Player:
             "weekday": self.weekday,
             "time": self.time,
             "location": getattr(self.location, "key", self.location.name),
+            "home": getattr(self.home, "key", self.home.name),
+            "loan": self.loan_balance,
+            "rent": self.monthly_rent,
+            "month_day": self.month_day,
+            "month": self.month,
+            "season": self.season,
             "inventory": [item_key(it) for it in self.inventory],
             "equipment": {slot: eq.name if eq else None for slot, eq in self.equipment.items()},
             "mods": {slot: mod.name for slot, mod in self.mods.items()},
@@ -532,6 +586,12 @@ class Player:
         player.weekday = data.get("weekday", 0)
         player.time = data.get("time", 0)
         player.location = LOCATIONS_BY_KEY.get(data.get("location"), player.location)
+        player.home = LOCATIONS_BY_KEY.get(data.get("home"), SHELTER)
+        player.loan_balance = data.get("loan", 0)
+        player.monthly_rent = data.get("rent", 0)
+        player.month_day = data.get("month_day", 1)
+        player.month = data.get("month", 1)
+        player.season = data.get("season", 0)
         player.inventory = [_ITEMS[key] for key in data.get("inventory", []) if key in _ITEMS]
         player.equipment = {
             slot: EQUIPMENT_BY_NAME.get(name) if name else None
