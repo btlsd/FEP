@@ -79,6 +79,24 @@ class Game:
         self.player = player
         self.characters = NPCS
 
+    def check_home_ambush(self, dest):
+        p = self.player
+        if dest != p.home or not p.home_ambush:
+            return False
+        print("\n집 근처에서 묘한 기운을 느낍니다.")
+        detect = 30 + p.perception * 3
+        if random.randint(1, 100) <= detect:
+            print("누군가 숨어 있는 것 같습니다.")
+            choice = choose_option(["도망간다", "무시하고 집에 들어간다"], allow_back=False)
+            if choice == 0:
+                print("당신은 서둘러 그곳을 벗어났습니다.")
+                return True
+        p.location = dest
+        print("집 안에서 로봇들이 습격해 옵니다!")
+        self.kidnap_fight_sequence()
+        p.home_ambush = False
+        return False
+
     def save(self, filename="save.json"):
         data = {
             "player": self.player.to_dict(),
@@ -395,9 +413,12 @@ class Game:
             return
         if not self.attempt_enter(dest):
             return
-        self.player.location = dest
-        self.player.flags.discard("stealth")
-        print(f"도보로 {self.player.location.name}으로 이동했습니다.")
+        if self.check_home_ambush(dest):
+            return
+        if dest != self.player.location:
+            self.player.location = dest
+            self.player.flags.discard("stealth")
+            print(f"도보로 {self.player.location.name}으로 이동했습니다.")
 
     def move_station(self):
         current = self.player.location
@@ -417,9 +438,12 @@ class Game:
             return
         if not self.attempt_enter(dest):
             return
-        self.player.location = dest
-        self.player.flags.discard("stealth")
-        print(f"{dest.name}으로 이동했습니다.")
+        if self.check_home_ambush(dest):
+            return
+        if dest != self.player.location:
+            self.player.location = dest
+            self.player.flags.discard("stealth")
+            print(f"{dest.name}으로 이동했습니다.")
 
     def interact(self):
         nearby = [c for c in self.characters if c.location == self.player.location]
@@ -470,6 +494,36 @@ class Game:
             f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
         )
 
+    def kidnap_fight_sequence(self):
+        p = self.player
+        bot = Character("납치 로봇", {}, p.location.nation.name, "로봇", {}, agility=6)
+        bot.health = 40
+        win = bot.fight(p)
+        if not win:
+            self.resolve_kidnap()
+            return
+        strong = Character("강화 로봇", {}, p.location.nation.name, "로봇", {}, agility=8)
+        strong.health = 60
+        print("더 강한 로봇이 나타났습니다!")
+        win2 = strong.fight(p)
+        if win2:
+            commander = Character("지휘관 백", {}, p.location.nation.name, "지휘관", {})
+            print("지휘관 백이 다가와 당신에게 특수부대 편입을 제안합니다.")
+            if p.intelligence >= 8:
+                print("로봇들의 설계가 인류연합국식임을 간파했습니다.")
+            choice = choose_option(["편입한다", "거절한다"], allow_back=False)
+            if choice == 0:
+                p.job = "특수부대 요원"
+                p.add_flag("special_force")
+                print("당신은 특수부대에 편입되었습니다.")
+            else:
+                print("제안을 거절했습니다. 하지만 정부는 당신을 주시합니다.")
+            p.arrears = 0
+            p.kidnap_due = False
+            p.home_ambush = False
+        else:
+            self.resolve_kidnap()
+
     def handle_kidnap(self):
         p = self.player
         print("\n정부 요원들이 당신을 은밀히 납치하려 합니다!")
@@ -483,36 +537,11 @@ class Game:
                     print("겨우 몸을 숨겨 납치를 피했습니다.")
                     p.arrears = 2
                     p.kidnap_due = False
+                    p.home_ambush = True
                     return
                 else:
                     print("숨는 데 실패했습니다!")
-            # fight sequence
-            bot = Character("납치 로봇", {}, p.location.nation.name, "로봇", {}, agility=6)
-            bot.health = 40
-            win = bot.fight(p)
-            if not win:
-                self.resolve_kidnap()
-                return
-            strong = Character("강화 로봇", {}, p.location.nation.name, "로봇", {}, agility=8)
-            strong.health = 60
-            print("더 강한 로봇이 나타났습니다!")
-            win2 = strong.fight(p)
-            if win2:
-                commander = Character("지휘관 백", {}, p.location.nation.name, "지휘관", {})
-                print("지휘관 백이 다가와 당신에게 특수부대 편입을 제안합니다.")
-                if p.intelligence >= 8:
-                    print("로봇들의 설계가 인류연합국식임을 간파했습니다.")
-                choice = choose_option(["편입한다", "거절한다"], allow_back=False)
-                if choice == 0:
-                    p.job = "특수부대 요원"
-                    p.add_flag("special_force")
-                    print("당신은 특수부대에 편입되었습니다.")
-                else:
-                    print("제안을 거절했습니다. 하지만 정부는 당신을 주시합니다.")
-                p.arrears = 0
-                p.kidnap_due = False
-            else:
-                self.resolve_kidnap()
+            self.kidnap_fight_sequence()
         else:
             print("눈치채지 못한 채 납치당했습니다!")
             self.resolve_kidnap()

@@ -252,6 +252,7 @@ class Player:
         self.monthly_rent = 0
         self.arrears = 0
         self.kidnap_due = False
+        self.home_ambush = False
         self.month_day = 1
         self.month = 1
         self.season = 0
@@ -567,6 +568,7 @@ class Player:
             "rent": self.monthly_rent,
             "arrears": self.arrears,
             "kidnap_due": self.kidnap_due,
+            "home_ambush": self.home_ambush,
             "month_day": self.month_day,
             "month": self.month,
             "season": self.season,
@@ -599,6 +601,7 @@ class Player:
         player.monthly_rent = data.get("rent", 0)
         player.arrears = data.get("arrears", 0)
         player.kidnap_due = data.get("kidnap_due", False)
+        player.home_ambush = data.get("home_ambush", False)
         player.month_day = data.get("month_day", 1)
         player.month = data.get("month", 1)
         player.season = data.get("season", 0)
