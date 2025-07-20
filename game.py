@@ -21,6 +21,7 @@ from items import (
 )
 from equipment import BODY_MODS
 from gui import draw_screen
+from utils import choose_option
 
 # 각 직업별 요구 능력치와 자격증 매핑
 TRAININGS = {
@@ -184,71 +185,57 @@ class Game:
             return
         if shop_type == "illegal":
             print("불법 시술소입니다. 실패하거나 가품을 사용할 위험이 있습니다.")
-        print("시술할 개조를 선택하세요:")
-        for i, mod in enumerate(BODY_MODS, start=1):
+        opts = []
+        for mod in BODY_MODS:
             req = f" - 필요 부품: {mod.required_item.name}" if mod.required_item else ""
             company = f" [{mod.company}]" if mod.company else ""
-            print(f"{i}. {mod.name}{company} (부위: {mod.slot}){req}")
-        choice = input("> ").strip()
-        if choice.isdigit():
-            idx = int(choice) - 1
-            if 0 <= idx < len(BODY_MODS):
-                self.player.install_mod(BODY_MODS[idx])
-                return
-        print("잘못된 선택입니다.")
+            opts.append(f"{mod.name}{company} (부위: {mod.slot}){req}")
+        idx = choose_option(opts)
+        if idx is None:
+            return
+        self.player.install_mod(BODY_MODS[idx])
 
     def find_job(self):
         if not getattr(self.player.location, "job_office", False):
             print("이곳에서는 직업을 소개받을 수 없습니다.")
             return
-        print("원하는 일을 선택하세요:")
-        print("1. 단순 노동")
-        print("2. 직업 교육 프로그램")
-        print("3. 아직 결정하지 않는다")
-        choice = input("> ").strip()
-        if choice == "1":
+        idx = choose_option(["단순 노동", "직업 교육 프로그램", "아직 결정하지 않는다"])
+        if idx is None or idx == 2:
+            print("결정을 미루었습니다.")
+            return
+        if idx == 0:
             self.player.job = "임시 노동자"
             print("당신은 임시 노동자로 등록되었습니다.")
-        elif choice == "2":
-            print("어떤 분류의 직업을 원합니까?")
-            print("1. 정부 소속 직업")
-            print("2. 일반 직업")
-            cat = input("> ").strip()
-            if cat not in {"1", "2"}:
-                print("잘못된 선택입니다.")
-                return
-            want_gov = cat == "1"
-            jobs = [j for j, info in TRAININGS.items() if info.get("gov") == want_gov]
-            if not jobs:
-                print("해당 분류의 과정이 없습니다.")
-                return
-            print("어떤 과정을 듣겠습니까?")
-            for i, j in enumerate(jobs, start=1):
-                print(f"{i}. {j}")
-            sel = input("> ").strip()
-            if sel.isdigit() and 1 <= int(sel) <= len(jobs):
-                job = jobs[int(sel) - 1]
-                info = TRAININGS[job]
-                req = info["req"]
-                meets = all(getattr(self.player, stat) >= val for stat, val in req.items())
-                self.player.job = job
-                if info.get("gov"):
-                    print("정부 소속 과정으로 지정 숙소와 생활 패턴을 따라야 합니다.")
-                if meets:
-                    cert = info["cert"]
-                    self.player.inventory.append(cert)
-                    nations = (
-                        "범국가" if cert.universal else ", ".join(cert.valid_nations or [])
-                    )
-                    print(f"{job} 자격증을 취득했습니다. (인정 국가: {nations})")
-                else:
-                    req_text = ", ".join(f"{k} {v}+" for k, v in req.items())
-                    print("교육은 마쳤지만 요구 능력치가 부족해 시험에 불합격했습니다.")
-                    print(f"필요 능력치: {req_text}. 다음 시험 때 다시 도전하세요.")
-            else:
-                print("등록을 취소했습니다.")
+            return
+        # training path
+        cat_idx = choose_option(["정부 소속 직업", "일반 직업"])
+        if cat_idx is None:
+            return
+        want_gov = cat_idx == 0
+        jobs = [j for j, info in TRAININGS.items() if info.get("gov") == want_gov]
+        if not jobs:
+            print("해당 분류의 과정이 없습니다.")
+            return
+        job_idx = choose_option(jobs)
+        if job_idx is None:
+            print("등록을 취소했습니다.")
+            return
+        job = jobs[job_idx]
+        info = TRAININGS[job]
+        req = info["req"]
+        meets = all(getattr(self.player, stat) >= val for stat, val in req.items())
+        self.player.job = job
+        if info.get("gov"):
+            print("정부 소속 과정으로 지정 숙소와 생활 패턴을 따라야 합니다.")
+        if meets:
+            cert = info["cert"]
+            self.player.inventory.append(cert)
+            nations = "범국가" if cert.universal else ", ".join(cert.valid_nations or [])
+            print(f"{job} 자격증을 취득했습니다. (인정 국가: {nations})")
         else:
-            print("결정을 미루었습니다.")
+            req_text = ", ".join(f"{k} {v}+" for k, v in req.items())
+            print("교육은 마쳤지만 요구 능력치가 부족해 시험에 불합격했습니다.")
+            print(f"필요 능력치: {req_text}. 다음 시험 때 다시 도전하세요.")
 
     def move_walk(self):
         current = self.player.location
@@ -260,83 +247,59 @@ class Game:
         if not options:
             print("이곳에서 이동할 수 있는 장소가 없습니다.")
             return
-        print("이동할 장소를 선택하세요:")
-        for i, dest in enumerate(options, start=1):
-            print(f"{i}. {dest.name}")
-        choice = input("> ").strip()
-        if choice.isdigit():
-            idx = int(choice) - 1
-            if 0 <= idx < len(options):
-                dest = options[idx]
-                bag = self.player.equipment.get("bag")
-                if bag and not bag.can_enter_buildings and dest.indoors:
-                    print("대형 카트로는 그곳에 들어갈 수 없습니다.")
-                    return
-                if dest.open_times and self.player.time not in dest.open_times:
-                    print("지금은 그곳에 들어갈 수 없습니다.")
-                    return
-                self.player.location = dest
-                print(f"도보로 {self.player.location.name}으로 이동했습니다.")
-                return
-        print("잘못된 선택입니다.")
+        idx = choose_option([d.name for d in options])
+        if idx is None:
+            return
+        dest = options[idx]
+        bag = self.player.equipment.get("bag")
+        if bag and not bag.can_enter_buildings and dest.indoors:
+            print("대형 카트로는 그곳에 들어갈 수 없습니다.")
+            return
+        if dest.open_times and self.player.time not in dest.open_times:
+            print("지금은 그곳에 들어갈 수 없습니다.")
+            return
+        self.player.location = dest
+        print(f"도보로 {self.player.location.name}으로 이동했습니다.")
 
     def move_station(self):
         current = self.player.location
         if not current.station or not current.connections:
             print("정거장에서만 사용할 수 있습니다.")
             return
-        print("이동할 장소를 선택하세요:")
-        for i, dest in enumerate(current.connections, start=1):
-            print(f"{i}. {dest.name}")
-        choice = input("> ").strip()
-        if choice.isdigit():
-            idx = int(choice) - 1
-            if 0 <= idx < len(current.connections):
-                dest = current.connections[idx]
-                bag = self.player.equipment.get("bag")
-                if bag and not bag.can_enter_buildings and dest.indoors:
-                    print("대형 카트로는 그곳에 들어갈 수 없습니다.")
-                    return
-                if dest.open_times and self.player.time not in dest.open_times:
-                    print("지금은 그곳에 들어갈 수 없습니다.")
-                    return
-                self.player.location = dest
-                print(f"{dest.name}으로 이동했습니다.")
-                return
-        print("잘못된 선택입니다.")
+        idx = choose_option([d.name for d in current.connections])
+        if idx is None:
+            return
+        dest = current.connections[idx]
+        bag = self.player.equipment.get("bag")
+        if bag and not bag.can_enter_buildings and dest.indoors:
+            print("대형 카트로는 그곳에 들어갈 수 없습니다.")
+            return
+        if dest.open_times and self.player.time not in dest.open_times:
+            print("지금은 그곳에 들어갈 수 없습니다.")
+            return
+        self.player.location = dest
+        print(f"{dest.name}으로 이동했습니다.")
 
     def interact(self):
         nearby = [c for c in self.characters if c.location == self.player.location]
         if not nearby:
             print("주변에 대화할 사람이 없습니다.")
             return
-        for i, npc in enumerate(nearby, start=1):
-            print(f"{i}. {npc.name} ({npc.job})")
-        choice = input("> ").strip()
-        if not choice.isdigit():
-            print("잘못된 선택입니다.")
-            return
-        idx = int(choice) - 1
-        if not (0 <= idx < len(nearby)):
-            print("잘못된 선택입니다.")
+        idx = choose_option([f"{n.name} ({n.job})" for n in nearby])
+        if idx is None:
             return
         npc = nearby[idx]
-        print(f"{npc.name}에게 무엇을 하시겠습니까?")
-        print("1. 대화")
-        print("2. 거래")
-        print("3. 돈 빌리기")
-        print("4. 전투")
-        action = input("> ").strip()
-        if action == "1":
+        action_idx = choose_option(["대화", "거래", "돈 빌리기", "전투"])
+        if action_idx is None:
+            return
+        if action_idx == 0:
             npc.talk(self.player)
-        elif action == "2":
+        elif action_idx == 1:
             npc.trade(self.player)
-        elif action == "3":
+        elif action_idx == 2:
             npc.lend_money(self.player)
-        elif action == "4":
+        elif action_idx == 3:
             npc.fight(self.player)
-        else:
-            print("잘못된 선택입니다.")
 
     def travel(self):
         if not self.player.location.station or not self.player.location.international:
@@ -350,107 +313,91 @@ class Game:
         else:
             print("탑승권이 없어 이동할 수 없습니다.")
             return
-        print("이동할 국가를 선택하세요:")
-        for i, nation in enumerate(NATIONS, start=1):
-            print(f"{i}. {nation.name} - {nation.description}")
-        choice = input("> ").strip()
-        if choice.isdigit():
-            idx = int(choice) - 1
-            if 0 <= idx < len(NATIONS):
-                nation = NATIONS[idx]
-                self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
-                if use_ticket:
-                    self.player.inventory.remove(BOARDING_PASS)
-                print(
-                    f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
-                )
-                return
-        print("잘못된 선택입니다.")
+        opts = [f"{n.name} - {n.description}" for n in NATIONS]
+        idx = choose_option(opts)
+        if idx is None:
+            return
+        nation = NATIONS[idx]
+        self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
+        if use_ticket:
+            self.player.inventory.remove(BOARDING_PASS)
+        print(
+            f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
+        )
 
     def step(self, action):
         action()
         self.advance_time()
 
     def choose_move(self):
-        print("1. 도보 이동")
+        opts = ["도보 이동"]
         if self.player.location.station:
-            print("2. 정거장 이동")
+            opts.append("정거장 이동")
             if self.player.location.international:
-                print("3. 국가 이동")
-        choice = input("> ").strip()
-        if choice == "1":
+                opts.append("국가 이동")
+        idx = choose_option(opts)
+        if idx is None:
+            return
+        if idx == 0:
             self.step(self.move_walk)
-        elif choice == "2" and self.player.location.station:
+        elif idx == 1 and self.player.location.station:
             self.step(self.move_station)
-        elif (
-            choice == "3"
-            and self.player.location.station
-            and self.player.location.international
-        ):
+        elif idx == 2 and self.player.location.station and self.player.location.international:
             self.step(self.travel)
-        else:
-            print("잘못된 선택입니다.")
 
     def choose_action(self):
-        print("1. 일하기")
-        print("2. 식사")
-        print("3. 잠자기")
-        print("4. 탐험")
-        print("5. 소지품 확인")
-        print("6. 씻기")
-        print("7. 신체 개조")
+        opts = [
+            "일하기",
+            "식사",
+            "잠자기",
+            "탐험",
+            "소지품 확인",
+            "씻기",
+            "신체 개조",
+        ]
         if getattr(self.player.location, "job_office", False):
-            print("8. 직업 찾기")
-        choice = input("> ").strip()
-        actions = {
-            "1": self.work,
-            "2": self.eat,
-            "3": self.sleep,
-            "4": self.explore,
-            "5": self.player.show_inventory,
-            "6": self.wash,
-            "7": self.modify_body,
-            "8": self.find_job,
-        }
-        action = actions.get(choice)
-        if action:
-            if action is self.player.show_inventory:
-                action()
-            else:
-                self.step(action)
+            opts.append("직업 찾기")
+        idx = choose_option(opts)
+        if idx is None:
+            return
+        actions = [
+            self.work,
+            self.eat,
+            self.sleep,
+            self.explore,
+            self.player.show_inventory,
+            self.wash,
+            self.modify_body,
+        ]
+        if getattr(self.player.location, "job_office", False):
+            actions.append(self.find_job)
+        action = actions[idx]
+        if action is self.player.show_inventory:
+            action()
         else:
-            print("잘못된 선택입니다.")
+            self.step(action)
 
     def open_menu(self):
-        print("1. 종료")
-        print("이전 메뉴로 돌아가려면 엔터를 누르세요")
-        choice = input("> ").strip()
-        if choice == "1":
-            print("게임을 종료합니다.")
-            return False
-        return True
+        idx = choose_option(["종료"])
+        if idx is None:
+            return True
+        print("게임을 종료합니다.")
+        return False
 
     def play(self):
         while self.player.is_alive():
             self.update_characters()
             draw_screen(self.player, self.characters)
-            print("무엇을 하시겠습니까?")
-            print("1. 이동")
-            print("2. NPC 선택")
-            print("3. 행동")
-            print("4. 메뉴")
-            choice = input("> ").strip()
-            if choice == "1":
+            idx = choose_option(["이동", "NPC 선택", "행동", "메뉴"], allow_back=False)
+            if idx == 0:
                 self.choose_move()
-            elif choice == "2":
+            elif idx == 1:
                 self.step(self.interact)
-            elif choice == "3":
+            elif idx == 2:
                 self.choose_action()
-            elif choice == "4":
+            elif idx == 3:
                 if not self.open_menu():
                     break
-            else:
-                print("잘못된 선택입니다.")
         if not self.player.is_alive():
             print("건강이 나빠 쓰러졌습니다. 게임 오버.")
 

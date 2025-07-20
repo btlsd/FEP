@@ -15,6 +15,7 @@ from locations import (
     DEFAULT_LOCATION_BY_NATION,
     LOCATIONS,
 )
+from utils import choose_option
 
 LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
@@ -84,78 +85,55 @@ class Character:
         from dialogues import merchant_intro
 
         print(merchant_intro(self, player))
-        print("1. 현금 거래")
-        print("2. 물물 교환")
-        choice = input("> ").strip()
         items = list(self.shop.items())
-        if choice == "1":
-            print("구입할 물건을 선택하세요:")
-            for i, (item, price) in enumerate(items, start=1):
-                print(f"{i}. {item.name} - {price}{self.currency}")
-            sel = input("> ").strip()
-            if sel.isdigit():
-                idx = int(sel) - 1
-                if 0 <= idx < len(items):
-                    item, price = items[idx]
-                    pay_price = price
-                    pay_currency = self.currency
-                    if not player.has_money(price, pay_currency):
-                        pay_price = int(price * 1.2)
-                        for cur in player.money:
-                            if cur != pay_currency and player.has_money(pay_price, cur):
-                                pay_currency = cur
-                                break
-                        else:
-                            print("돈이 부족합니다.")
-                            return
-                    if not player.can_carry(item):
-                        print("무게 때문에 들 수 없습니다.")
-                        return
-                    player.spend_money(pay_price, pay_currency)
-                    player.add_item(item)
-                    print(f"{pay_currency}로 {pay_price} 지불했습니다.")
-                else:
-                    print("잘못된 선택입니다.")
-            else:
+        choice = choose_option(["현금 거래", "물물 교환"])
+        if choice is None:
+            print("거래를 취소했습니다.")
+            return
+        if choice == 0:
+            idx = choose_option([f"{it.name} - {price}{self.currency}" for it, price in items])
+            if idx is None:
                 print("거래를 취소했습니다.")
-        elif choice == "2":
+                return
+            item, price = items[idx]
+            pay_price = price
+            pay_currency = self.currency
+            if not player.has_money(price, pay_currency):
+                pay_price = int(price * 1.2)
+                for cur in player.money:
+                    if cur != pay_currency and player.has_money(pay_price, cur):
+                        pay_currency = cur
+                        break
+                else:
+                    print("돈이 부족합니다.")
+                    return
+            if not player.can_carry(item):
+                print("무게 때문에 들 수 없습니다.")
+                return
+            player.spend_money(pay_price, pay_currency)
+            player.add_item(item)
+            print(f"{pay_currency}로 {pay_price} 지불했습니다.")
+        else:
             if not player.inventory:
                 print("교환할 물건이 없습니다.")
                 return
-            print("제시할 물건을 선택하세요:")
-            for i, it in enumerate(player.inventory, start=1):
-                print(f"{i}. {it.name}")
-            sel = input("> ").strip()
-            if not sel.isdigit():
+            give_idx = choose_option([it.name for it in player.inventory])
+            if give_idx is None:
                 print("거래를 취소했습니다.")
-                return
-            give_idx = int(sel) - 1
-            if not (0 <= give_idx < len(player.inventory)):
-                print("잘못된 선택입니다.")
                 return
             offered = player.inventory.pop(give_idx)
-            print("받을 물건을 선택하세요:")
-            for i, (item, _) in enumerate(items, start=1):
-                print(f"{i}. {item.name}")
-            sel = input("> ").strip()
-            if sel.isdigit():
-                idx = int(sel) - 1
-                if 0 <= idx < len(items):
-                    item = items[idx][0]
-                    if not player.can_carry(item):
-                        print("무게 때문에 들 수 없습니다.")
-                        player.inventory.append(offered)
-                    else:
-                        player.add_item(item)
-                        print("교환이 완료되었습니다.")
-                else:
-                    player.inventory.append(offered)
-                    print("잘못된 선택입니다.")
-            else:
+            recv_idx = choose_option([it.name for it, _ in items])
+            if recv_idx is None:
                 player.inventory.append(offered)
                 print("거래를 취소했습니다.")
-        else:
-            print("거래를 취소했습니다.")
+                return
+            item = items[recv_idx][0]
+            if not player.can_carry(item):
+                print("무게 때문에 들 수 없습니다.")
+                player.inventory.append(offered)
+                return
+            player.add_item(item)
+            print("교환이 완료되었습니다.")
 
     def lend_money(self, player):
         if self.affinity >= 60:
