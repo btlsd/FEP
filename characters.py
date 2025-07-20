@@ -140,9 +140,9 @@ class Player:
         print(f"매력: {self.charisma}")
         print(f"지능: {self.intelligence}")
         print(f"민첩: {self.agility}")
-        print(
-            f"소지 무게: {self.current_weight()}/{self.carrying_capacity()}\n"
-        )
+        est = self.estimated_weight()
+        est_text = str(est) if self.perception >= 10 else f"약 {est}"
+        print(f"소지 무게: {est_text}/{self.carrying_capacity()}\n")
 
     def is_alive(self):
         return self.health > 0
@@ -173,6 +173,17 @@ class Player:
     def current_weight(self):
         return sum(item.weight for item in self.inventory)
 
+    def estimate_value(self, value):
+        """Return an estimated measurement influenced by perception."""
+        if self.perception >= 10:
+            return value
+        error_ratio = (10 - self.perception) / 10
+        factor = random.uniform(-error_ratio, error_ratio)
+        return max(0, round(value * (1 + factor), 1))
+
+    def estimated_weight(self):
+        return sum(self.estimate_value(it.weight) for it in self.inventory)
+
     def can_carry(self, item):
         return self.current_weight() + item.weight <= self.carrying_capacity()
 
@@ -189,6 +200,15 @@ class Player:
         else:
             print("소지품:")
             for it in self.inventory:
-                print(f"- {it.name} (무게 {it.weight})")
-            print(f"총 무게 {self.current_weight()}/{self.carrying_capacity()}")
+                est_w = self.estimate_value(it.weight)
+                est_v = self.estimate_value(getattr(it, "volume", 0))
+                w_text = str(est_w) if self.perception >= 10 else f"약 {est_w}"
+                v_text = str(est_v) if self.perception >= 10 else f"약 {est_v}"
+                print(f"- {it.name} (무게 {w_text}, 부피 {v_text})")
+            total = self.estimated_weight()
+            if self.perception < 10:
+                total_text = f"약 {total}"
+            else:
+                total_text = str(total)
+            print(f"총 무게 {total_text}/{self.carrying_capacity()}")
 
