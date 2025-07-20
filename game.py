@@ -17,9 +17,19 @@ NATIONS = [
 class Player:
     def __init__(self, name):
         self.name = name
-        self.health = 100
+        # 기본 능력치
+        self.strength = 5
+        self.perception = 5
+        self.endurance = 5
+        self.charisma = 5
+        self.intelligence = 5
+
+        self.max_health = 100 + self.endurance * 10
+        self.max_energy = 100 + self.endurance * 5
+
+        self.health = self.max_health
         self.hunger = 100
-        self.energy = 100
+        self.energy = self.max_energy
         self.money = 20
         self.experience = 0
         self.day = 1
@@ -28,12 +38,17 @@ class Player:
     def status(self):
         print(f"\n{self.day}일차")
         print(f"{self.name}의 상태:")
-        print(f"건강: {self.health}")
+        print(f"건강: {self.health}/{self.max_health}")
         print(f"배고픔: {self.hunger}")
-        print(f"에너지: {self.energy}")
+        print(f"에너지: {self.energy}/{self.max_energy}")
         print(f"돈: {self.money}원")
         print(f"경험치: {self.experience}")
         print(f"현재 위치: {self.location.name}\n")
+        print(f"힘: {self.strength}")
+        print(f"지각: {self.perception}")
+        print(f"인내심: {self.endurance}")
+        print(f"매력: {self.charisma}")
+        print(f"지능: {self.intelligence}\n")
 
     def is_alive(self):
         return self.health > 0
@@ -47,6 +62,8 @@ class Player:
         if self.energy <= 0:
             self.health += self.energy
             self.energy = 0
+        if self.health > self.max_health:
+            self.health = self.max_health
 
 class Game:
     def __init__(self, player):
@@ -56,11 +73,12 @@ class Game:
         if self.player.energy < 20 or self.player.hunger < 20:
             print("에너지가 부족하거나 너무 배가 고파서 일할 수 없습니다.")
             return
-        self.player.money += 10
+        income = 10 + self.player.intelligence // 2 + self.player.strength // 2
+        self.player.money += income
         self.player.energy -= 20
         self.player.hunger -= 10
         self.player.experience += 1
-        print("일해서 10원을 벌었습니다.")
+        print(f"일해서 {income}원을 벌었습니다.")
 
     def eat(self):
         if self.player.money < 5:
@@ -71,22 +89,32 @@ class Game:
         if self.player.hunger > 100:
             self.player.hunger = 100
         self.player.energy += 10
-        if self.player.energy > 100:
-            self.player.energy = 100
-        print("식사를 했습니다.")
+        if self.player.energy > self.player.max_energy:
+            self.player.energy = self.player.max_energy
+        heal = self.player.endurance
+        self.player.health = min(self.player.health + heal, self.player.max_health)
+        print(f"식사를 했습니다. 체력이 {heal} 회복되었습니다.")
 
     def sleep(self):
-        self.player.energy = 100
+        self.player.energy = self.player.max_energy
         self.player.hunger -= 10
         if self.player.hunger < 0:
             self.player.hunger = 0
-        print("잠을 자고 기력이 회복되었습니다.")
+        heal = 10 + self.player.endurance
+        self.player.health = min(self.player.health + heal, self.player.max_health)
+        print(f"잠을 자고 기력이 회복되었습니다. 체력이 {heal} 회복되었습니다.")
 
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
-        event = random.choice(["find_money", "nothing", "injury"])
+        roll = random.randint(1, 100)
+        if roll <= 30 + self.player.perception:
+            event = "find_money"
+        elif roll <= 80:
+            event = "nothing"
+        else:
+            event = "injury"
         if event == "find_money":
-            found = random.randint(5, 20)
+            found = random.randint(5, 20) + self.player.charisma
             self.player.money += found
             print(f"탐험 중에 {found}원을 발견했습니다.")
         elif event == "injury":
