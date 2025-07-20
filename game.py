@@ -7,6 +7,7 @@ from locations import (
 
 from characters import NPCS, Player
 from items import BROKEN_PART
+from equipment import BODY_MODS
 from gui import draw_screen
 
 class Game:
@@ -114,6 +115,18 @@ class Game:
             del dest.hidden_connections[loc]
             print(f"숨겨진 장소 {dest.name}을(를) 발견했습니다!")
 
+    def modify_body(self):
+        print("시술할 개조를 선택하세요:")
+        for i, mod in enumerate(BODY_MODS, start=1):
+            print(f"{i}. {mod.name} (부위: {mod.slot})")
+        choice = input("> ").strip()
+        if choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(BODY_MODS):
+                self.player.install_mod(BODY_MODS[idx])
+                return
+        print("잘못된 선택입니다.")
+
     def move(self):
         current = self.player.location
         if not current.connections:
@@ -205,6 +218,7 @@ class Game:
         print("4. 탐험")
         print("5. 소지품 확인")
         print("6. 씻기")
+        print("7. 신체 개조")
         choice = input("> ").strip()
         actions = {
             "1": self.work,
@@ -213,6 +227,7 @@ class Game:
             "4": self.explore,
             "5": self.player.show_inventory,
             "6": self.wash,
+            "7": self.modify_body,
         }
         action = actions.get(choice)
         if action:

@@ -1,11 +1,10 @@
 import random
 
-from items import (
+from items import BROKEN_PART
+from equipment import (
+    Equipment,
     CLOTHES_WITH_POCKETS,
     BASIC_BAG,
-    BROKEN_PART,
-    Item,
-    Equipment,
 )
 
 from locations import (
@@ -119,6 +118,8 @@ class Player:
             "clothing": CLOTHES_WITH_POCKETS,
             "bag": None,
         }
+        # installed body modifications by slot
+        self.mods = {}
 
     def status(self):
         print(f"\n{self.day}일차 {TIME_OF_DAY[self.time]}")
@@ -140,6 +141,8 @@ class Player:
         print(f"매력: {self.charisma}")
         print(f"지능: {self.intelligence}")
         print(f"민첩: {self.agility}")
+        if self.mods:
+            print("개조: " + ", ".join(m.name for m in self.mods.values()))
         est = self.estimated_weight()
         est_text = str(est) if self.perception >= 10 else f"약 {est}"
         print(f"소지 무게: {est_text}/{self.carrying_capacity()}\n")
@@ -161,6 +164,17 @@ class Player:
             self.health = self.max_health
         if self.cleanliness < 0:
             self.cleanliness = 0
+        self.recalc_derived_stats()
+
+    def recalc_derived_stats(self):
+        self.max_health = 100 + self.endurance * 10
+        self.max_stamina = 100 + self.endurance * 5
+        self.max_satiety = 100 + self.endurance * 2
+        self.max_cleanliness = 100 + self.charisma * 2
+        self.health = min(self.health, self.max_health)
+        self.stamina = min(self.stamina, self.max_stamina)
+        self.satiety = min(self.satiety, self.max_satiety)
+        self.cleanliness = min(self.cleanliness, self.max_cleanliness)
 
     # Inventory helpers
     def carrying_capacity(self):
@@ -211,4 +225,25 @@ class Player:
             else:
                 total_text = str(total)
             print(f"총 무게 {total_text}/{self.carrying_capacity()}")
+
+    # Body modification helpers
+    def install_mod(self, mod):
+        current = self.mods.get(mod.slot)
+        if current:
+            print(f"{current.name}을(를) 제거하고 {mod.name}을(를) 장착합니다.")
+            self.remove_mod(current)
+        else:
+            print(f"{mod.name}을(를) 장착합니다.")
+        self.mods[mod.slot] = mod
+        for stat, value in mod.stat_changes.items():
+            setattr(self, stat, getattr(self, stat) + value)
+        self.recalc_derived_stats()
+
+    def remove_mod(self, mod):
+        if self.mods.get(mod.slot) != mod:
+            return
+        del self.mods[mod.slot]
+        for stat, value in mod.stat_changes.items():
+            setattr(self, stat, getattr(self, stat) - value)
+        self.recalc_derived_stats()
 
