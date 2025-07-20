@@ -3,6 +3,7 @@ import random
 from locations import (
     NATIONS,
     DEFAULT_LOCATION_BY_NATION,
+    LOCATIONS,
 )
 
 from characters import NPCS, Player
@@ -138,10 +139,40 @@ class Game:
                 return
         print("잘못된 선택입니다.")
 
-    def move(self):
+    def move_walk(self):
         current = self.player.location
-        if not current.connections:
+        options = [
+            loc
+            for loc in LOCATIONS
+            if loc.zone == current.zone and loc != current
+        ]
+        if not options:
             print("이곳에서 이동할 수 있는 장소가 없습니다.")
+            return
+        print("이동할 장소를 선택하세요:")
+        for i, dest in enumerate(options, start=1):
+            print(f"{i}. {dest.name}")
+        choice = input("> ").strip()
+        if choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(options):
+                dest = options[idx]
+                bag = self.player.equipment.get("bag")
+                if bag and not bag.can_enter_buildings and dest.indoors:
+                    print("대형 카트로는 그곳에 들어갈 수 없습니다.")
+                    return
+                if dest.open_times and self.player.time not in dest.open_times:
+                    print("지금은 그곳에 들어갈 수 없습니다.")
+                    return
+                self.player.location = dest
+                print(f"도보로 {self.player.location.name}으로 이동했습니다.")
+                return
+        print("잘못된 선택입니다.")
+
+    def move_station(self):
+        current = self.player.location
+        if not current.station or not current.connections:
+            print("정거장에서만 사용할 수 있습니다.")
             return
         print("이동할 장소를 선택하세요:")
         for i, dest in enumerate(current.connections, start=1):
@@ -159,7 +190,7 @@ class Game:
                     print("지금은 그곳에 들어갈 수 없습니다.")
                     return
                 self.player.location = dest
-                print(f"도보로 {self.player.location.name}으로 이동했습니다.")
+                print(f"{dest.name}으로 이동했습니다.")
                 return
         print("잘못된 선택입니다.")
 
@@ -225,28 +256,27 @@ class Game:
                 return
         print("잘못된 선택입니다.")
 
-    def board(self):
-        if not self.player.location.station:
-            print("여기서는 탑승할 수 없습니다.")
-            return
-        if self.player.location.international:
-            self.travel()
-        else:
-            print("이 정거장에서는 국가 간 이동을 할 수 없습니다.")
-
     def step(self, action):
         action()
         self.advance_time()
 
     def choose_move(self):
-        print("1. 장소 이동")
+        print("1. 도보 이동")
         if self.player.location.station:
-            print("2. 탑승")
+            print("2. 정거장 이동")
+            if self.player.location.international:
+                print("3. 국가 이동")
         choice = input("> ").strip()
         if choice == "1":
-            self.step(self.move)
+            self.step(self.move_walk)
         elif choice == "2" and self.player.location.station:
-            self.step(self.board)
+            self.step(self.move_station)
+        elif (
+            choice == "3"
+            and self.player.location.station
+            and self.player.location.international
+        ):
+            self.step(self.travel)
         else:
             print("잘못된 선택입니다.")
 

@@ -54,10 +54,16 @@ def draw_screen(player, npcs=NPCS):
         print("주변 인물: 없음")
     print("-" * 30)
 
-    if location.connections:
-        print("이동 가능 장소:")
-        for dest in location.connections:
+    from locations import LOCATIONS
+    foot = [loc for loc in LOCATIONS if loc.zone == location.zone and loc != location]
+    if foot:
+        print("도보 이동 가능:")
+        for dest in foot:
             print(f"- {dest.name}")
     else:
-        print("이동 가능한 장소가 없습니다.")
+        print("도보로 이동할 장소가 없습니다.")
+    if location.station and location.connections:
+        print("정거장 이동 가능:")
+        for dest in location.connections:
+            print(f"- {dest.name}")
     print()

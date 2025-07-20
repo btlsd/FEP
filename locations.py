@@ -16,6 +16,7 @@ class Location:
         name,
         description,
         nation,
+        zone=None,
         indoors=False,
         descriptions=None,
         open_times=None,
@@ -26,6 +27,7 @@ class Location:
         self.name = name
         self.description = description
         self.nation = nation
+        self.zone = zone or name
         self.indoors = indoors
         self.connections = []
         self.hidden_connections = {}
@@ -80,6 +82,7 @@ for entry in data["locations"]:
         entry["name"],
         entry.get("description", ""),
         nation,
+        entry.get("zone"),
         entry.get("indoors", False),
         entry.get("descriptions"),
         entry.get("open_times"),
