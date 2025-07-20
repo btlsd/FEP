@@ -1,21 +1,17 @@
 import random
 
+from locations import (
+    NATIONS,
+    DEFAULT_LOCATION_BY_NATION,
+    Location,
+    SEWER,
+    STATION,
+    MARKET,
+    RESIDENTIAL,
+)
+
 
 TIME_OF_DAY = ["아침", "낮", "밤"]
-
-
-class Nation:
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
-
-
-NATIONS = [
-    Nation("휴먼 프론티어", "인간 위주의 국가"),
-    Nation("자연 연합", "여러 종들이 의견을 모아 운영하는 생태계 중심의 국가"),
-    Nation("오프라인 기계 국가", "개체가 오프라인 상태로 존재하는 기계들의 국가"),
-    Nation("온라인 기계 네트워크", "개체가 온라인 상태로 연결된 기계 국가"),
-]
 
 
 class Character:
@@ -24,8 +20,8 @@ class Character:
         self.personality = personality
         self.affiliation = affiliation
         self.job = job
-        self.schedule = schedule  # time index -> Nation
-        self.location = schedule.get(0, NATIONS[0])
+        self.schedule = schedule  # time index -> Location
+        self.location = schedule.get(0, SEWER)
         self.affinity = 50
         self.health = 50
 
@@ -85,14 +81,14 @@ NPCS = [
         "친절한",
         "휴먼 프론티어 상인조합",
         "상인",
-        {0: NATIONS[0], 1: NATIONS[0], 2: NATIONS[0]},
+        {0: MARKET, 1: MARKET, 2: RESIDENTIAL},
     ),
     Character(
         "로봇 42",
         "차가운",
         "온라인 기계 네트워크",
         "경비",
-        {0: NATIONS[3], 1: NATIONS[2], 2: NATIONS[3]},
+        {0: STATION, 1: STATION, 2: STATION},
     ),
 ]
 
@@ -115,7 +111,7 @@ class Player:
         self.money = 20
         self.experience = 0
         self.day = 1
-        self.location = NATIONS[0]
+        self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
         self.time = 0  # 0=아침,1=낮,2=밤
 
     def status(self):
@@ -126,7 +122,7 @@ class Player:
         print(f"에너지: {self.energy}/{self.max_energy}")
         print(f"돈: {self.money}원")
         print(f"경험치: {self.experience}")
-        print(f"현재 위치: {self.location.name}")
+        print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
         nearby = [c.name for c in NPCS if c.location == self.location]
         if nearby:
             print("주변 인물: " + ", ".join(nearby))
@@ -222,6 +218,23 @@ class Game:
         else:
             print("탐험 중 아무 일도 일어나지 않았습니다.")
 
+    def move(self):
+        current = self.player.location
+        if not current.connections:
+            print("이곳에서 이동할 수 있는 장소가 없습니다.")
+            return
+        print("이동할 장소를 선택하세요:")
+        for i, dest in enumerate(current.connections, start=1):
+            print(f"{i}. {dest.name}")
+        choice = input("> ").strip()
+        if choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(current.connections):
+                self.player.location = current.connections[idx]
+                print(f"{self.player.location.name}으로 이동했습니다.")
+                return
+        print("잘못된 선택입니다.")
+
     def interact(self):
         nearby = [c for c in self.characters if c.location == self.player.location]
         if not nearby:
@@ -263,8 +276,9 @@ class Game:
         if choice.isdigit():
             idx = int(choice) - 1
             if 0 <= idx < len(NATIONS):
-                self.player.location = NATIONS[idx]
-                print(f"{self.player.location.name}으로 이동했습니다.")
+                nation = NATIONS[idx]
+                self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
+                print(f"{nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다.")
                 return
         print("잘못된 선택입니다.")
 
@@ -278,8 +292,9 @@ class Game:
             "2": self.eat,
             "3": self.sleep,
             "4": self.explore,
-            "5": self.travel,
-            "6": self.interact,
+            "5": self.move,
+            "6": self.travel,
+            "7": self.interact,
             "q": None,
         }
         while self.player.is_alive():
@@ -290,8 +305,9 @@ class Game:
             print("2. 식사")
             print("3. 잠자기")
             print("4. 탐험")
-            print("5. 이동")
-            print("6. 캐릭터와 상호작용")
+            print("5. 장소 이동")
+            print("6. 국가 이동")
+            print("7. 캐릭터와 상호작용")
             print("q. 종료")
             choice = input("> ").strip()
             if choice == "q":
@@ -308,7 +324,10 @@ class Game:
 
 def main():
     name = input("캐릭터 이름을 입력하세요: ")
+    print("시스템 초기화 중...")
+    print("...")
     player = Player(name)
+    print("눈을 뜨니 당신은 거대한 하수도에 누워 있습니다.")
     game = Game(player)
     game.play()
 
