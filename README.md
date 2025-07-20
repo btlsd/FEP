@@ -9,10 +9,6 @@ life simulation game set in a far-future Seoul and beyond. All in-game text is i
 python game.py
 ```
 
-For a browser-based version using Pyodide, simply open `index.html` in a modern
-web browser. This loads the same Python code and lets you play directly on the
-page. Internet access is required on first load to download the Pyodide
-runtime.
 
 During the game you will be prompted in Korean to choose among four main categories:
 
