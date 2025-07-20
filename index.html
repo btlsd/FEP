@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FEP Web</title>
+<style>
+body { font-family: sans-serif; background:#f0f0f0; padding:20px; }
+pre { background:#222; color:#0f0; padding:10px; height:400px; overflow:auto; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<pre id="output"></pre>
+<button id="start">게임 시작</button>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js"></script>
+<script>
+async function runGame() {
+  const pyodide = await loadPyodide();
+  const files = ["items.py", "locations.py", "characters.py", "gui.py", "game.py"];
+  for (const file of files) {
+    const resp = await fetch(file);
+    const text = await resp.text();
+    pyodide.FS.writeFile(file, text);
+  }
+  await pyodide.runPythonAsync(`
+import builtins
+from js import prompt, document
+out = document.getElementById('output')
+
+def js_print(*args):
+    out.textContent += ' '.join(str(a) for a in args) + '\n'
+
+builtins.print = js_print
+builtins.input = lambda msg='': prompt(msg)
+import game
+
+game.main()
+  `);
+}
+document.getElementById('start').addEventListener('click', runGame);
+</script>
+</body>
+</html>
