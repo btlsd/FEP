@@ -30,6 +30,12 @@ These values influence activities like working and exploring.
 동일한 장소에 있을 때 대화하거나 거래하고, 필요하면 돈을 빌리거나
 전투를 벌일 수 있습니다.
 
+### 캐릭터 정의
+
+플레이어와 NPC에 대한 능력치와 스케줄, 성격 정보는 `characters.py`에
+정리되어 있습니다. 새 캐릭터를 추가하거나 수정하고 싶다면 이 파일을
+편집하면 됩니다.
+
 ### 장소
 
 모든 장소 정의는 `locations.py`에 분리되어 있어 간단히 수정하거나
