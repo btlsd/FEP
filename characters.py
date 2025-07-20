@@ -286,6 +286,19 @@ class Player:
     def has_money(self, amount, currency):
         return self.money.get(currency, 0) >= amount
 
+    def describe_stat(self, value):
+        if value >= 20:
+            return "초인적이다"
+        if value >= 16:
+            return "매우 뛰어난 편이다"
+        if value >= 13:
+            return "준수한 편이다"
+        if value >= 8:
+            return "평범한 수준이다"
+        if value >= 5:
+            return "다소 부족한 편이다"
+        return "매우 낮은 편이다"
+
     def status(self):
         print(f"\n{self.day}일차 {WEEKDAYS[self.weekday]}요일 {TIME_OF_DAY[self.time]}")
         print(f"{self.name}의 상태:")
@@ -303,12 +316,19 @@ class Player:
         if nearby:
             print("주변 인물: " + ", ".join(nearby))
         print()
-        print(f"힘: {self.strength}")
-        print(f"지각: {self.perception}")
-        print(f"인내심: {self.endurance}")
-        print(f"매력: {self.charisma}")
-        print(f"지능: {self.intelligence}")
-        print(f"민첩: {self.agility}")
+        for key, label in [
+            ("strength", "근력"),
+            ("perception", "지각"),
+            ("endurance", "인내심"),
+            ("charisma", "매력"),
+            ("intelligence", "지능"),
+            ("agility", "민첩"),
+        ]:
+            val = getattr(self, key)
+            if "brain" in self.mods:
+                print(f"{label}: {val}")
+            else:
+                print(f"{label}: {self.describe_stat(val)}")
         if self.mods:
             print("개조: " + ", ".join(m.name for m in self.mods.values()))
         est = self.estimated_weight()
@@ -411,12 +431,16 @@ class Player:
             else:
                 total_text = str(total)
             print(f"총 무게 {total_text}/{self.carrying_capacity()}")
-        if self.blueprints:
-            from items import _ITEMS
-            print("설계도:")
-            for key, prog in self.blueprints.items():
-                name = _ITEMS[key].name
-                print(f"- {name} {prog}%")
+
+    def show_data(self):
+        if not self.blueprints:
+            print("획득한 데이터가 없습니다.")
+            return
+        from items import _ITEMS
+        print("설계도 진행도:")
+        for key, prog in self.blueprints.items():
+            name = _ITEMS[key].name
+            print(f"- {name} {prog}%")
 
     # Body modification helpers
     def install_mod(self, mod):

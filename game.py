@@ -539,13 +539,23 @@ class Game:
             self.step(action)
 
     def open_menu(self):
-        idx = choose_option(["저장", "불러오기", "종료"])
+        options = ["스탯 확인", "소지품 확인", "데이터 확인", "저장", "불러오기", "종료"]
+        idx = choose_option(options)
         if idx is None:
             return True
         if idx == 0:
-            self.save()
+            self.player.status()
             return True
         if idx == 1:
+            self.player.show_inventory()
+            return True
+        if idx == 2:
+            self.player.show_data()
+            return True
+        if idx == 3:
+            self.save()
+            return True
+        if idx == 4:
             self.load()
             return True
         print("게임을 종료합니다.")

@@ -15,7 +15,7 @@ During the game you will be prompted in Korean to choose among four main categor
 1. **이동** – 장소나 국가를 바꿉니다.
 2. **NPC 선택** – 같은 장소에 있는 인물과 상호작용합니다.
 3. **행동** – 일하기, 식사, 잠자기, 탐험 등의 활동을 수행합니다.
-4. **메뉴** – 저장과 불러오기, 게임 종료 등 기타 기능을 선택합니다.
+4. **메뉴** – 스탯과 소지품, 설계도 확인, 저장과 불러오기, 게임 종료 등을 선택합니다.
    직업소개소에서라면 **행동** 메뉴에 **직업 찾기** 옵션이 추가로 나타납니다.
 이동 메뉴에서는 현재 위치에 따라 몇 가지 선택지가 주어집니다.
 일반적으로는 같은 구역 내의 장소로 **도보 이동**할 수 있고, `station:true`로
@@ -42,6 +42,11 @@ Characters have six core attributes:
 - **Charisma**
 - **Intelligence**
 - **Agility** – higher agility lets your turn gauge fill faster in battle
+
+A value around 10 is typical for an average human. Scores above 20 are
+considered exceptional. Unless the player installs a brain-interface
+modification, these numbers are not shown directly; the menu instead
+displays rough descriptions such as "평범한 근력" or "뛰어난 지각".
 
 These values influence activities like working and exploring. From these base attributes the game derives secondary stats used in daily life:
 
@@ -167,8 +172,8 @@ Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 �
 퀘스트 보상, 전투 후 남은 잔해를 스캔해서 획득할 수 있습니다. 잔해가 덜
 파괴될수록 스캔으로 얻는 설계도 진행도가 높습니다. 진행도가 100%가 되면
 그 설계도를 사용해 프린팅할 수 있습니다. 프린팅 가능 여부는 아이템 정의의
-`printable` 속성으로 결정되며, 설계도와 진행도는 플레이어 인벤토리 화면에서
-확인할 수 있습니다. 프린터가 있는 장소에서는 **프린팅** 행동이 추가로 표시됩니다.
+`printable` 속성으로 결정되며, 설계도 진행도는 메뉴의 **데이터 확인**에서
+볼 수 있습니다. 프린터가 있는 장소에서는 **프린팅** 행동이 추가로 표시됩니다.
 
 ### 전투
 
