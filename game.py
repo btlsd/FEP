@@ -118,7 +118,9 @@ class Game:
     def modify_body(self):
         print("시술할 개조를 선택하세요:")
         for i, mod in enumerate(BODY_MODS, start=1):
-            print(f"{i}. {mod.name} (부위: {mod.slot})")
+            req = f" - 필요 부품: {mod.required_item.name}" if mod.required_item else ""
+            company = f" [{mod.company}]" if mod.company else ""
+            print(f"{i}. {mod.name}{company} (부위: {mod.slot}){req}")
         choice = input("> ").strip()
         if choice.isdigit():
             idx = int(choice) - 1

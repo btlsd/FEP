@@ -114,6 +114,9 @@ class Player:
         # Inventory and equipment
         self.base_capacity = 5
         self.inventory = []
+        # 테스트용으로 기본 개조 부품 하나를 지급
+        from items import IR_EYE_LEFT_PART
+        self.inventory.append(IR_EYE_LEFT_PART)
         self.equipment = {
             "clothing": CLOTHES_WITH_POCKETS,
             "bag": None,
@@ -228,6 +231,11 @@ class Player:
 
     # Body modification helpers
     def install_mod(self, mod):
+        if mod.required_item and mod.required_item not in self.inventory:
+            print(f"{mod.required_item.name}이(가) 없어 개조를 진행할 수 없습니다.")
+            return
+        if mod.required_item and mod.required_item in self.inventory:
+            self.inventory.remove(mod.required_item)
         current = self.mods.get(mod.slot)
         if current:
             print(f"{current.name}을(를) 제거하고 {mod.name}을(를) 장착합니다.")
@@ -238,6 +246,8 @@ class Player:
         for stat, value in mod.stat_changes.items():
             setattr(self, stat, getattr(self, stat) + value)
         self.recalc_derived_stats()
+        if mod.needs_brain and "brain" not in self.mods:
+            print("뇌 인터페이스가 없어 고성능 기능을 이용할 수 없습니다.")
 
     def remove_mod(self, mod):
         if self.mods.get(mod.slot) != mod:
