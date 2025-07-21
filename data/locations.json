@@ -199,6 +199,24 @@
       "printer": true
     },
     {
+      "key": "BANK",
+      "name": "은행",
+      "description": "예금과 출금을 처리하는 금융 기관",
+      "zone": "상업 지구",
+      "descriptions": {
+        "0": "새벽에는 문을 닫았다.",
+        "1": "아침부터 고객이 드문드문 찾아온다.",
+        "2": "오전에는 창구가 비교적 한산하다.",
+        "3": "오후에는 업무가 가장 많다.",
+        "4": "저녁이 되면 영업을 마친다.",
+        "5": "밤에는 경비원만 남아 있다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "bank": true,
+      "open_times": [1,2,3,4]
+    },
+    {
       "key": "SPECIAL_BASE",
       "name": "특수부대 기지",
       "description": "정부의 특수부대가 주둔하는 비밀 기지",
@@ -367,6 +385,7 @@
     ["RESIDENTIAL", "APARTMENT"],
     ["RESIDENTIAL", "SHELTER"],
     ["MARKET", "JOB_CENTER"],
+    ["MARKET", "BANK"],
     ["STATION", "CLINIC_ILLEGAL"],
     ["STATION", "SPECIAL_BASE"],
     ["CAPITAL_GEOHAP", "GEOHAP_MARKET"],

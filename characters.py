@@ -244,6 +244,7 @@ class Player:
         self.cleanliness = self.max_cleanliness
         # 각 국가별 화폐를 기록한다
         self.money = {NATIONS[0].currency: 20}
+        self.bank = {n.currency: 0 for n in NATIONS}
         self.experience = 0
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
@@ -291,6 +292,19 @@ class Player:
     def add_money(self, amount, currency):
         self.money[currency] = self.money.get(currency, 0) + amount
 
+    def deposit(self, amount, currency):
+        if self.spend_money(amount, currency):
+            self.bank[currency] = self.bank.get(currency, 0) + amount
+            return True
+        return False
+
+    def withdraw(self, amount, currency):
+        if self.bank.get(currency, 0) >= amount and amount > 0:
+            self.bank[currency] -= amount
+            self.add_money(amount, currency)
+            return True
+        return False
+
     def spend_money(self, amount, currency):
         if self.money.get(currency, 0) >= amount:
             self.money[currency] -= amount
@@ -322,6 +336,9 @@ class Player:
         print(f"청결도: {self.cleanliness}/{self.max_cleanliness}")
         money_str = ", ".join(f"{amt}{cur}" for cur, amt in self.money.items())
         print(f"보유 화폐: {money_str}")
+        bank_str = ", ".join(f"{amt}{cur}" for cur, amt in self.bank.items() if amt)
+        if bank_str:
+            print(f"은행 예금: {bank_str}")
         print(f"경험치: {self.experience}")
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
         print(f"거주지: {self.home.name}")
@@ -404,6 +421,13 @@ class Player:
 
     def process_monthly_costs(self):
         currency = self.home.nation.currency
+        # 월급 입금 (월급제 직업)
+        from game import JOB_PAY
+        info = JOB_PAY.get(self.job)
+        if info and info.get("type") == "monthly":
+            amount = info.get("rate", 0)
+            self.bank[currency] = self.bank.get(currency, 0) + amount
+            print(f"월급 {amount}{currency}이 은행에 입금되었습니다.")
         loan_payment = min(10, self.loan_balance)
         self.loan_balance -= loan_payment
         utilities = self.shower_count * 0.5 + self.appliance_usage * 0.5
@@ -421,6 +445,12 @@ class Player:
                 self.arrears = 0
         self.shower_count = 0
         self.appliance_usage = 0
+        # 이자 지급
+        for cur, bal in self.bank.items():
+            interest = int(bal * 0.01)
+            if interest:
+                self.bank[cur] += interest
+                print(f"{cur} 예금 이자로 {interest}{cur}이 추가되었습니다.")
 
     # Inventory helpers
     def carrying_capacity(self):
@@ -561,6 +591,7 @@ class Player:
             "satiety": self.satiety,
             "cleanliness": self.cleanliness,
             "money": self.money,
+            "bank": self.bank,
             "experience": self.experience,
             "day": self.day,
             "weekday": self.weekday,
@@ -594,6 +625,8 @@ class Player:
         player.satiety = data.get("satiety", player.max_satiety)
         player.cleanliness = data.get("cleanliness", player.max_cleanliness)
         player.money = data.get("money", {})
+        player.bank = {n.currency: 0 for n in NATIONS}
+        player.bank.update(data.get("bank", {}))
         player.experience = data.get("experience", 0)
         player.day = data.get("day", 1)
         player.weekday = data.get("weekday", 0)

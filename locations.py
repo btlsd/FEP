@@ -25,6 +25,7 @@ class Location:
         international=False,
         job_office=False,
         printer=False,
+        bank=False,
         restricted=False,
         locked_relic=False,
     ):
@@ -44,6 +45,7 @@ class Location:
         self.international = international
         self.job_office = job_office
         self.printer = printer
+        self.bank = bank
         self.restricted = restricted
         self.locked_relic = locked_relic
 
@@ -99,6 +101,7 @@ for entry in data["locations"]:
         entry.get("international", False),
         entry.get("job_office", False),
         entry.get("printer", False),
+        entry.get("bank", False),
         entry.get("restricted", False),
         entry.get("locked_relic", False),
     )

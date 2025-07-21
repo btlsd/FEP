@@ -74,6 +74,19 @@ TRAININGS = {
     },
 }
 
+# 직업별 급여 정보 (시급 또는 월급)
+JOB_PAY = {
+    "임시 노동자": {"type": "hourly", "rate": 10},
+    "도시 계획자": {"type": "monthly", "rate": 300},
+    "군사 요원": {"type": "monthly", "rate": 250},
+    "토지 개관자": {"type": "monthly", "rate": 220},
+    "로봇 관리자": {"type": "monthly", "rate": 230},
+    "창작자": {"type": "monthly", "rate": 200},
+    "사회복지사": {"type": "monthly", "rate": 210},
+    "탐정": {"type": "hourly", "rate": 40},
+    "경비": {"type": "hourly", "rate": 15},
+}
+
 class Game:
     def __init__(self, player):
         self.player = player
@@ -138,7 +151,11 @@ class Game:
         if self.player.stamina < 20 or self.player.satiety < 20:
             print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
             return
-        income = 10 + self.player.intelligence // 2 + self.player.strength // 2
+        info = JOB_PAY.get(self.player.job)
+        if info and info.get("type") == "hourly":
+            income = info.get("rate", 0)
+        else:
+            income = 10 + self.player.intelligence // 2 + self.player.strength // 2
         currency = self.player.location.nation.currency
         tax = int(income * 0.2)
         net = income - tax
@@ -325,6 +342,51 @@ class Game:
             return
         self.player.add_item(item)
         print(f"{item.name}을(를) 프린팅했습니다. 비용 {cost}{currency}")
+
+    def deposit_money(self):
+        if not getattr(self.player.location, "bank", False):
+            print("은행이 없습니다.")
+            return
+        currencies = list(self.player.money.keys())
+        if not currencies:
+            print("소지한 현금이 없습니다.")
+            return
+        idx = choose_option([f"{cur} ({self.player.money[cur]})" for cur in currencies])
+        if idx is None:
+            return
+        cur = currencies[idx]
+        amt = input("입금할 금액을 입력하세요: ").strip()
+        if not amt.isdigit():
+            print("잘못된 금액입니다.")
+            return
+        amt = int(amt)
+        if self.player.deposit(amt, cur):
+            print(f"{amt}{cur}을 입금했습니다.")
+        else:
+            print("금액이 부족합니다.")
+
+    def withdraw_money(self):
+        if not getattr(self.player.location, "bank", False):
+            print("은행이 없습니다.")
+            return
+        currencies = list(self.player.bank.keys())
+        available = [cur for cur in currencies if self.player.bank.get(cur, 0) > 0]
+        if not available:
+            print("예금된 돈이 없습니다.")
+            return
+        idx = choose_option([f"{cur} ({self.player.bank[cur]})" for cur in available])
+        if idx is None:
+            return
+        cur = available[idx]
+        amt = input("출금할 금액을 입력하세요: ").strip()
+        if not amt.isdigit():
+            print("잘못된 금액입니다.")
+            return
+        amt = int(amt)
+        if self.player.withdraw(amt, cur):
+            print(f"{amt}{cur}을 출금했습니다.")
+        else:
+            print("금액이 부족합니다.")
 
     def scan_remains(self, npc):
         key = getattr(npc, "blueprint_drop", None)
@@ -601,6 +663,8 @@ class Game:
             opts.append("프린팅")
         if getattr(self.player.location, "job_office", False):
             opts.append("직업 찾기")
+        if getattr(self.player.location, "bank", False):
+            opts.extend(["입금", "출금"])
         idx = choose_option(opts)
         if idx is None:
             return
@@ -628,6 +692,8 @@ class Game:
             actions.append(self.print_item)
         if getattr(self.player.location, "job_office", False):
             actions.append(self.find_job)
+        if getattr(self.player.location, "bank", False):
+            actions.extend([self.deposit_money, self.withdraw_money])
         action = actions[idx]
         if action is self.player.show_inventory:
             action()
