@@ -5,7 +5,7 @@ Displays player status, current location information, and available
 movement options in Korean.
 """
 
-from characters import NPCS, TIME_OF_DAY, WEEKDAYS
+from characters import NPCS, TIME_OF_DAY, WEEKDAYS, MONTH_NAMES, SEASONS
 
 
 def health_message(player):
@@ -20,7 +20,10 @@ def health_message(player):
 
 def draw_screen(player, npcs=NPCS):
     """Print a simple status window and location information."""
-    print(f"{player.day}일차 {WEEKDAYS[player.weekday]}요일 {TIME_OF_DAY[player.time]}")
+    date_text = f"{MONTH_NAMES[player.month-1]} {player.month_day}일"
+    print(
+        f"{date_text} {SEASONS[player.season]} {player.weather} {WEEKDAYS[player.weekday]}요일 {TIME_OF_DAY[player.time]}"
+    )
     print(health_message(player))
     print(
         f"체력 {player.health}/{player.max_health} "
@@ -41,7 +44,7 @@ def draw_screen(player, npcs=NPCS):
 
     location = player.location
     print(f"현재 위치: {location.name}")
-    print(location.get_description(player.time))
+    print(location.get_description(player.time, player.season))
     if location.station:
         if getattr(location, "international", False):
             print("국가 간 이동이 가능한 정거장이 있습니다.")

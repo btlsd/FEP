@@ -151,7 +151,13 @@ HIDDEN_RANGED_ARM = BodyMod(
 )
 
 # Exotic enhancements
-from items import MEMORY_MODULE, WING_PART, TAIL_PART
+from items import (
+    MEMORY_MODULE,
+    WING_PART,
+    TAIL_PART,
+    COLD_SKIN_PART,
+    BEAUTY_SKIN_PART,
+)
 
 MEMORY_UPGRADE = BodyMod(
     "확장 메모리",
@@ -178,6 +184,23 @@ TAIL_IMPLANT = BodyMod(
     flags=["tailed"],
     required_item=TAIL_PART,
     needs_brain=True,
+)
+
+# Skin enhancements
+COLD_RESIST_SKIN = BodyMod(
+    "단열 피부",
+    "skin",
+    stat_add={"endurance": 1},
+    flags=["cold_resist"],
+    required_item=COLD_SKIN_PART,
+)
+
+BEAUTY_SKIN = BodyMod(
+    "미용 피부",
+    "skin",
+    stat_add={"charisma": 2},
+    flags=["beauty_skin"],
+    required_item=BEAUTY_SKIN_PART,
 )
 
 EXO_SUIT = Equipment(
@@ -216,6 +239,8 @@ BODY_MODS = [
     MEMORY_UPGRADE,
     WING_IMPLANT,
     TAIL_IMPLANT,
+    COLD_RESIST_SKIN,
+    BEAUTY_SKIN,
 ]
 
 # Lookup dictionaries for saving/loading

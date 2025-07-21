@@ -38,6 +38,7 @@ class Location:
         jail=False,
         sleep_spot=False,
         wash_spot=False,
+        season_desc=None,
     ):
         self.name = name
         self.description = description
@@ -68,10 +69,16 @@ class Location:
         self.jail = jail
         self.sleep_spot = sleep_spot
         self.wash_spot = wash_spot
+        self.season_desc = season_desc or {}
 
-    def get_description(self, time_idx):
+    def get_description(self, time_idx, season=None):
         # descriptions keys might be strings in JSON
-        return self.descriptions.get(time_idx) or self.descriptions.get(str(time_idx)) or self.description
+        desc = self.descriptions.get(time_idx) or self.descriptions.get(str(time_idx)) or self.description
+        if season is not None:
+            extra = self.season_desc.get(season) or self.season_desc.get(str(season))
+            if extra:
+                desc += " " + extra
+        return desc
 
     def connect(self, other, required_perception=None):
         if required_perception is None:
@@ -134,6 +141,7 @@ for entry in data["locations"]:
         entry.get("jail", False),
         entry.get("sleep_spot", False),
         entry.get("wash_spot", False),
+        entry.get("season_desc"),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc

@@ -24,6 +24,14 @@ LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 # 새벽, 아침, 오전, 오후, 저녁, 밤의 여섯 구간
 TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
 WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
+MONTH_NAMES = [f"{m}월" for m in range(1, 13)]
+SEASONS = ["봄", "여름", "가을", "겨울"]
+WEATHER_BY_SEASON = {
+    0: ["맑음", "비", "흐림"],
+    1: ["맑음", "비", "무더위"],
+    2: ["맑음", "비", "바람"],
+    3: ["맑음", "눈", "눈보라"],
+}
 
 class Character:
     def __init__(
@@ -277,6 +285,7 @@ class Player:
         self.month_day = 1
         self.month = 1
         self.season = 0
+        self.weather = random.choice(WEATHER_BY_SEASON[self.season])
         self.shower_count = 0
         self.appliance_usage = 0
         # 시간은 0~5까지의 4시간 간격 구간으로 취급한다
@@ -307,6 +316,7 @@ class Player:
         self.flags.update(self.equipment["clothing"].flags)
         self.recalculate_stats()
         self.update_memory_capacity()
+        self.update_smell()
 
     # Flag helpers
     def has_flag(self, flag):
@@ -432,6 +442,18 @@ class Player:
         if self.satisfaction < 0:
             self.health -= 1
             self.satisfaction = 0
+        self.update_smell()
+
+    def update_smell(self):
+        """Adjust charisma if the player smells bad from low cleanliness."""
+        if self.cleanliness < 20:
+            if "smelly" not in self.flags:
+                self.flags.add("smelly")
+                self.charisma -= 2
+        else:
+            if "smelly" in self.flags:
+                self.flags.remove("smelly")
+                self.charisma += 2
 
     def end_day(self):
         self.day += 1
@@ -462,7 +484,11 @@ class Player:
             self.month += 1
             if self.month % 3 == 1:
                 self.season = (self.season + 1) % 4
+            if self.month > 12:
+                self.month = 1
             self.process_monthly_costs()
+        self.weather = random.choice(WEATHER_BY_SEASON[self.season])
+        self.update_smell()
 
     def recalc_derived_stats(self):
         self.max_health = 100 + self.endurance * 10
@@ -495,6 +521,7 @@ class Player:
                 setattr(self, stat, int(getattr(self, stat) * mul))
         self.recalc_derived_stats()
         self.update_memory_capacity()
+        self.update_smell()
 
     def start_job(self, job):
         self.job = job
@@ -754,6 +781,7 @@ class Player:
             "month_day": self.month_day,
             "month": self.month,
             "season": self.season,
+            "weather": self.weather,
             "inventory": [item_key(it) for it in self.inventory],
             "equipment": {slot: eq.name if eq else None for slot, eq in self.equipment.items()},
             "weapon": item_key(self.weapon) if self.weapon else None,
@@ -794,6 +822,7 @@ class Player:
         player.month_day = data.get("month_day", 1)
         player.month = data.get("month", 1)
         player.season = data.get("season", 0)
+        player.weather = data.get("weather", random.choice(WEATHER_BY_SEASON[player.season]))
         player.inventory = [_ITEMS[key] for key in data.get("inventory", []) if key in _ITEMS]
         player.equipment = {
             slot: EQUIPMENT_BY_NAME.get(name) if name else None
