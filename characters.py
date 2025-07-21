@@ -581,7 +581,12 @@ class Player:
                 est_v = self.estimate_value(getattr(it, "volume", 0))
                 w_text = str(est_w) if self.perception >= 10 else f"약 {est_w}"
                 v_text = str(est_v) if self.perception >= 10 else f"약 {est_v}"
-                print(f"- {it.name} (무게 {w_text}, 부피 {v_text})")
+                line = f"- {it.name} (무게 {w_text}, 부피 {v_text})"
+                if getattr(it, "weapon_type", None) in ["둔기", "냉병기"]:
+                    mat = getattr(it, "material", "-")
+                    qual = getattr(it, "quality", 1.0)
+                    line += f" [재질: {mat}, 제련도: {qual}]"
+                print(line)
             total = self.estimated_weight()
             if self.perception < 10:
                 total_text = f"약 {total}"

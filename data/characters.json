@@ -16,7 +16,10 @@
       "shop": {
         "IR_EYE_LEFT_PART": 15,
         "BROKEN_PART": 3,
-        "WOODEN_CLUB": 8
+        "WOODEN_CLUB": 8,
+        "IRON_PIPE": 10,
+        "SWORD": 25,
+        "PISTOL": 40
       },
       "blueprints": {
         "IR_EYE_LEFT_PART": 30

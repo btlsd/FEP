@@ -14,6 +14,9 @@ class Item:
         damage=0,
         weapon_type=None,
         concealable=False,
+        material=None,
+        quality=1.0,
+        durability=None,
     ):
         self.name = name
         self.weight = weight
@@ -24,6 +27,16 @@ class Item:
         self.damage = damage
         self.weapon_type = weapon_type
         self.concealable = concealable
+        self.material = material
+        self.quality = quality
+        base_dur = {"나무": 40, "철": 70, "강철": 90, "합금": 110}
+        if durability is None:
+            durability = int(base_dur.get(material, 50) * quality)
+        self.durability = durability
+        if weapon_type and damage:
+            self.damage = int(damage * quality)
+        else:
+            self.damage = damage
 
 
 def _load_items():
@@ -42,6 +55,9 @@ def _load_items():
             val.get("damage", 0),
             val.get("weapon_type"),
             val.get("concealable", False),
+            val.get("material"),
+            val.get("quality", 1.0),
+            val.get("durability"),
         )
     return items
 

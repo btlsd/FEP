@@ -19,5 +19,13 @@
   "WOODEN_CLUB": {"name": "나무 곤봉", "weight": 3, "volume": 2, "damage": 5, "weapon_type": "둔기"},
   "COMBAT_KNIFE": {"name": "전투 칼", "weight": 1, "volume": 1, "damage": 7, "weapon_type": "냉병기", "concealable": true},
   "PISTOL": {"name": "권총", "weight": 2, "volume": 1, "damage": 10, "weapon_type": "화기", "concealable": true},
-  "LASER_PISTOL": {"name": "레이저 권총", "weight": 2.5, "volume": 1, "damage": 12, "weapon_type": "레이저", "concealable": true}
-}
+  "LASER_PISTOL": {"name": "레이저 권총", "weight": 2.5, "volume": 1, "damage": 12, "weapon_type": "레이저", "concealable": true},
+  "IRON_PIPE": {"name": "쇠파이프", "weight": 3, "volume": 2, "damage": 6, "weapon_type": "둔기", "material": "철", "quality": 0.8},
+  "WOOD_STICK": {"name": "각목", "weight": 2, "volume": 2, "damage": 5, "weapon_type": "둔기", "material": "나무", "quality": 0.7},
+  "HAMMER": {"name": "망치", "weight": 3, "volume": 1.5, "damage": 7, "weapon_type": "둔기", "material": "강철", "quality": 1.0},
+  "SWORD": {"name": "검", "weight": 2.5, "volume": 1.5, "damage": 8, "weapon_type": "냉병기", "material": "강철", "quality": 1.0},
+  "SPEAR": {"name": "창", "weight": 3, "volume": 3, "damage": 9, "weapon_type": "냉병기", "material": "강철", "quality": 0.9},
+  "RIFLE": {"name": "소총", "weight": 4, "volume": 3, "damage": 14, "weapon_type": "화기"},
+  "LASER_SWORD": {"name": "레이저 검", "weight": 2, "volume": 1.5, "damage": 15, "weapon_type": "레이저"},
+  "LASER_RIFLE": {"name": "레이저 소총", "weight": 3, "volume": 3, "damage": 18, "weapon_type": "레이저"}
+ }
