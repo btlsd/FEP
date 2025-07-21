@@ -105,6 +105,19 @@
       "schedule": {"0": "SPECIAL_BASE", "1": "SPECIAL_BASE", "2": "SPECIAL_BASE", "3": "SPECIAL_BASE", "4": "SPECIAL_BASE"},
       "agility": 6,
       "inventory": ["PISTOL"]
+    },
+    {
+      "name": "갱단원 칼",
+      "age": 28,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 30, "C": 30, "E": 60, "A": 60, "N": 50},
+      "affiliation": "슬럼 갱단",
+      "job": "갱단원",
+      "status": "평민",
+      "schedule": {"0": "SLUM_MARKET", "1": "SLUM_MARKET", "2": "SLUM_MARKET", "3": "SLUM_MARKET", "4": "SLUM_MARKET", "5": "SLUM_SHACK"},
+      "agility": 6,
+      "inventory": ["IRON_PIPE"]
     }
   ]
 }

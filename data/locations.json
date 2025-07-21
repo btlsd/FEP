@@ -263,6 +263,27 @@
       "wash_spot": true
     },
     {
+      "key": "JAIL",
+      "name": "감옥",
+      "description": "범죄자를 가두는 교도소",
+      "zone": "교도소",
+      "descriptions": {
+        "0": "새벽에도 죄수들이 웅성거린다.",
+        "1": "아침에는 교도관의 점호가 있다.",
+        "2": "오전에는 작업장이 분주하다.",
+        "3": "오후에도 무거운 분위기가 이어진다.",
+        "4": "저녁이면 죄수들이 피곤에 지친다.",
+        "5": "밤에는 엄중한 감시 속에 잠든다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "jail": true,
+      "restricted": true,
+      "sleep_spot": true,
+      "wash_spot": true,
+      "open_times": [0,1,2,3,4,5]
+    },
+    {
       "key": "JOB_CENTER",
       "name": "직업소개소",
       "description": "일자리를 알선하는 연합 기관",
@@ -493,6 +514,7 @@
     ["STATION", "SPECIAL_BASE"],
     ["SEWER", "SLUM_MARKET"],
     ["SLUM_MARKET", "SLUM_SHACK"],
+    ["SLUM_MARKET", "JAIL"],
     ["RESIDENTIAL", "SMALL_HOUSE"],
     ["CAPITAL_GEOHAP", "GEOHAP_MARKET"],
     ["CAPITAL_GEOHAP", "GEOHAP_RESIDENTIAL"],

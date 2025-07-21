@@ -8,12 +8,17 @@ def gauge_cost(agility):
 
 
 def start_battle(player, npc, ambush=None):
-    """Run a simple turn-based battle between player and npc."""
+    """Run a simple turn-based battle between player and npc.
+
+    Returns (win:bool, turns:int) where turns is the number of actions taken
+    by both sides combined.
+    """
     print(f"{npc.name}과(와) 전투를 시작합니다!")
     gauges = {
         player: 0 if ambush == "player" else 100,
         npc: 0 if ambush == "npc" else 100,
     }
+    turns = 0
     while player.health > 0 and npc.health > 0:
         gauges[player] -= gauge_cost(player.agility)
         gauges[npc] -= gauge_cost(npc.agility)
@@ -50,6 +55,7 @@ def start_battle(player, npc, ambush=None):
                 else:
                     print("도주에 실패했습니다!")
             gauges[player] = 100
+            turns += 1
             if npc.health <= 0:
                 break
         if gauges[npc] <= 0 and npc.health > 0:
@@ -67,10 +73,11 @@ def start_battle(player, npc, ambush=None):
             player.health -= dmg
             print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.")
             gauges[npc] = 100
+            turns += 1
     if player.health <= 0:
         print("당신이 쓰러졌습니다...")
-        return False
+        return False, turns
     else:
         print(f"{npc.name}을(를) 쓰러뜨렸습니다!")
         npc.affinity = max(0, npc.affinity - 20)
-        return True
+        return True, turns

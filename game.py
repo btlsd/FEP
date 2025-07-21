@@ -19,6 +19,7 @@ from items import (
     SOCIAL_WORK_CERT,
     DETECTIVE_CERT,
     SECURITY_CERT,
+    IRON_PIPE,
 )
 from equipment import BODY_MODS
 from gui import draw_screen
@@ -160,14 +161,22 @@ class Game:
         for npc in self.characters:
             npc.update_location(self.player.time)
 
-    def advance_time(self):
-        self.player.time += 1
-        self.player.pass_time()
-        if self.player.time > 5:
-            self.player.time = 0
-            self.player.end_day()
-            if self.player.kidnap_due:
-                self.handle_kidnap()
+    def advance_time(self, segments=1):
+        for _ in range(max(1, int(segments))):
+            self.player.time += 1
+            self.player.pass_time()
+            if self.player.time > 5:
+                self.player.time = 0
+                self.player.end_day()
+                if self.player.kidnap_due:
+                    self.handle_kidnap()
+
+    def battle_time(self, turns):
+        """Return how many time segments should pass for the given turn count."""
+        agi = max(1, self.player.agility)
+        factor = max(1, 12 - agi)
+        segs = int(turns * factor / 24)
+        return max(1, segs)
 
     def work(self):
         if self.player.weekday not in {0, 1, 3, 4}:
@@ -267,6 +276,18 @@ class Game:
 
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
+        if self.player.location.zone == "빈민가" and random.random() < 0.4:
+            gang = Character("슬럼 갱단원", {}, self.player.location.nation.name, "갱단원", {}, agility=6)
+            gang.weapon = IRON_PIPE
+            print("슬럼 갱단원이 시비를 걸어옵니다!")
+            win, turns = gang.fight(self.player, ambush="npc")
+            seg = self.battle_time(turns)
+            if not win:
+                self.imprison()
+                return 0
+            else:
+                print("갱단원을 물리쳤습니다.")
+                return seg
         roll = random.randint(1, 100)
         if roll <= 20 + self.player.perception:
             event = "find_item"
@@ -377,6 +398,10 @@ class Game:
         else:
             print(f"{npc.name}에게 들켰습니다!")
             npc.affinity = max(0, npc.affinity - 10)
+            if random.random() < 0.5:
+                print("경찰에게 체포되었습니다!")
+                self.imprison()
+                return 0
         self.player.flags.discard("stealth")
         self.player.stamina -= 5
 
@@ -391,6 +416,10 @@ class Game:
             self.player.add_flag("relic_unlocked")
         else:
             print("자물쇠따기에 실패했습니다.")
+            if random.random() < 0.5:
+                print("경찰에게 체포되었습니다!")
+                self.imprison()
+                return 0
         self.player.stamina -= 5
 
     def hack(self):
@@ -404,6 +433,10 @@ class Game:
             print(f"해킹에 성공해 {gain}{currency}을 얻었습니다.")
         else:
             print("해킹에 실패했습니다.")
+            if random.random() < 0.5:
+                print("경찰에게 체포되었습니다!")
+                self.imprison()
+                return 0
         self.player.flags.discard("stealth")
         self.player.stamina -= 5
 
@@ -702,11 +735,13 @@ class Game:
         elif action_idx == 2:
             npc.lend_money(self.player)
         elif action_idx == 3:
-            win = npc.fight(self.player)
+            win, turns = npc.fight(self.player)
             if win:
                 scan = choose_option(["잔해 스캔", "그만두기"])
                 if scan == 0:
                     self.scan_remains(npc)
+            segments = self.battle_time(turns)
+            return segments
 
     def travel(self):
         if not self.player.location.station or not self.player.location.international:
@@ -736,14 +771,17 @@ class Game:
         p = self.player
         bot = Character("납치 로봇", {}, p.location.nation.name, "로봇", {}, agility=6)
         bot.health = 40
-        win = bot.fight(p, ambush="npc")
+        win, turns = bot.fight(p, ambush="npc")
+        segments = self.battle_time(turns)
         if not win:
             self.resolve_kidnap()
+            self.advance_time(segments)
             return
         strong = Character("강화 로봇", {}, p.location.nation.name, "로봇", {}, agility=8)
         strong.health = 60
         print("더 강한 로봇이 나타났습니다!")
-        win2 = strong.fight(p, ambush="npc")
+        win2, turns2 = strong.fight(p, ambush="npc")
+        segments += self.battle_time(turns2)
         if win2:
             commander = Character("지휘관 백", {}, p.location.nation.name, "지휘관", {})
             print("지휘관 백이 다가와 당신에게 특수부대 편입을 제안합니다.")
@@ -761,6 +799,7 @@ class Game:
             p.home_ambush = False
         else:
             self.resolve_kidnap()
+        self.advance_time(segments)
 
     def handle_kidnap(self):
         p = self.player
@@ -799,12 +838,24 @@ class Game:
         p.health = 0
         self.running = False
 
+    def imprison(self):
+        from locations import JAIL, SLUM_MARKET
+        p = self.player
+        p.location = JAIL
+        print("당신은 체포되어 감옥에 수감되었습니다.")
+        self.advance_time(6)
+        if "gang_contact" not in p.flags:
+            p.add_flag("gang_contact")
+            print("감옥에서 범죄 조직과 연결되었습니다.")
+        p.location = SLUM_MARKET
+        print("하루 후 풀려나 빈민가로 돌아왔습니다.")
+
     def step(self, action):
-        action()
+        segs = action()
         if self.running:
             self.check_health()
         if self.running:
-            self.advance_time()
+            self.advance_time(segs if isinstance(segs, int) else 1)
 
     def choose_move(self):
         opts = ["도보 이동"]
