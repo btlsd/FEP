@@ -118,6 +118,13 @@ MUSCLE_REPLACE = BodyMod(
     flags=["muscle_replace"],
 )
 
+# Hidden weapon compartment allowing small weapons to be concealed
+CONCEALED_SLOT = BodyMod(
+    "은닉 무기 슬롯",
+    "arm",
+    flags=["conceal_slot"],
+)
+
 EXO_SUIT = Equipment(
     "엑소 슈트",
     8,
@@ -148,6 +155,7 @@ BODY_MODS = [
     POWER_ARM,
     LIGHT_LEG,
     MUSCLE_REPLACE,
+    CONCEALED_SLOT,
 ]
 
 # Lookup dictionaries for saving/loading

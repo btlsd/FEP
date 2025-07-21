@@ -170,6 +170,11 @@ class Character:
 
     def fight(self, player):
         from battle import start_battle
+        if not getattr(self, "weapon", None):
+            for it in self.inventory:
+                if getattr(it, "damage", 0) > 0:
+                    self.weapon = it
+                    break
         return start_battle(player, self)
 
 
@@ -287,6 +292,7 @@ class Player:
             "bag": None,
             "accessory": None,
         }
+        self.weapon = None
         # installed body modifications by slot
         self.mods = {}
         self.flags = set()
@@ -386,6 +392,8 @@ class Player:
         eq_list = [f"{slot}:{eq.name}" for slot, eq in self.equipment.items() if eq]
         if eq_list:
             print("장비: " + ", ".join(eq_list))
+        if self.weapon:
+            print(f"무기: {self.weapon.name}")
         est = self.estimated_weight()
         est_text = str(est) if self.perception >= 10 else f"약 {est}"
         print(f"소지 무게: {est_text}/{self.carrying_capacity()}")
@@ -580,6 +588,8 @@ class Player:
             else:
                 total_text = str(total)
             print(f"총 무게 {total_text}/{self.carrying_capacity()}")
+        if self.weapon:
+            print(f"장착 무기: {self.weapon.name}")
 
     def equip(self, item, slot):
         from equipment import Equipment
@@ -609,6 +619,26 @@ class Player:
             self.flags.discard(flag)
         self.equipment[slot] = None
         self.recalculate_stats()
+
+    def equip_weapon(self, item):
+        if getattr(item, "damage", 0) <= 0:
+            print("무기로 사용할 수 없습니다.")
+            return
+        if self.weapon is item:
+            print("이미 장착한 무기입니다.")
+            return
+        if self.weapon:
+            self.inventory.append(self.weapon)
+        if item in self.inventory:
+            self.inventory.remove(item)
+        self.weapon = item
+        print(f"{item.name}을(를) 무기로 장착했습니다.")
+
+    def unequip_weapon(self):
+        if self.weapon:
+            self.inventory.append(self.weapon)
+            print(f"{self.weapon.name}을(를) 해제했습니다.")
+            self.weapon = None
 
     def show_data(self):
         if not self.blueprints:
@@ -691,6 +721,7 @@ class Player:
             "season": self.season,
             "inventory": [item_key(it) for it in self.inventory],
             "equipment": {slot: eq.name if eq else None for slot, eq in self.equipment.items()},
+            "weapon": item_key(self.weapon) if self.weapon else None,
             "mods": {slot: mod.name for slot, mod in self.mods.items()},
             "flags": list(self.flags),
             "job": self.job,
@@ -730,6 +761,8 @@ class Player:
             slot: EQUIPMENT_BY_NAME.get(name) if name else None
             for slot, name in data.get("equipment", {}).items()
         }
+        weapon_key = data.get("weapon")
+        player.weapon = _ITEMS.get(weapon_key)
         player.mods = {}
         for slot, name in data.get("mods", {}).items():
             mod = BODY_MODS_BY_NAME.get(name)

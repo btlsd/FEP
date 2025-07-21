@@ -326,7 +326,11 @@ class Game:
     def change_equipment(self):
         from equipment import Equipment
 
-        choices = [it for it in self.player.inventory if isinstance(it, Equipment)]
+        choices = [
+            it
+            for it in self.player.inventory
+            if isinstance(it, Equipment) or getattr(it, "damage", 0) > 0
+        ]
         if not choices:
             print("장비할 수 있는 아이템이 없습니다.")
             return
@@ -335,13 +339,16 @@ class Game:
             return
         item = choices[idx]
         name = item.name
-        if "배지" in name:
-            slot = "accessory"
-        elif "가방" in name or "카트" in name or "캐리어" in name:
-            slot = "bag"
+        if isinstance(item, Equipment):
+            if "배지" in name:
+                slot = "accessory"
+            elif "가방" in name or "카트" in name or "캐리어" in name:
+                slot = "bag"
+            else:
+                slot = "clothing"
+            self.player.equip(item, slot)
         else:
-            slot = "clothing"
-        self.player.equip(item, slot)
+            self.player.equip_weapon(item)
 
     def wait(self):
         print("가만히 시간을 보냅니다.")

@@ -11,6 +11,9 @@ class Item:
         valid_nations=None,
         universal=False,
         printable=False,
+        damage=0,
+        weapon_type=None,
+        concealable=False,
     ):
         self.name = name
         self.weight = weight
@@ -18,6 +21,9 @@ class Item:
         self.valid_nations = valid_nations
         self.universal = universal
         self.printable = printable
+        self.damage = damage
+        self.weapon_type = weapon_type
+        self.concealable = concealable
 
 
 def _load_items():
@@ -33,6 +39,9 @@ def _load_items():
             val.get("valid_nations"),
             val.get("universal", False),
             val.get("printable", False),
+            val.get("damage", 0),
+            val.get("weapon_type"),
+            val.get("concealable", False),
         )
     return items
 

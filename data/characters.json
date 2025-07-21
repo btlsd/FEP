@@ -15,7 +15,8 @@
       "inventory": ["BROKEN_PART"],
       "shop": {
         "IR_EYE_LEFT_PART": 15,
-        "BROKEN_PART": 3
+        "BROKEN_PART": 3,
+        "WOODEN_CLUB": 8
       },
       "blueprints": {
         "IR_EYE_LEFT_PART": 30
@@ -32,7 +33,8 @@
       "status": "정예",
       "schedule": {"0": "STATION", "1": "STATION", "2": "STATION", "3": "STATION", "4": "STATION", "5": "STATION"},
       "agility": 5,
-      "blueprint_drop": "IR_EYE_LEFT_PART"
+      "blueprint_drop": "IR_EYE_LEFT_PART",
+      "inventory": ["LASER_PISTOL"]
     },
     {
       "name": "닥터 홍",
@@ -98,7 +100,8 @@
       "job": "지휘관",
       "status": "특수",
       "schedule": {"0": "SPECIAL_BASE", "1": "SPECIAL_BASE", "2": "SPECIAL_BASE", "3": "SPECIAL_BASE", "4": "SPECIAL_BASE"},
-      "agility": 6
+      "agility": 6,
+      "inventory": ["PISTOL"]
     }
   ]
 }

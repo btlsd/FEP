@@ -15,5 +15,9 @@
   "CREATOR_CERT": {"name": "창작자 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["인류연합국", "거합", "탐랑"]},
   "SOCIAL_WORK_CERT": {"name": "사회복지사 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["인류연합국"]},
   "DETECTIVE_CERT": {"name": "탐정 자격증", "weight": 0.1, "volume": 0.1, "universal": true},
-  "SECURITY_CERT": {"name": "경비 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["전계국", "인류연합국"]}
+  "SECURITY_CERT": {"name": "경비 자격증", "weight": 0.1, "volume": 0.1, "valid_nations": ["전계국", "인류연합국"]},
+  "WOODEN_CLUB": {"name": "나무 곤봉", "weight": 3, "volume": 2, "damage": 5, "weapon_type": "둔기"},
+  "COMBAT_KNIFE": {"name": "전투 칼", "weight": 1, "volume": 1, "damage": 7, "weapon_type": "냉병기", "concealable": true},
+  "PISTOL": {"name": "권총", "weight": 2, "volume": 1, "damage": 10, "weapon_type": "화기", "concealable": true},
+  "LASER_PISTOL": {"name": "레이저 권총", "weight": 2.5, "volume": 1, "damage": 12, "weapon_type": "레이저", "concealable": true}
 }

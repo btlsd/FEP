@@ -14,14 +14,18 @@ def start_battle(player, npc):
         gauges[player] -= gauge_cost(player.agility)
         gauges[npc] -= gauge_cost(npc.agility)
         if gauges[player] <= 0:
-            dmg = random.randint(5, 10) + player.strength
+            weapon = getattr(player, "weapon", None)
+            w_dmg = getattr(weapon, "damage", 0)
+            dmg = random.randint(5, 10) + getattr(player, "strength", 5) + w_dmg
             npc.health -= dmg
             print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.")
             gauges[player] = 100
             if npc.health <= 0:
                 break
         if gauges[npc] <= 0:
-            dmg = random.randint(5, 10)
+            weapon = getattr(npc, "weapon", None)
+            w_dmg = getattr(weapon, "damage", 0)
+            dmg = random.randint(5, 10) + getattr(npc, "strength", 5) + w_dmg
             player.health -= dmg
             print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.")
             gauges[npc] = 100
