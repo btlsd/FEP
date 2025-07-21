@@ -208,6 +208,9 @@ class Game:
         print(f"식사를 했습니다. 체력이 {heal} 회복되었습니다.")
 
     def sleep(self):
+        if not getattr(self.player.location, "sleep_spot", False):
+            print("여기서는 잠을 잘 수 없습니다.")
+            return
         gain_stamina = self.player.endurance * 5 + 20
         self.player.stamina = min(self.player.max_stamina, self.player.stamina + gain_stamina)
         self.player.satiety -= 10
@@ -218,6 +221,9 @@ class Game:
         print(f"잠을 자고 기력이 회복되었습니다. 체력이 {heal} 회복되었습니다.")
 
     def wash(self):
+        if not getattr(self.player.location, "wash_spot", False):
+            print("씻을 시설이 없습니다.")
+            return
         cost = 2
         currency = self.player.location.nation.currency
         if not self.player.spend_money(cost, currency):

@@ -164,7 +164,7 @@
       "housing_market": true
     },
     {
-      "key": "SHELTER",
+  "key": "SHELTER",
       "name": "쉘터",
       "description": "노숙자를 위한 임시 거주 시설",
       "zone": "주거 지구",
@@ -177,10 +177,12 @@
         "5": "밤에는 경비가 순찰을 돈다."
       },
       "nation": 0,
-      "indoors": true
-    },
+  "indoors": true,
+  "sleep_spot": true,
+  "wash_spot": true
+},
     {
-      "key": "SMALL_HOUSE",
+  "key": "SMALL_HOUSE",
       "name": "작은 집",
       "description": "소박하지만 아늑한 주택",
       "zone": "주거 지구",
@@ -193,14 +195,16 @@
         "5": "밤에는 불이 꺼져 있다."
       },
       "nation": 0,
-      "indoors": true,
-      "residence": true,
-      "price": 100,
-      "government": true,
-      "restricted": true
-    },
+  "indoors": true,
+  "residence": true,
+  "price": 100,
+  "government": true,
+  "restricted": true,
+  "sleep_spot": true,
+  "wash_spot": true
+},
     {
-      "key": "SLUM_SHACK",
+  "key": "SLUM_SHACK",
       "name": "허름한 오두막",
       "description": "낙후된 지역의 작은 집",
       "zone": "빈민가",
@@ -214,12 +218,14 @@
       },
       "nation": 0,
       "indoors": true,
-      "residence": true,
-      "price": 20,
-      "restricted": true
-    },
+  "residence": true,
+  "price": 20,
+  "restricted": true,
+  "sleep_spot": true,
+  "wash_spot": false
+},
     {
-      "key": "APARTMENT",
+  "key": "APARTMENT",
       "name": "임대 아파트",
       "description": "정부가 제공한 임대 주택",
       "zone": "주거 지구",
@@ -232,8 +238,10 @@
         "5": "밤에는 불빛이 하나둘 꺼진다."
       },
       "nation": 0,
-      "indoors": true
-    },
+  "indoors": true,
+  "sleep_spot": true,
+  "wash_spot": true
+},
     {
       "key": "HOSPITAL",
       "name": "시립 병원",
@@ -250,7 +258,9 @@
       "nation": 0,
       "indoors": true,
       "hospital": true,
-      "open_times": [0,1,2,3,4,5]
+      "open_times": [0,1,2,3,4,5],
+      "sleep_spot": true,
+      "wash_spot": true
     },
     {
       "key": "JOB_CENTER",

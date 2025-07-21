@@ -35,6 +35,8 @@ class Location:
         rent_price=0,
         government=False,
         hospital=False,
+        sleep_spot=False,
+        wash_spot=False,
     ):
         self.name = name
         self.description = description
@@ -62,6 +64,8 @@ class Location:
         self.rent_price = rent_price
         self.government = government
         self.hospital = hospital
+        self.sleep_spot = sleep_spot
+        self.wash_spot = wash_spot
 
     def get_description(self, time_idx):
         # descriptions keys might be strings in JSON
@@ -125,6 +129,8 @@ for entry in data["locations"]:
         entry.get("rent_price", 0),
         entry.get("government", False),
         entry.get("hospital", False),
+        entry.get("sleep_spot", False),
+        entry.get("wash_spot", False),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc
