@@ -84,9 +84,9 @@ class Game:
         if dest != p.home or not p.home_ambush:
             return False
         print("\n집 근처에서 묘한 기운을 느낍니다.")
-        detect = 30 + p.perception * 3
+        detect = 30 + p.perception * 3 + p.intuition * 3
         if random.randint(1, 100) <= detect:
-            print("누군가 숨어 있는 것 같습니다.")
+            print("익숙하지 않은 냄새와 함께 어둠 속에 그림자가 어른거립니다.")
             choice = choose_option(["도망간다", "무시하고 집에 들어간다"], allow_back=False)
             if choice == 0:
                 print("당신은 서둘러 그곳을 벗어났습니다.")
@@ -527,9 +527,10 @@ class Game:
     def handle_kidnap(self):
         p = self.player
         print("\n정부 요원들이 당신을 은밀히 납치하려 합니다!")
-        detect = 20 + p.perception * 2 + p.intelligence + p.agility
+        detect = 20 + p.perception * 2 + p.intelligence + p.agility + p.intuition * 3
         if random.randint(1, 100) <= detect:
-            print("로봇들의 접근을 감지했습니다.")
+            print("어둠 속에서 낯선 그림자가 스치고 익숙하지 않은 향이 느껴집니다.")
+            print("불길한 기운을 감지했습니다.")
             choice = choose_option(["숨는다", "맞서 싸운다"], allow_back=False)
             if choice == 0:
                 chance = 30 + p.agility * 3 + p.perception * 2
@@ -689,7 +690,7 @@ def main():
     name = input("새로운 이름을 정하세요: ")
     gender = input("성별을 입력하세요 (male/female/none): ")
     points = 10
-    base = {"strength":5,"perception":5,"endurance":5,"charisma":5,"intelligence":5,"agility":5}
+    base = {"strength":5,"perception":5,"endurance":5,"charisma":5,"intelligence":5,"agility":5,"intuition":5}
     for key in list(base.keys()):
         while True:
             val = input(f"{key} 추가 포인트(남은 {points}): ")

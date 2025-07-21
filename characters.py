@@ -231,6 +231,7 @@ class Player:
         self.charisma = stats.get("charisma", 5)
         self.intelligence = stats.get("intelligence", 5)
         self.agility = stats.get("agility", 5)
+        self.intuition = stats.get("intuition", 5)
 
         self.max_health = 100 + self.endurance * 10
         self.max_stamina = 100 + self.endurance * 5
@@ -339,6 +340,7 @@ class Player:
             ("charisma", "매력"),
             ("intelligence", "지능"),
             ("agility", "민첩"),
+            ("intuition", "직감"),
         ]:
             val = getattr(self, key)
             if "brain" in self.mods:
@@ -552,6 +554,7 @@ class Player:
                 "charisma": self.charisma,
                 "intelligence": self.intelligence,
                 "agility": self.agility,
+                "intuition": self.intuition,
             },
             "health": self.health,
             "stamina": self.stamina,
