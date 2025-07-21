@@ -32,6 +32,18 @@ with open(_act_path, encoding="utf-8") as f:
     _ACTION_DATA = json.load(f).get("actions", [])
 ACTIONS = {a["key"]: a["name"] for a in _ACTION_DATA}
 
+# 범죄별 형량(일수)
+CRIME_SENTENCES = {
+    "pickpocket": {
+        "인류연합국": 180,
+        "거합": 90,
+        "탐랑": 60,
+        "전계국": 365,
+    },
+    "lockpick": {"인류연합국": 365, "거합": 180, "탐랑": 120, "전계국": 540},
+    "hack": {"인류연합국": 120, "거합": 60, "탐랑": 90, "전계국": 240},
+}
+
 # 각 직업별 요구 능력치와 자격증 매핑
 TRAININGS = {
     "도시 계획자": {
@@ -259,6 +271,44 @@ class Game:
         self.player.stamina = max(0, self.player.stamina - 5)
         print("미디어를 시청하며 시간을 보냈습니다.")
 
+    def read_book(self):
+        opts = ["기초 수리술", "고전 문학"]
+        idx = choose_option(opts)
+        if idx is None:
+            return
+        self.player.learn_skill(opts[idx])
+        self.player.stamina = max(0, self.player.stamina - 5)
+        self.player.satisfaction = min(
+            self.player.max_satisfaction, self.player.satisfaction + 5
+        )
+
+    def study_video(self):
+        opts = ["기초 전투술", "기초 프로그래밍"]
+        idx = choose_option(opts)
+        if idx is None:
+            return
+        if not self.player.spend_money(1, self.player.location.nation.currency):
+            print("시청료가 부족합니다.")
+            return
+        self.player.learn_skill(opts[idx])
+        self.player.stamina = max(0, self.player.stamina - 5)
+
+    def download_data(self):
+        if not self.player.has_flag("interface"):
+            print("뇌 인터페이스가 필요합니다.")
+            return
+        opts = ["고급 설계 데이터", "희귀 지식"]
+        idx = choose_option(opts)
+        if idx is None:
+            return
+        cost = 10
+        cur = self.player.location.nation.currency
+        if not self.player.spend_money(cost, cur):
+            print("데이터 구입 비용이 부족합니다.")
+            return
+        self.player.learn_skill(opts[idx])
+        print("데이터를 다운로드해 지식을 획득했습니다.")
+
     def exercise(self):
         if self.player.stamina < 10:
             print("운동을 할 기력이 부족합니다.")
@@ -283,7 +333,7 @@ class Game:
             win, turns = gang.fight(self.player, ambush="npc")
             seg = self.battle_time(turns)
             if not win:
-                self.imprison()
+                self.imprison("pickpocket")
                 return 0
             else:
                 print("갱단원을 물리쳤습니다.")
@@ -400,7 +450,7 @@ class Game:
             npc.affinity = max(0, npc.affinity - 10)
             if random.random() < 0.5:
                 print("경찰에게 체포되었습니다!")
-                self.imprison()
+                self.imprison("lockpick")
                 return 0
         self.player.flags.discard("stealth")
         self.player.stamina -= 5
@@ -418,7 +468,7 @@ class Game:
             print("자물쇠따기에 실패했습니다.")
             if random.random() < 0.5:
                 print("경찰에게 체포되었습니다!")
-                self.imprison()
+                self.imprison("hack")
                 return 0
         self.player.stamina -= 5
 
@@ -838,27 +888,27 @@ class Game:
         p.health = 0
         self.running = False
 
-    def imprison(self):
+    def imprison(self, crime=None):
         from locations import JAIL, SLUM_MARKET
         p = self.player
         p.location = JAIL
         print("당신은 체포되어 감옥에 수감되었습니다.")
-        routine = [
-            "새벽에는 철창 안에서 눈을 뜹니다.",
-            "아침에는 교도관의 점호가 진행됩니다.",
-            "오전에는 잡일을 해야 합니다.",
-            "오후에도 작업이 계속됩니다.",
-            "저녁 식사 후 짧은 휴식이 주어집니다.",
-            "밤에는 엄격한 감시 속에서 잠을 청합니다.",
-        ]
-        for msg in routine:
-            print(msg)
-            self.advance_time(1)
+        nation = p.location.nation.name
+        days = 1
+        if crime and crime in CRIME_SENTENCES:
+            days = CRIME_SENTENCES[crime].get(nation, 30)
+        for d in range(days):
+            print(f"{d+1}일차 수감 생활이 지나갑니다...")
+            for msg in ["새벽", "아침", "오전", "오후", "저녁", "밤"]:
+                self.advance_time(1)
+            p.satiety = p.max_satiety
+            p.stamina = p.max_stamina
+            p.cleanliness = max(p.cleanliness, p.max_cleanliness // 2)
         if "gang_contact" not in p.flags:
             p.add_flag("gang_contact")
             print("감옥에서 범죄 조직과 연결되었습니다.")
         p.location = SLUM_MARKET
-        print("하루 후 풀려나 빈민가로 돌아왔습니다.")
+        print(f"{days}일 후 풀려나 빈민가로 돌아왔습니다.")
 
     def step(self, action):
         segs = action()
@@ -897,6 +947,9 @@ class Game:
             "신체 개조",
             "미디어 시청",
             "운동",
+            "책 읽기",
+            "영상 학습",
+            "데이터 다운로드",
         ]
         added = []
         for key in ACTIONS:
@@ -926,6 +979,9 @@ class Game:
             self.modify_body,
             self.watch_media,
             self.exercise,
+            self.read_book,
+            self.study_video,
+            self.download_data,
         ]
         extra_map = {
             "wait": self.wait,

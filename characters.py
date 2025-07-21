@@ -229,6 +229,8 @@ class Player:
         self.name = name
         self.gender = gender
         stats = stats or {}
+        self.age = stats.get("age", 20)
+        self.age_days = 0
         # 기본 능력치
         self.strength = stats.get("strength", 5)
         self.perception = stats.get("perception", 5)
@@ -299,9 +301,12 @@ class Player:
         self.job = None
         # blueprint progress by item key
         self.blueprints = {}
+        self.skills = set()
+        self.max_skills = 3 + self.intelligence // 2
 
         self.flags.update(self.equipment["clothing"].flags)
         self.recalculate_stats()
+        self.update_memory_capacity()
 
     # Flag helpers
     def has_flag(self, flag):
@@ -349,6 +354,11 @@ class Player:
             return "다소 부족한 편이다"
         return "매우 낮은 편이다"
 
+    def update_memory_capacity(self):
+        base = 3 + self.intelligence // 2
+        bonus = sum(getattr(m, "memory_bonus", 0) for m in self.mods.values())
+        self.max_skills = base + bonus
+
     def status(self):
         print(f"\n{self.day}일차 {WEEKDAYS[self.weekday]}요일 {TIME_OF_DAY[self.time]}")
         print(f"{self.name}의 상태:")
@@ -369,6 +379,9 @@ class Player:
             print(f"대출 잔액: {self.loan_balance}{self.home.nation.currency}")
         print(f"직업: {self.job or '없음'}")
         print(f"성별: {self.gender}")
+        print(f"나이: {self.age}")
+        if self.skills:
+            print("습득 기술: " + ", ".join(sorted(self.skills)))
         nearby = [c.name for c in NPCS if c.location == self.location]
         if nearby:
             print("주변 인물: " + ", ".join(nearby))
@@ -424,6 +437,10 @@ class Player:
         self.day += 1
         self.weekday = (self.weekday + 1) % 7
         self.month_day += 1
+        self.age_days += 1
+        if self.age_days >= 365:
+            self.age += 1
+            self.age_days -= 365
         self.satiety -= 5
         self.cleanliness -= 10
         self.satisfaction -= 5
@@ -477,6 +494,7 @@ class Player:
             for stat, mul in mod.stat_mult.items():
                 setattr(self, stat, int(getattr(self, stat) * mul))
         self.recalc_derived_stats()
+        self.update_memory_capacity()
 
     def start_job(self, job):
         self.job = job
@@ -553,6 +571,16 @@ class Player:
             print(f"{item.name}을(를) 획득했습니다.")
         else:
             print(f"{item.name}은(는) 너무 무거워서 들 수 없습니다.")
+
+    def learn_skill(self, skill):
+        if skill in self.skills:
+            print(f"이미 {skill}을(를) 알고 있습니다.")
+            return
+        if len(self.skills) >= self.max_skills:
+            print("더 이상 새로운 지식을 기억하기 어렵습니다.")
+            return
+        self.skills.add(skill)
+        print(f"{skill}을(를) 습득했습니다.")
 
     # Blueprint helpers
     def add_blueprint_progress(self, item_key, amount):
@@ -703,6 +731,8 @@ class Player:
             "name": self.name,
             "gender": self.gender,
             "stats": self.base_stats,
+            "age": self.age,
+            "age_days": self.age_days,
             "health": self.health,
             "stamina": self.stamina,
             "satiety": self.satiety,
@@ -731,6 +761,7 @@ class Player:
             "flags": list(self.flags),
             "job": self.job,
             "blueprints": self.blueprints,
+            "skills": list(self.skills),
         }
 
     @classmethod
@@ -739,6 +770,8 @@ class Player:
         from equipment import EQUIPMENT_BY_NAME, BODY_MODS_BY_NAME
 
         player = cls(data["name"], data.get("gender", "none"), data.get("stats"))
+        player.age = data.get("age", 20)
+        player.age_days = data.get("age_days", 0)
         player.health = data.get("health", player.max_health)
         player.stamina = data.get("stamina", player.max_stamina)
         player.satiety = data.get("satiety", player.max_satiety)
@@ -781,5 +814,6 @@ class Player:
         player.flags.update(data.get("flags", []))
         player.job = data.get("job")
         player.blueprints = data.get("blueprints", {})
+        player.skills = set(data.get("skills", []))
         return player
 

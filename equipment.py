@@ -35,6 +35,7 @@ class BodyMod:
         company=None,
         needs_brain=False,
         weapon_damage=0,
+        memory_bonus=0,
     ):
         self.name = name
         self.slot = slot  # e.g. 'arm', 'eye'
@@ -46,6 +47,7 @@ class BodyMod:
         self.company = company
         self.needs_brain = needs_brain
         self.weapon_damage = weapon_damage
+        self.memory_bonus = memory_bonus
 
 
 # Default equipment items
@@ -77,6 +79,7 @@ BRAIN_INTERFACE = BodyMod(
     stat_add={},
     flags=["interface"],
     required_item=BRAIN_INTERFACE_CHIP,
+    memory_bonus=2,
 )
 IR_EYE_LEFT = BodyMod(
     "아이리움 적외선 눈(왼쪽)",
@@ -147,6 +150,36 @@ HIDDEN_RANGED_ARM = BodyMod(
     needs_brain=True,
 )
 
+# Exotic enhancements
+from items import MEMORY_MODULE, WING_PART, TAIL_PART
+
+MEMORY_UPGRADE = BodyMod(
+    "확장 메모리",
+    "brain_extra",
+    stat_add={"intelligence": 1},
+    memory_bonus=5,
+    required_item=MEMORY_MODULE,
+    needs_brain=True,
+)
+
+WING_IMPLANT = BodyMod(
+    "사이버 날개",
+    "back",
+    stat_add={"agility": 2},
+    flags=["winged"],
+    required_item=WING_PART,
+    needs_brain=True,
+)
+
+TAIL_IMPLANT = BodyMod(
+    "사이버 꼬리",
+    "tail",
+    stat_add={"agility": 1, "perception": 1},
+    flags=["tailed"],
+    required_item=TAIL_PART,
+    needs_brain=True,
+)
+
 EXO_SUIT = Equipment(
     "엑소 슈트",
     8,
@@ -180,6 +213,9 @@ BODY_MODS = [
     CONCEALED_SLOT,
     HIDDEN_MELEE_ARM,
     HIDDEN_RANGED_ARM,
+    MEMORY_UPGRADE,
+    WING_IMPLANT,
+    TAIL_IMPLANT,
 ]
 
 # Lookup dictionaries for saving/loading
