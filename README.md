@@ -56,6 +56,12 @@ These values influence activities like working and exploring. From these base at
 - **기력** – stamina for actions, mainly restored by sleeping
 - **청결도** – gets lower over time or when exploring, restored by washing
 
+시간이 4시간씩 한 칸 흐를 때마다 포만감이 2, 기력이 1, 청결도가 1씩 자동으로 감소하며
+이 수치가 바닥나면 체력이 깎이기 시작합니다. 모든 행동은 시간을 소모하므로
+장기간 활동하면 자연히 배고픔과 피로가 쌓입니다. `식사`와 `씻기`, `잠자기` 등을 통해
+포만감과 청결도, 기력을 회복할 수 있습니다. 이러한 수치들의 최대치와 회복량은
+주요 능력치(특히 인내심과 매력)에 따라 결정됩니다.
+
 The maximum values and recovery rates of these secondary stats scale with the primary attributes such as Endurance or Charisma.
 
 ### NPC Interactions
@@ -101,6 +107,9 @@ Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 �
 정거장에서는 다른 구역으로 이동할 수 있고, `international: true`가
 설정된 정거장(예: 공항, 각 국가의 수도)에서만 다른 나라로 이동할 수
 있습니다. 국가 이동 시에는 `탑승권` 아이템이나 해당 자격 플래그가 필요합니다.
+
+모든 행동을 수행하면 시간이 4시간씩 경과하며, 시간이 흐를 때마다 포만감과
+기력, 청결도가 조금씩 감소합니다.
 
 각 장소는 시간대에 따라 분위기가 달라지며, 특정 시간에만 출입이 가능할
 수 있습니다. 게임의 하루는 24시간제를 4시간 단위로 나눈 여섯 구간

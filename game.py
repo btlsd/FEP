@@ -162,6 +162,7 @@ class Game:
 
     def advance_time(self):
         self.player.time += 1
+        self.player.pass_time()
         if self.player.time > 5:
             self.player.time = 0
             self.player.end_day()

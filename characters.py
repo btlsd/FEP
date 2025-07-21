@@ -391,6 +391,20 @@ class Player:
     def is_alive(self):
         return self.health > 0
 
+    def pass_time(self):
+        """Reduce basic needs each time segment."""
+        self.satiety -= 2
+        self.stamina -= 1
+        self.cleanliness -= 1
+        if self.satiety < 0:
+            self.health += self.satiety
+            self.satiety = 0
+        if self.stamina < 0:
+            self.health += self.stamina
+            self.stamina = 0
+        if self.cleanliness < 0:
+            self.cleanliness = 0
+
     def end_day(self):
         self.day += 1
         self.weekday = (self.weekday + 1) % 7
