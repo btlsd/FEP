@@ -843,7 +843,17 @@ class Game:
         p = self.player
         p.location = JAIL
         print("당신은 체포되어 감옥에 수감되었습니다.")
-        self.advance_time(6)
+        routine = [
+            "새벽에는 철창 안에서 눈을 뜹니다.",
+            "아침에는 교도관의 점호가 진행됩니다.",
+            "오전에는 잡일을 해야 합니다.",
+            "오후에도 작업이 계속됩니다.",
+            "저녁 식사 후 짧은 휴식이 주어집니다.",
+            "밤에는 엄격한 감시 속에서 잠을 청합니다.",
+        ]
+        for msg in routine:
+            print(msg)
+            self.advance_time(1)
         if "gang_contact" not in p.flags:
             p.add_flag("gang_contact")
             print("감옥에서 범죄 조직과 연결되었습니다.")

@@ -118,6 +118,45 @@
       "schedule": {"0": "SLUM_MARKET", "1": "SLUM_MARKET", "2": "SLUM_MARKET", "3": "SLUM_MARKET", "4": "SLUM_MARKET", "5": "SLUM_SHACK"},
       "agility": 6,
       "inventory": ["IRON_PIPE"]
+    },
+    {
+      "name": "교도소장 박",
+      "age": 55,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 40, "C": 70, "E": 50, "A": 50, "N": 30},
+      "affiliation": "교정국",
+      "job": "교도소장",
+      "status": "정예",
+      "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
+      "agility": 5,
+      "inventory": ["PISTOL"]
+    },
+    {
+      "name": "안드로이드 경비 A",
+      "age": 10,
+      "gender": "none",
+      "origin": "전계국",
+      "personality": {"O": 20, "C": 80, "E": 30, "A": 20, "N": 10},
+      "affiliation": "교정국",
+      "job": "경비",
+      "status": "정예",
+      "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
+      "agility": 6,
+      "inventory": ["LASER_PISTOL"]
+    },
+    {
+      "name": "안드로이드 경비 B",
+      "age": 10,
+      "gender": "none",
+      "origin": "전계국",
+      "personality": {"O": 20, "C": 80, "E": 30, "A": 20, "N": 10},
+      "affiliation": "교정국",
+      "job": "경비",
+      "status": "정예",
+      "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
+      "agility": 6,
+      "inventory": ["LASER_PISTOL"]
     }
   ]
 }
