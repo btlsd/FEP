@@ -1,0 +1,73 @@
+{
+  "greetings": {
+    "default": "안녕하세요, {player}.",
+    "gender": {
+      "male": "안녕하십니까, {player}님?",
+      "female": "안녕하세요, {player}님!",
+      "none": "환영합니다, {player}."
+    },
+    "age": {
+      "미취학 아동": "{player}! 재미있는 일 없을까?",
+      "저학년": "안녕 {player}!",
+      "고학년": "하이 {player}~",
+      "청소년": "뭐 하고 지내, {player}?",
+      "청년": "반가워요, {player}.",
+      "성년": "안녕하세요, {player}.",
+      "중년": "어서 오십시오, {player}님.",
+      "노년": "반갑네, {player}."
+    },
+    "job": {
+      "상인": "물건 보러 오셨나요, {player}?",
+      "경비": "근무 중입니다, {player}."
+    },
+    "origin": {
+      "인류연합국": "인류연합국에 오신 것을 환영합니다.",
+      "거합": "거합의 평화가 함께하길.",
+      "탐랑": "탐랑의 자유가 깃들기를.",
+      "전계국": "전계국 시스템이 당신을 인식했습니다, {player}."
+    },
+    "status": {
+      "정예": "높은 지위가 느껴집니다, {player}님.",
+      "평민": "편한 마음으로 둘러보세요, {player}.",
+      "실험체": "당신에 대한 기록을 조회 중입니다, {player}."
+    },
+    "personality": {
+      "HHHHH": "성격 HHHHH형 인사",
+      "HHHHL": "성격 HHHHL형 인사",
+      "HHHLH": "성격 HHHLH형 인사",
+      "HHHLL": "성격 HHHLL형 인사",
+      "HHLHH": "성격 HHLHH형 인사",
+      "HHLHL": "성격 HHLHL형 인사",
+      "HHLLH": "성격 HHLLH형 인사",
+      "HHLLL": "성격 HHLLL형 인사",
+      "HLHHH": "성격 HLHHH형 인사",
+      "HLHHL": "성격 HLHHL형 인사",
+      "HLHLH": "성격 HLHLH형 인사",
+      "HLHLL": "성격 HLHLL형 인사",
+      "HLLHH": "성격 HLLHH형 인사",
+      "HLLHL": "성격 HLLHL형 인사",
+      "HLLLH": "성격 HLLLH형 인사",
+      "HLLLL": "성격 HLLLL형 인사",
+      "LHHHH": "성격 LHHHH형 인사",
+      "LHHHL": "성격 LHHHL형 인사",
+      "LHHLH": "성격 LHHLH형 인사",
+      "LHHLL": "성격 LHHLL형 인사",
+      "LHLHH": "성격 LHLHH형 인사",
+      "LHLHL": "성격 LHLHL형 인사",
+      "LHLLH": "성격 LHLLH형 인사",
+      "LHLLL": "성격 LHLLL형 인사",
+      "LLHHH": "성격 LLHHH형 인사",
+      "LLHHL": "성격 LLHHL형 인사",
+      "LLHLH": "성격 LLHLH형 인사",
+      "LLHLL": "성격 LLHLL형 인사",
+      "LLLHH": "성격 LLLHH형 인사",
+      "LLLHL": "성격 LLLHL형 인사",
+      "LLLLH": "성격 LLLLH형 인사",
+      "LLLLL": "성격 LLLLL형 인사"
+    }
+  }
+  ,
+  "merchant_trade": {
+    "intro": "데이터 연결은 불안정하니 현금이나 물물 교환만 가능합니다."
+  }
+}
