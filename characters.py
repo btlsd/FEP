@@ -168,14 +168,14 @@ class Character:
         else:
             print(f"{self.name}은(는) 돈을 빌려주지 않습니다.")
 
-    def fight(self, player):
+    def fight(self, player, ambush=None):
         from battle import start_battle
         if not getattr(self, "weapon", None):
             for it in self.inventory:
                 if getattr(it, "damage", 0) > 0:
                     self.weapon = it
                     break
-        return start_battle(player, self)
+        return start_battle(player, self, ambush)
 
 
 def _load_npcs():

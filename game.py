@@ -736,14 +736,14 @@ class Game:
         p = self.player
         bot = Character("납치 로봇", {}, p.location.nation.name, "로봇", {}, agility=6)
         bot.health = 40
-        win = bot.fight(p)
+        win = bot.fight(p, ambush="npc")
         if not win:
             self.resolve_kidnap()
             return
         strong = Character("강화 로봇", {}, p.location.nation.name, "로봇", {}, agility=8)
         strong.health = 60
         print("더 강한 로봇이 나타났습니다!")
-        win2 = strong.fight(p)
+        win2 = strong.fight(p, ambush="npc")
         if win2:
             commander = Character("지휘관 백", {}, p.location.nation.name, "지휘관", {})
             print("지휘관 백이 다가와 당신에게 특수부대 편입을 제안합니다.")
