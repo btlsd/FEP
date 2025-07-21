@@ -16,6 +16,9 @@ def start_battle(player, npc):
         if gauges[player] <= 0:
             weapon = getattr(player, "weapon", None)
             w_dmg = getattr(weapon, "damage", 0)
+            if not weapon:
+                for mod in getattr(player, "mods", {}).values():
+                    w_dmg = max(w_dmg, getattr(mod, "weapon_damage", 0))
             dmg = random.randint(5, 10) + getattr(player, "strength", 5) + w_dmg
             npc.health -= dmg
             print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.")
@@ -25,6 +28,9 @@ def start_battle(player, npc):
         if gauges[npc] <= 0:
             weapon = getattr(npc, "weapon", None)
             w_dmg = getattr(weapon, "damage", 0)
+            if not weapon:
+                for mod in getattr(npc, "mods", {}).values():
+                    w_dmg = max(w_dmg, getattr(mod, "weapon_damage", 0))
             dmg = random.randint(5, 10) + getattr(npc, "strength", 5) + w_dmg
             player.health -= dmg
             print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.")

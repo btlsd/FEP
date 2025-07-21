@@ -34,6 +34,7 @@ class BodyMod:
         required_item=None,
         company=None,
         needs_brain=False,
+        weapon_damage=0,
     ):
         self.name = name
         self.slot = slot  # e.g. 'arm', 'eye'
@@ -44,6 +45,7 @@ class BodyMod:
         self.required_item = required_item
         self.company = company
         self.needs_brain = needs_brain
+        self.weapon_damage = weapon_damage
 
 
 # Default equipment items
@@ -65,6 +67,8 @@ from items import (
     PREC_EYE_LEFT_PART,
     PREC_EYE_RIGHT_PART,
     BRAIN_INTERFACE_CHIP,
+    HIDDEN_MELEE_ARM_PART,
+    HIDDEN_RANGED_ARM_PART,
 )
 
 BRAIN_INTERFACE = BodyMod(
@@ -125,6 +129,24 @@ CONCEALED_SLOT = BodyMod(
     flags=["conceal_slot"],
 )
 
+# Arm modifications with built-in hidden weapons
+HIDDEN_MELEE_ARM = BodyMod(
+    "은닉 냉병기 팔",
+    "arm",
+    flags=["melee_arm", "conceal_slot"],
+    required_item=HIDDEN_MELEE_ARM_PART,
+    weapon_damage=7,
+)
+
+HIDDEN_RANGED_ARM = BodyMod(
+    "은닉 원거리 무기 팔",
+    "arm",
+    flags=["ranged_arm", "conceal_slot"],
+    required_item=HIDDEN_RANGED_ARM_PART,
+    weapon_damage=10,
+    needs_brain=True,
+)
+
 EXO_SUIT = Equipment(
     "엑소 슈트",
     8,
@@ -156,6 +178,8 @@ BODY_MODS = [
     LIGHT_LEG,
     MUSCLE_REPLACE,
     CONCEALED_SLOT,
+    HIDDEN_MELEE_ARM,
+    HIDDEN_RANGED_ARM,
 ]
 
 # Lookup dictionaries for saving/loading

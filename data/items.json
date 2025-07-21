@@ -27,5 +27,7 @@
   "SPEAR": {"name": "창", "weight": 3, "volume": 3, "damage": 9, "weapon_type": "냉병기", "material": "강철", "quality": 0.9},
   "RIFLE": {"name": "소총", "weight": 4, "volume": 3, "damage": 14, "weapon_type": "화기"},
   "LASER_SWORD": {"name": "레이저 검", "weight": 2, "volume": 1.5, "damage": 15, "weapon_type": "레이저"},
-  "LASER_RIFLE": {"name": "레이저 소총", "weight": 3, "volume": 3, "damage": 18, "weapon_type": "레이저"}
- }
+  "LASER_RIFLE": {"name": "레이저 소총", "weight": 3, "volume": 3, "damage": 18, "weapon_type": "레이저"},
+  "HIDDEN_MELEE_ARM_PART": {"name": "은닉 냉병기 팔 부품", "weight": 3, "volume": 3, "printable": true},
+  "HIDDEN_RANGED_ARM_PART": {"name": "은닉 원거리 팔 부품", "weight": 3, "volume": 3, "printable": true}
+}
