@@ -237,6 +237,34 @@ class Game:
         self.player.shower_count += 1
         print("씻고 나니 상쾌합니다.")
 
+    def watch_media(self):
+        cost = 2
+        currency = self.player.location.nation.currency
+        if not self.player.spend_money(cost, currency):
+            print("미디어 시청료를 지불할 돈이 없습니다.")
+            return
+        gain = 15 + self.player.intelligence // 2
+        self.player.satisfaction = min(
+            self.player.max_satisfaction, self.player.satisfaction + gain
+        )
+        self.player.stamina = max(0, self.player.stamina - 5)
+        print("미디어를 시청하며 시간을 보냈습니다.")
+
+    def exercise(self):
+        if self.player.stamina < 10:
+            print("운동을 할 기력이 부족합니다.")
+            return
+        self.player.stamina -= 10
+        self.player.satiety = max(0, self.player.satiety - 5)
+        self.player.cleanliness = max(0, self.player.cleanliness - 5)
+        self.player.health = min(
+            self.player.max_health, self.player.health + 5 + self.player.endurance // 2
+        )
+        self.player.satisfaction = min(
+            self.player.max_satisfaction, self.player.satisfaction + 10
+        )
+        print("운동을 마치고 땀을 흘렸습니다.")
+
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
         roll = random.randint(1, 100)
@@ -799,6 +827,8 @@ class Game:
             "장비 장착",
             "씻기",
             "신체 개조",
+            "미디어 시청",
+            "운동",
         ]
         added = []
         for key in ACTIONS:
@@ -826,6 +856,8 @@ class Game:
             self.change_equipment,
             self.wash,
             self.modify_body,
+            self.watch_media,
+            self.exercise,
         ]
         extra_map = {
             "wait": self.wait,
@@ -835,6 +867,8 @@ class Game:
             "lockpick": self.lockpick,
             "hack": self.hack,
             "explore": self.explore,
+            "watch_media": self.watch_media,
+            "exercise": self.exercise,
         }
         for key in added:
             actions.append(extra_map.get(key, self.wait))

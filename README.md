@@ -55,11 +55,12 @@ These values influence activities like working and exploring. From these base at
 - **포만감** – how full you are, decreases with time and activities
 - **기력** – stamina for actions, mainly restored by sleeping
 - **청결도** – gets lower over time or when exploring, restored by washing
+- **만족감** – decreases when you neglect leisure, restored through hobbies
 
-시간이 4시간씩 한 칸 흐를 때마다 포만감이 2, 기력이 1, 청결도가 1씩 자동으로 감소하며
+시간이 4시간씩 한 칸 흐를 때마다 포만감이 2, 기력이 1, 청결도가 1, 만족감이 1씩 자동으로 감소하며
 이 수치가 바닥나면 체력이 깎이기 시작합니다. 모든 행동은 시간을 소모하므로
-장기간 활동하면 자연히 배고픔과 피로가 쌓입니다. `식사`와 `씻기`, `잠자기` 등을 통해
-포만감과 청결도, 기력을 회복할 수 있습니다. 이러한 수치들의 최대치와 회복량은 잠자기는 침대가 있는 거주지나 병원 등에서만 가능하며, 씻기는 세면 시설이 있는 장소에서만 할 수 있습니다. 물이 끊긴 허름한 오두막 등에서는 씻지 못합니다.
+장기간 활동하면 자연히 배고픔과 피로가 쌓입니다. `식사`와 `씻기`, `잠자기`, `미디어 시청`, `운동` 등을 통해
+포만감과 청결도, 기력, 만족감을 회복할 수 있습니다. 이러한 수치들의 최대치와 회복량은 잠자기는 침대가 있는 거주지나 병원 등에서만 가능하며, 씻기는 세면 시설이 있는 장소에서만 할 수 있습니다. 물이 끊긴 허름한 오두막 등에서는 씻지 못합니다.
 주요 능력치(특히 인내심과 매력)에 따라 결정됩니다.
 
 The maximum values and recovery rates of these secondary stats scale with the primary attributes such as Endurance or Charisma.
@@ -236,7 +237,7 @@ NPC와 싸우게 되면 전투는 턴제로 진행됩니다. 각 참여자는 "�
 
 플레이어가 사용할 수 있는 추가 행동은 `data/actions.json`에 정리되어 있습니다.
 기본적인 일하기나 식사 외에도 기다리기, 은신, 소매치기, 자물쇠따기,
-해킹, 탐색 같은 행동을 선택할 수 있습니다. 은신 상태에서는 출입 자격이
-없는 장소에 잠입할 때 발각 확률이 줄어들며, 소매치기는 NPC가 보유한
-인벤토리에서 물건을 빼앗을 수 있습니다. 자물쇠따기는 비밀 실험실과 같이
-고대 유물이 잠든 곳에서 사용됩니다.
+해킹, 탐색, **미디어 시청**, **운동** 같은 활동을 선택할 수 있습니다.
+은신 상태에서는 출입 자격이 없는 장소에 잠입할 때 발각 확률이 줄어들며,
+소매치기는 NPC가 보유한 인벤토리에서 물건을 빼앗을 수 있습니다.
+자물쇠따기는 비밀 실험실과 같이 고대 유물이 잠든 곳에서 사용됩니다.

@@ -247,11 +247,13 @@ class Player:
         self.max_stamina = 100 + self.endurance * 5
         self.max_satiety = 100 + self.endurance * 2
         self.max_cleanliness = 100 + self.charisma * 2
+        self.max_satisfaction = 100 + (self.charisma + self.intelligence) * 2
 
         self.health = self.max_health
         self.stamina = self.max_stamina
         self.satiety = self.max_satiety
         self.cleanliness = self.max_cleanliness
+        self.satisfaction = self.max_satisfaction
         # 각 국가별 화폐를 기록한다
         self.money = {NATIONS[0].currency: 20}
         self.bank = {n.currency: 0 for n in NATIONS}
@@ -348,6 +350,7 @@ class Player:
         print(f"포만감: {self.satiety}/{self.max_satiety}")
         print(f"기력: {self.stamina}/{self.max_stamina}")
         print(f"청결도: {self.cleanliness}/{self.max_cleanliness}")
+        print(f"만족감: {self.satisfaction}/{self.max_satisfaction}")
         money_str = ", ".join(f"{amt}{cur}" for cur, amt in self.money.items())
         print(f"보유 화폐: {money_str}")
         bank_str = ", ".join(f"{amt}{cur}" for cur, amt in self.bank.items() if amt)
@@ -396,6 +399,7 @@ class Player:
         self.satiety -= 2
         self.stamina -= 1
         self.cleanliness -= 1
+        self.satisfaction -= 1
         if self.satiety < 0:
             self.health += self.satiety
             self.satiety = 0
@@ -404,6 +408,9 @@ class Player:
             self.stamina = 0
         if self.cleanliness < 0:
             self.cleanliness = 0
+        if self.satisfaction < 0:
+            self.health -= 1
+            self.satisfaction = 0
 
     def end_day(self):
         self.day += 1
@@ -411,6 +418,7 @@ class Player:
         self.month_day += 1
         self.satiety -= 5
         self.cleanliness -= 10
+        self.satisfaction -= 5
         if self.satiety <= 0:
             self.health += self.satiety
             self.satiety = 0
@@ -421,6 +429,8 @@ class Player:
             self.health = self.max_health
         if self.cleanliness < 0:
             self.cleanliness = 0
+        if self.satisfaction < 0:
+            self.satisfaction = 0
         self.recalc_derived_stats()
         if self.month_day > 30:
             self.month_day = 1
@@ -434,10 +444,12 @@ class Player:
         self.max_stamina = 100 + self.endurance * 5
         self.max_satiety = 100 + self.endurance * 2
         self.max_cleanliness = 100 + self.charisma * 2
+        self.max_satisfaction = 100 + (self.charisma + self.intelligence) * 2
         self.health = min(self.health, self.max_health)
         self.stamina = min(self.stamina, self.max_stamina)
         self.satiety = min(self.satiety, self.max_satiety)
         self.cleanliness = min(self.cleanliness, self.max_cleanliness)
+        self.satisfaction = min(self.satisfaction, self.max_satisfaction)
 
     def recalculate_stats(self):
         for key, val in self.base_stats.items():
@@ -660,6 +672,7 @@ class Player:
             "stamina": self.stamina,
             "satiety": self.satiety,
             "cleanliness": self.cleanliness,
+            "satisfaction": self.satisfaction,
             "money": self.money,
             "bank": self.bank,
             "experience": self.experience,
@@ -694,6 +707,7 @@ class Player:
         player.stamina = data.get("stamina", player.max_stamina)
         player.satiety = data.get("satiety", player.max_satiety)
         player.cleanliness = data.get("cleanliness", player.max_cleanliness)
+        player.satisfaction = data.get("satisfaction", player.max_satisfaction)
         player.money = data.get("money", {})
         player.bank = {n.currency: 0 for n in NATIONS}
         player.bank.update(data.get("bank", {}))

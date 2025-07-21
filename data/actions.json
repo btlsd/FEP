@@ -7,5 +7,7 @@
     {"key": "lockpick", "name": "자물쇠따기"},
     {"key": "hack", "name": "해킹"},
     {"key": "explore", "name": "탐색"}
+    ,{"key": "watch_media", "name": "미디어 시청"}
+    ,{"key": "exercise", "name": "운동"}
   ]
 }
