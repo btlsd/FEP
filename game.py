@@ -23,7 +23,7 @@ from items import (
 )
 from equipment import BODY_MODS
 from gui import draw_screen
-from utils import choose_option
+from utils import choose_option, roll_check
 import json
 import os
 
@@ -135,7 +135,7 @@ class Game:
             return False
         print("\n집 근처에서 묘한 기운을 느낍니다.")
         detect = 30 + p.perception * 3 + p.intuition * 3
-        if random.randint(1, 100) <= detect:
+        if roll_check(detect):
             print("익숙하지 않은 냄새와 함께 어둠 속에 그림자가 어른거립니다.")
             choice = choose_option(["도망간다", "무시하고 집에 들어간다"], allow_back=False)
             if choice == 0:
@@ -156,7 +156,7 @@ class Game:
             chance -= 10
         if chance < 10:
             chance = 10
-        if random.randint(1, 100) <= chance:
+        if roll_check(chance):
             print("경비에게 발각되었습니다!")
             success, seg = self.handle_detection(p.location)
             return seg
@@ -372,7 +372,7 @@ class Game:
 
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
-        if self.player.location.zone == "빈민가" and random.random() < 0.4:
+        if self.player.location.zone == "빈민가" and roll_check(40):
             gang = Character("슬럼 갱단원", {}, self.player.location.nation.name, "갱단원", {}, agility=6)
             gang.weapon = IRON_PIPE
             print("슬럼 갱단원이 시비를 걸어옵니다!")
@@ -486,7 +486,7 @@ class Game:
         chance = 30 + self.player.agility + self.player.perception
         if self.player.has_flag("stealth"):
             chance += 20
-        if random.randint(1, 100) <= chance:
+        if roll_check(chance):
             small = [it for it in npc.inventory if getattr(it, "volume", 1) <= 1]
             if not small:
                 print("훔칠 만한 작은 물건이 없습니다.")
@@ -498,7 +498,7 @@ class Game:
         else:
             print(f"{npc.name}에게 들켰습니다!")
             npc.affinity = max(0, npc.affinity - 10)
-            if random.random() < 0.5:
+            if roll_check(50):
                 print("경찰에게 체포되었습니다!")
                 self.imprison("lockpick")
                 return 0
@@ -510,12 +510,12 @@ class Game:
             print("따야 할 자물쇠가 없습니다.")
             return
         chance = 40 + self.player.agility + self.player.intelligence
-        if random.randint(1, 100) <= chance:
+        if roll_check(chance):
             print("자물쇠를 따는 데 성공했습니다.")
             self.player.add_flag("relic_unlocked")
         else:
             print("자물쇠따기에 실패했습니다.")
-            if random.random() < 0.5:
+            if roll_check(50):
                 print("경찰에게 체포되었습니다!")
                 self.imprison("hack")
                 return 0
@@ -525,14 +525,14 @@ class Game:
         chance = 30 + self.player.intelligence * 2
         if self.player.has_flag("stealth"):
             chance += 10
-        if random.randint(1, 100) <= chance:
+        if roll_check(chance):
             gain = 5
             currency = self.player.location.nation.currency
             self.player.add_money(gain, currency)
             print(f"해킹에 성공해 {gain}{currency}을 얻었습니다.")
         else:
             print("해킹에 실패했습니다.")
-            if random.random() < 0.5:
+            if roll_check(50):
                 print("경찰에게 체포되었습니다!")
                 self.imprison()
                 return 0
@@ -720,7 +720,7 @@ class Game:
             chance = 50 + dest.security * 10
             if self.player.has_flag("stealth"):
                 chance -= 30
-            if random.randint(1, 100) <= chance:
+            if roll_check(chance):
                 print("경비에게 발각되었습니다!")
                 success, _ = self.handle_detection(dest, entering=True)
                 return success
@@ -923,13 +923,13 @@ class Game:
         p = self.player
         print("\n정부 요원들이 당신을 은밀히 납치하려 합니다!")
         detect = 20 + p.perception * 2 + p.intelligence + p.agility + p.intuition * 3
-        if random.randint(1, 100) <= detect:
+        if roll_check(detect):
             print("어둠 속에서 낯선 그림자가 스치고 익숙하지 않은 향이 느껴집니다.")
             print("불길한 기운을 감지했습니다.")
             choice = choose_option(["숨는다", "맞서 싸운다"], allow_back=False)
             if choice == 0:
                 chance = 30 + p.agility * 3 + p.perception * 2
-                if random.randint(1, 100) <= chance:
+                if roll_check(chance):
                     print("겨우 몸을 숨겨 납치를 피했습니다.")
                     p.arrears = 2
                     p.kidnap_due = False

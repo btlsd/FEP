@@ -20,3 +20,16 @@ def choose_option(options, allow_back=True):
                 return idx
         print("잘못된 선택입니다.")
 
+import random
+
+
+def roll_check(chance):
+    """Roll 1-100 and return True if the result is <= chance.
+
+    The function also prints the target value and the rolled number so the
+    player can see how close they were to succeeding.
+    """
+    roll = random.randint(1, 100)
+    outcome = "성공" if roll <= chance else "실패"
+    print(f"목표 {chance} - 결과 {roll} => {outcome}")
+    return roll <= chance
