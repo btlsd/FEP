@@ -1,0 +1,580 @@
+{
+  "nations": [
+    {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가", "currency": "연화", "transport": "자동운행 차량과 열차"},
+    {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가", "currency": "거합권", "transport": "거대한 동식물 이용"},
+    {"name": "탐랑", "description": "개성을 중시해 오프라인으로 방랑하는 기계들의 느슨한 모임", "currency": "탐랑칩", "transport": "개인 제작 탈것"},
+    {"name": "전계국", "description": "모든 기계가 하나로 연결되길 바라는 전기와 기계의 나라", "currency": "전계 데이터", "transport": "제트 수송선"}
+  ],
+  "locations": [
+    {
+      "key": "SEWER",
+      "name": "거대한 하수도",
+      "description": "인류연합국 수도 지하를 흐르는 광대한 하수도",
+      "zone": "하수도",
+      "descriptions": {
+        "0": "새벽이라 더욱 어둡고 냄새가 진하다.",
+        "1": "아침의 빛이 조금 들어오지만 여전히 축축하다.",
+        "2": "오전에는 수도의 하수들이 빠르게 흐른다.",
+        "3": "오후가 되어 하수도 작업자들의 발걸음이 들린다.",
+        "4": "저녁이 되어 약한 조명이 켜져 있다.",
+        "5": "밤에는 거의 빛이 없어 위험해 보인다."
+      },
+      "nation": 0,
+      "indoors": true
+    },
+    {
+      "key": "STATION",
+      "name": "지하 정거장",
+      "description": "도시 각지로 통하는 낡은 정거장",
+      "zone": "하수도",
+      "descriptions": {
+        "0": "새벽의 정거장은 조용하다.",
+        "1": "아침이 되자 몇몇 승객이 서두른다.",
+        "2": "오전에는 통근객들로 붐빈다.",
+        "3": "오후에도 사람들이 오가지만 한산하다.",
+        "4": "저녁에는 귀가 행렬로 붐빈다.",
+        "5": "밤의 정거장은 문을 닫아 썰렁하다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "station": true,
+      "printer": true,
+      "open_times": [0,1,2,3,4],
+      "cost_mult": 1.2
+    },
+    {
+      "key": "AIRPORT",
+      "name": "국가간 공항",
+      "description": "다른 나라로 가는 항공기가 오가는 공항",
+      "zone": "공항",
+      "descriptions": {
+        "0": "새벽에도 항공편이 드물게 있다.",
+        "1": "아침 비행기로 분주하다.",
+        "2": "오전에는 여행객들로 붐빈다.",
+        "3": "오후에도 출발과 도착이 이어진다.",
+        "4": "저녁엔 귀국객이 많다.",
+        "5": "밤에는 일부 노선만 운영된다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "station": true,
+      "international": true,
+      "open_times": [0,1,2,3,4,5],
+      "cost_mult": 1.2
+    },
+    {
+      "key": "MARKET",
+      "name": "중앙 시장",
+      "description": "사람들로 붐비는 시장거리",
+      "zone": "상업 지구",
+      "descriptions": {
+        "0": "새벽의 시장은 준비 중이라 한적하다.",
+        "1": "아침에는 상인들이 준비에 분주하다.",
+        "2": "오전에는 손님들로 북적인다.",
+        "3": "오후에도 활기가 가득하다.",
+        "4": "저녁이 되면 가게들이 서서히 문을 닫는다.",
+        "5": "밤의 시장은 불이 꺼져 사람이 없다."
+      },
+      "nation": 0,
+      "open_times": [1,2,3,4],
+      "cost_mult": 1.2,
+      "printer": true,
+      "season_desc": {
+        "0": "봄바람에 꽃 향기가 가득하다.",
+        "1": "여름 햇살로 무척 덥다.",
+        "2": "가을에는 단풍이 상점을 물들인다.",
+        "3": "겨울이라 길가에 눈이 쌓여 있다."
+      },
+      "cost_mult": 1.2
+    },
+    {
+      "key": "RESIDENTIAL",
+      "name": "주거 지구",
+      "description": "평범한 주거 지역",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽의 주거 지구는 고요하다.",
+        "1": "아침에는 출근 준비로 바쁘다.",
+        "2": "오전에는 대부분이 집을 비웠다.",
+        "3": "오후에는 아이들 뛰노는 소리가 들린다.",
+        "4": "저녁에는 집집마다 불이 켜진다.",
+        "5": "밤에는 간간이 개 짖는 소리만 들린다."
+      },
+      "nation": 0,
+      "season_desc": {
+        "0": "봄에는 화창하고 따스하다.",
+        "1": "여름 더위로 창문들이 열려 있다.",
+        "2": "가을 바람에 낙엽이 흩날린다.",
+        "3": "겨울 추위로 사람들이 외출을 꺼린다."
+      }
+    },
+    {
+      "key": "SECRET_LAB",
+      "name": "비밀 실험실",
+      "description": "하수도 깊숙한 곳에 숨겨진 연구 시설",
+      "zone": "하수도",
+      "descriptions": {
+        "0": "새벽의 실험실은 침묵 속에 잠겨 있다.",
+        "1": "아침이지만 내부에는 불이 켜져 있지 않다.",
+        "2": "오전에도 외부와 단절된 채 조용하다.",
+        "3": "오후가 되어야 간혹 기계음이 들려온다.",
+        "4": "저녁에는 경비가 강화된다.",
+        "5": "밤에만 비밀 실험이 이뤄지는 듯 활기를 띤다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "open_times": [5],
+      "restricted": true,
+      "locked_relic": true,
+      "security": 2,
+      "danger": 2
+    },
+    {
+      "key": "CLINIC_LEGAL",
+      "name": "사이버 클리닉",
+      "description": "합법 개조 시술소",
+      "zone": "상업 지구",
+      "descriptions": {
+        "0": "새벽에도 예약 손님이 있다.",
+        "1": "아침부터 신체 개조 문의가 많다.",
+        "2": "오전엔 예약으로 분주하다.",
+        "3": "오후에도 차분히 운영된다.",
+        "4": "저녁엔 마감 준비를 한다.",
+        "5": "밤에는 문을 닫는다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "mod_shop": "legal",
+      "open_times": [0,1,2,3,4],
+      "cost_mult": 1.2
+    },
+    {
+      "key": "EXO_WORKSHOP",
+      "name": "엑소슈트 작업장",
+      "description": "엑소슈트 개조를 전문으로 하는 공업 지구의 공장",
+      "zone": "공업 지구",
+      "descriptions": {
+        "0": "새벽에도 기계 소리가 끊이지 않는다.",
+        "1": "아침부터 기술자들이 분주하다.",
+        "2": "오전에는 시험 운전이 이어진다.",
+        "3": "오후에도 불꽃과 소음이 가득하다.",
+        "4": "저녁에는 정비로 마무리한다.",
+        "5": "밤이면 경비만 남아 있다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "exo_shop": true,
+      "open_times": [1,2,3,4],
+      "cost_mult": 1.2
+    },
+    {
+      "key": "CLINIC_ILLEGAL",
+      "name": "음침한 뒷골목 클리닉",
+      "description": "불법 개조를 해 주는 위험한 곳",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽에만 은밀히 영업한다.",
+        "1": "아침에는 흔적도 없다.",
+        "2": "오전에도 문을 닫은 듯 보인다.",
+        "3": "오후에도 찾기 어렵다.",
+        "4": "저녁부터 사람들이 모여든다.",
+        "5": "밤이면 은밀한 시술이 이루어진다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "mod_shop": "illegal",
+      "open_times": [0,4,5],
+      "security": 1,
+      "danger": 1,
+      "cost_mult": 0.7
+    },
+    {
+      "key": "SLUM_MARKET",
+      "name": "빈민 주택 시장",
+      "description": "낙후된 지역에서 허름한 집을 거래하는 곳",
+      "zone": "빈민가",
+      "descriptions": {
+        "0": "새벽에도 술 취한 사람들이 어슬렁거린다.",
+        "1": "아침에는 쓰레기를 치우는 모습이 보인다.",
+        "2": "오전에는 몇몇이 집을 내놓으러 온다.",
+        "3": "오후에는 흥정을 하는 소리가 들린다.",
+        "4": "저녁이면 더 많은 군중이 모인다.",
+        "5": "밤에는 분위기가 험악하다."
+      },
+      "nation": 0,
+      "housing_market": true,
+      "cost_mult": 0.7
+    },
+    {
+  "key": "SHELTER",
+      "name": "쉘터",
+      "description": "노숙자를 위한 임시 거주 시설",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽의 쉘터는 조용히 잠든 사람들로 가득하다.",
+        "1": "아침에는 무료 배식 준비가 이루어진다.",
+        "2": "오전에는 상담을 받으려는 이들이 모인다.",
+        "3": "오후에는 봉사자들이 분주하다.",
+        "4": "저녁에는 따뜻한 불빛 아래 사람들이 모여든다.",
+        "5": "밤에는 경비가 순찰을 돈다."
+      },
+      "nation": 0,
+  "indoors": true,
+  "sleep_spot": true,
+  "wash_spot": true
+},
+    {
+  "key": "SMALL_HOUSE",
+      "name": "작은 집",
+      "description": "소박하지만 아늑한 주택",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽에는 조용하다.",
+        "1": "아침 햇살이 창문을 비춘다.",
+        "2": "오전에는 깔끔하게 정돈되어 있다.",
+        "3": "오후에는 따스한 분위기가 감돈다.",
+        "4": "저녁이면 외출한 이들이 돌아온다.",
+        "5": "밤에는 불이 꺼져 있다."
+      },
+      "nation": 0,
+  "indoors": true,
+  "residence": true,
+  "price": 100,
+  "government": true,
+  "restricted": true,
+  "sleep_spot": true,
+  "wash_spot": true
+},
+    {
+  "key": "SLUM_SHACK",
+      "name": "허름한 오두막",
+      "description": "낙후된 지역의 작은 집",
+      "zone": "빈민가",
+      "descriptions": {
+        "0": "새벽에도 축축한 냄새가 난다.",
+        "1": "아침이 되어도 썰렁하다.",
+        "2": "오전에는 주변이 조용하다.",
+        "3": "오후에도 별다른 움직임이 없다.",
+        "4": "저녁이면 근처에서 술 취한 소리가 들린다.",
+        "5": "밤에는 위험해 보인다."
+      },
+      "nation": 0,
+      "indoors": true,
+  "residence": true,
+  "price": 20,
+  "restricted": true,
+  "sleep_spot": true,
+  "wash_spot": false,
+  "cost_mult": 0.6
+},
+    {
+  "key": "APARTMENT",
+      "name": "임대 아파트",
+      "description": "정부가 제공한 임대 주택",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽에는 주변이 조용하다.",
+        "1": "아침에는 출근 준비로 분주하다.",
+        "2": "오전에는 대부분이 일터에 나가 있다.",
+        "3": "오후에는 아이들 노는 소리가 들린다.",
+        "4": "저녁이면 퇴근한 주민들이 모여든다.",
+        "5": "밤에는 불빛이 하나둘 꺼진다."
+      },
+      "nation": 0,
+  "indoors": true,
+  "sleep_spot": true,
+  "wash_spot": true
+},
+    {
+      "key": "HOSPITAL",
+      "name": "시립 병원",
+      "description": "가난한 시민들이 찾는 공공 병원",
+      "zone": "주거 지구",
+      "descriptions": {
+        "0": "새벽에도 응급실이 분주하다.",
+        "1": "아침에는 무료 진료를 기다리는 줄이 늘어선다.",
+        "2": "오전에는 의료진이 바쁘게 움직인다.",
+        "3": "오후에도 환자들이 끊이지 않는다.",
+        "4": "저녁이 되면 대기실이 붐빈다.",
+        "5": "밤에도 비상등 아래 치료가 이어진다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "hospital": true,
+      "open_times": [0,1,2,3,4,5],
+      "sleep_spot": true,
+      "wash_spot": true
+    },
+    {
+      "key": "JAIL",
+      "name": "감옥",
+      "description": "범죄자를 가두는 교도소",
+      "zone": "교도소",
+      "descriptions": {
+        "0": "새벽에도 죄수들이 웅성거린다.",
+        "1": "아침에는 교도관의 점호가 있다.",
+        "2": "오전에는 작업장이 분주하다.",
+        "3": "오후에도 무거운 분위기가 이어진다.",
+        "4": "저녁이면 죄수들이 피곤에 지친다.",
+        "5": "밤에는 엄중한 감시 속에 잠든다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "jail": true,
+      "restricted": true,
+      "sleep_spot": true,
+      "wash_spot": true,
+      "open_times": [0,1,2,3,4,5],
+      "security": 2,
+      "danger": 1
+    },
+    {
+      "key": "JOB_CENTER",
+      "name": "직업소개소",
+      "description": "일자리를 알선하는 연합 기관",
+      "zone": "상업 지구",
+      "descriptions": {
+        "0": "새벽엔 닫혀 있다.",
+        "1": "아침부터 구직자들이 문 앞에 늘어선다.",
+        "2": "오전에는 면접 안내 방송이 계속된다.",
+        "3": "오후에도 상담이 이어진다.",
+        "4": "저녁이 되면 문을 닫을 준비를 한다.",
+        "5": "밤에는 불이 꺼져 있다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "job_office": true,
+      "open_times": [1,2,3,4],
+      "printer": true
+    },
+    {
+      "key": "BANK",
+      "name": "은행",
+      "description": "예금과 출금을 처리하는 금융 기관",
+      "zone": "상업 지구",
+      "descriptions": {
+        "0": "새벽에는 문을 닫았다.",
+        "1": "아침부터 고객이 드문드문 찾아온다.",
+        "2": "오전에는 창구가 비교적 한산하다.",
+        "3": "오후에는 업무가 가장 많다.",
+        "4": "저녁이 되면 영업을 마친다.",
+        "5": "밤에는 경비원만 남아 있다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "bank": true,
+      "open_times": [1,2,3,4]
+    },
+    {
+      "key": "HOUSING_OFFICE",
+      "name": "주택 관리국",
+      "description": "정부가 운영하는 주택 임대 및 분양 사무소",
+      "zone": "상업 지구",
+      "descriptions": {
+        "0": "새벽에는 문이 굳게 닫혀 있다.",
+        "1": "아침부터 상담을 기다리는 사람이 모인다.",
+        "2": "오전에는 계약을 처리하느라 분주하다.",
+        "3": "오후에도 방문객이 끊이지 않는다.",
+        "4": "저녁이 되면 영업을 마감한다.",
+        "5": "밤에는 불이 꺼져 있다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "housing_office": true,
+      "open_times": [1,2,3,4]
+    },
+    {
+      "key": "SPECIAL_BASE",
+      "name": "특수부대 기지",
+      "description": "정부의 특수부대가 주둔하는 비밀 기지",
+      "zone": "군사 구역",
+      "descriptions": {
+        "0": "새벽에도 경계가 삼엄하다.",
+        "1": "아침에는 훈련 준비가 이루어진다.",
+        "2": "오전에는 요란한 구호가 울려 퍼진다.",
+        "3": "오후에도 강도 높은 훈련이 계속된다.",
+        "4": "저녁이면 요원들이 휴식을 취한다.",
+        "5": "밤에는 외부인 접근이 철저히 통제된다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "restricted": true,
+      "security": 2,
+      "danger": 2
+    },
+    {
+      "key": "CAPITAL_GEOHAP",
+      "name": "거합 수도",
+      "description": "거합의 중심 도시",
+      "zone": "거합 중심",
+      "descriptions": {
+        "0": "거합 수도 새벽에는 다양한 동식물들이 조용히 움직인다.",
+        "1": "아침에는 서서히 활동이 시작된다.",
+        "2": "오전에는 협력체들이 활발히 의사소통한다.",
+        "3": "오후에는 회의와 교류가 한창이다.",
+        "4": "저녁에는 하루 정리를 위해 분주하다.",
+        "5": "밤에는 대부분 휴식을 취한다."
+      },
+      "nation": 1,
+      "station": true,
+      "international": true
+    },
+    {
+      "key": "BASE_TAMRANG",
+      "name": "탐랑 거점",
+      "description": "오프라인 기계들의 집합",
+      "zone": "탐랑 중심",
+      "descriptions": {
+        "0": "탐랑 거점은 새벽에도 약한 전광판 불빛이 반짝인다.",
+        "1": "아침이 되어도 대다수 기계는 오프라인 상태다.",
+        "2": "오전이 되면 일부 수리 작업이 이루어진다.",
+        "3": "오후에는 방랑자들이 드물게 모인다.",
+        "4": "저녁에는 떠날 준비로 분주하다.",
+        "5": "밤이 되면 거점은 거의 비어 있다."
+      },
+      "nation": 2,
+      "station": true,
+      "international": true
+    },
+    {
+      "key": "HUB_CHONKYE",
+      "name": "전계 허브",
+      "description": "모든 기계가 연결된 중심",
+      "zone": "전계 중심",
+      "descriptions": {
+        "0": "새벽에도 불빛이 꺼지지 않는 허브.",
+        "1": "아침엔 시스템 점검이 진행된다.",
+        "2": "오전에는 연결된 기계가 활발히 데이터 교환을 한다.",
+        "3": "오후에도 쉴 틈 없이 기계가 움직인다.",
+        "4": "저녁에는 에너지 수급을 위해 일부 구역이 정비된다.",
+        "5": "밤에도 중앙에서 명령이 전달된다."
+      },
+      "nation": 3,
+      "station": true,
+      "international": true
+    },
+    {
+      "key": "GEOHAP_MARKET",
+      "name": "거합 시장 거리",
+      "description": "다양한 동식물 상인들이 모여 있는 곳",
+      "zone": "거합 시장",
+      "descriptions": {
+        "0": "새벽의 시장은 한산하다.",
+        "1": "아침엔 준비로 분주하다.",
+        "2": "오전에는 온갖 거래가 활발하다.",
+        "3": "오후에도 교류가 이어진다.",
+        "4": "저녁이면 정리하는 모습이 보인다.",
+        "5": "밤에는 조용해진다."
+      },
+      "nation": 1
+    },
+    {
+      "key": "GEOHAP_RESIDENTIAL",
+      "name": "거합 주거 지구",
+      "description": "거합 구성원들이 모여 사는 곳",
+      "zone": "거합 주거",
+      "descriptions": {
+        "0": "새벽의 주거 지구는 고요하다.",
+        "1": "아침엔 서서히 움직임이 보인다.",
+        "2": "오전에는 대부분 바깥으로 나간다.",
+        "3": "오후에는 아이들이 뛰논다.",
+        "4": "저녁에는 돌아온 주민들로 북적인다.",
+        "5": "밤에는 휴식을 취한다."
+      },
+      "nation": 1
+    },
+    {
+      "key": "TAMRANG_MARKET",
+      "name": "탐랑 시장 구역",
+      "description": "방랑 기계들이 물자를 교환하는 장소",
+      "zone": "탐랑 시장",
+      "descriptions": {
+        "0": "새벽에도 조용히 거래가 이루어진다.",
+        "1": "아침에는 부품을 찾는 기계들이 모인다.",
+        "2": "오전에는 비교적 활기가 있다.",
+        "3": "오후에도 협상이 계속된다.",
+        "4": "저녁에는 각자 다음 목적지로 떠난다.",
+        "5": "밤에는 썰렁하다."
+      },
+      "nation": 2
+    },
+    {
+      "key": "TAMRANG_RESIDENTIAL",
+      "name": "탐랑 정비 구역",
+      "description": "기계들이 잠시 머무르며 수리하는 곳",
+      "zone": "탐랑 주거",
+      "descriptions": {
+        "0": "새벽에는 일부만 작동 중이다.",
+        "1": "아침에는 정비로 분주하다.",
+        "2": "오전에는 기본 점검이 이루어진다.",
+        "3": "오후에는 휴식을 취한다.",
+        "4": "저녁에는 소규모 모임이 열린다.",
+        "5": "밤에는 대부분 전원을 끈다."
+      },
+      "nation": 2
+    },
+    {
+      "key": "CHONKYE_MARKET",
+      "name": "전계 거래소",
+      "description": "연결된 기계들이 자원을 교환하는 곳",
+      "zone": "전계 시장",
+      "descriptions": {
+        "0": "새벽에도 데이터 교환이 이루어진다.",
+        "1": "아침에는 정비 로봇들이 분주하다.",
+        "2": "오전에는 거래가 가장 활발하다.",
+        "3": "오후에도 처리량이 많다.",
+        "4": "저녁에는 서버 정비가 진행된다.",
+        "5": "밤에도 교환이 계속된다."
+      },
+      "nation": 3
+    },
+    {
+      "key": "CHONKYE_RESIDENTIAL",
+      "name": "전계 주거 구역",
+      "description": "연결된 기계들이 대기하는 구역",
+      "zone": "전계 주거",
+      "descriptions": {
+        "0": "새벽에도 일정한 소음이 들린다.",
+        "1": "아침에는 시스템 점검이 이루어진다.",
+        "2": "오전에는 대부분 데이터 처리에 집중한다.",
+        "3": "오후에는 휴식 알고리즘이 실행된다.",
+        "4": "저녁에는 에너지 충전이 진행된다.",
+        "5": "밤에는 조용하다."
+      },
+      "nation": 3
+    }
+  ],
+  "connections": [
+    ["SEWER", "STATION"],
+    ["STATION", "MARKET"],
+    ["STATION", "RESIDENTIAL"],
+    ["STATION", "AIRPORT"],
+    {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
+    ["RESIDENTIAL", "CLINIC_LEGAL"],
+    ["STATION", "EXO_WORKSHOP"],
+    ["RESIDENTIAL", "APARTMENT"],
+    ["RESIDENTIAL", "SHELTER"],
+    ["RESIDENTIAL", "HOSPITAL"],
+    ["MARKET", "JOB_CENTER"],
+    ["MARKET", "BANK"],
+    ["MARKET", "HOUSING_OFFICE"],
+    ["STATION", "CLINIC_ILLEGAL"],
+    ["STATION", "SPECIAL_BASE"],
+    ["SEWER", "SLUM_MARKET"],
+    ["SLUM_MARKET", "SLUM_SHACK"],
+    ["SLUM_MARKET", "JAIL"],
+    ["RESIDENTIAL", "SMALL_HOUSE"],
+    ["CAPITAL_GEOHAP", "GEOHAP_MARKET"],
+    ["CAPITAL_GEOHAP", "GEOHAP_RESIDENTIAL"],
+    ["BASE_TAMRANG", "TAMRANG_MARKET"],
+    ["BASE_TAMRANG", "TAMRANG_RESIDENTIAL"],
+    ["HUB_CHONKYE", "CHONKYE_MARKET"],
+    ["HUB_CHONKYE", "CHONKYE_RESIDENTIAL"]
+  ],
+  "default_locations": {
+    "0": "SEWER",
+    "1": "CAPITAL_GEOHAP",
+    "2": "BASE_TAMRANG",
+    "3": "HUB_CHONKYE"
+  }
+}

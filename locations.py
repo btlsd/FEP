@@ -1,25 +1,94 @@
+import json
+import os
+
+
 class Nation:
-    def __init__(self, name, description):
+    def __init__(self, name, description, currency="화폐", transport="도보"):
         self.name = name
         self.description = description
+        self.currency = currency
+        self.transport = transport
 
 
 class Location:
-    def __init__(self, name, description, nation, indoors=False):
+    def __init__(
+        self,
+        name,
+        description,
+        nation,
+        zone=None,
+        indoors=False,
+        descriptions=None,
+        open_times=None,
+        mod_shop=None,
+        exo_shop=False,
+        station=False,
+        international=False,
+        job_office=False,
+        printer=False,
+        bank=False,
+        restricted=False,
+        locked_relic=False,
+        housing_office=False,
+        housing_market=False,
+        residence=False,
+        price=0,
+        rent_price=0,
+        cost_mult=1.0,
+        government=False,
+        hospital=False,
+        jail=False,
+        sleep_spot=False,
+        wash_spot=False,
+        season_desc=None,
+        security=0,
+        danger=0,
+    ):
         self.name = name
         self.description = description
         self.nation = nation
+        self.zone = zone or name
         self.indoors = indoors
-        self.connections = []  # always visible connections
-        self.hidden_connections = {}  # other Location -> required perception
+        self.connections = []
+        self.hidden_connections = {}
+        # optional dict of time_index -> description
+        self.descriptions = descriptions or {}
+        # list of allowed time indexes (0~5)
+        self.open_times = open_times if open_times is not None else list(range(6))
+        self.mod_shop = mod_shop  # "legal" or "illegal"
+        self.exo_shop = exo_shop
+        self.station = station
+        self.international = international
+        self.job_office = job_office
+        self.printer = printer
+        self.bank = bank
+        self.restricted = restricted
+        self.locked_relic = locked_relic
+        self.housing_office = housing_office
+        self.housing_market = housing_market
+        self.residence = residence
+        self.price = price
+        self.rent_price = rent_price
+        self.cost_mult = cost_mult
+        self.government = government
+        self.hospital = hospital
+        self.jail = jail
+        self.sleep_spot = sleep_spot
+        self.wash_spot = wash_spot
+        self.season_desc = season_desc or {}
+        self.security = security
+        self.danger = danger
+
+    def get_description(self, time_idx, season=None):
+        # descriptions keys might be strings in JSON
+        desc = self.descriptions.get(time_idx) or self.descriptions.get(str(time_idx)) or self.description
+        if season is not None:
+            extra = self.season_desc.get(season) or self.season_desc.get(str(season))
+            if extra:
+                desc += " " + extra
+        return desc
 
     def connect(self, other, required_perception=None):
-        """Connect two locations.
-
-        If ``required_perception`` is given, the path starts hidden and is
-        revealed only when the player performs an exploration with perception
-        greater or equal to that value.
-        """
         if required_perception is None:
             if other not in self.connections:
                 self.connections.append(other)
@@ -30,73 +99,88 @@ class Location:
             other.hidden_connections[self] = required_perception
 
 
+def _load_data():
+    path = os.path.join(os.path.dirname(__file__), "data", "locations.json")
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+data = _load_data()
+
 # Nations
 NATIONS = [
-    Nation("인류연합국", "인간들로 이루어진 연합 국가"),
     Nation(
-        "거합",
-        "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가",
-    ),
-    Nation(
-        "탐랑",
-        "개성을 중시해 오프라인으로 방랑하는 기계들의 느슨한 모임",
-    ),
-    Nation(
-        "전계국",
-        "모든 기계가 하나로 연결되길 바라는 전기와 기계의 나라",
-    ),
+        n["name"],
+        n["description"],
+        n.get("currency", "화폐"),
+        n.get("transport", "도보"),
+    )
+    for n in data["nations"]
 ]
+NATION_BY_NAME = {n.name: n for n in NATIONS}
 
-# Locations for the human nation
-SEWER = Location(
-    "거대한 하수도",
-    "인류연합국 수도 지하를 흐르는 광대한 하수도",
-    NATIONS[0],
-    indoors=True,
-)
-STATION = Location(
-    "지하 정거장",
-    "도시 각지로 통하는 낡은 정거장",
-    NATIONS[0],
-    indoors=True,
-)
-MARKET = Location(
-    "중앙 시장",
-    "사람들로 붐비는 시장 거리",
-    NATIONS[0],
-)
-RESIDENTIAL = Location(
-    "주거 지구",
-    "평범한 주거 지역",
-    NATIONS[0],
-)
-SECRET_LAB = Location(
-    "비밀 실험실",
-    "하수도 깊숙한 곳에 숨겨진 연구 시설",
-    NATIONS[0],
-    indoors=True,
-)
+# Locations
+_locations = {}
+for entry in data["locations"]:
+    nation = NATIONS[entry["nation"]]
+    loc = Location(
+        entry["name"],
+        entry.get("description", ""),
+        nation,
+        entry.get("zone"),
+        entry.get("indoors", False),
+        entry.get("descriptions"),
+        entry.get("open_times"),
+        entry.get("mod_shop"),
+        entry.get("exo_shop", False),
+        entry.get("station", False),
+        entry.get("international", False),
+        entry.get("job_office", False),
+        entry.get("printer", False),
+        entry.get("bank", False),
+        entry.get("restricted", False),
+        entry.get("locked_relic", False),
+        entry.get("housing_office", False),
+        entry.get("housing_market", False),
+        entry.get("residence", False),
+        entry.get("price", 0),
+        entry.get("rent_price", 0),
+        entry.get("cost_mult", 1.0),
+        entry.get("government", False),
+        entry.get("hospital", False),
+        entry.get("jail", False),
+        entry.get("sleep_spot", False),
+        entry.get("wash_spot", False),
+        entry.get("season_desc"),
+        entry.get("security", 0),
+        entry.get("danger", 0),
+    )
+    loc.key = entry["key"]
+    _locations[entry["key"]] = loc
 
-# Connect locations
-SEWER.connect(STATION)
-STATION.connect(MARKET)
-STATION.connect(RESIDENTIAL)
-SEWER.connect(SECRET_LAB, required_perception=7)
+# Connections
+for conn in data["connections"]:
+    if isinstance(conn, list):
+        a, b = _locations[conn[0]], _locations[conn[1]]
+        a.connect(b)
+    else:
+        a = _locations[conn["from"]]
+        b = _locations[conn["to"]]
+        a.connect(b, required_perception=conn["perception"])
 
-# Default locations for each nation when first arrived
-DEFAULT_LOCATION_BY_NATION = {
-    NATIONS[0]: SEWER,
-    NATIONS[1]: Location("거합 수도", "거합의 중심 도시", NATIONS[1]),
-    NATIONS[2]: Location("탐랑 거점", "오프라인 기계들의 집합", NATIONS[2]),
-    NATIONS[3]: Location("전계 허브", "모든 기계가 연결된 중심", NATIONS[3]),
-}
+# Default locations
+DEFAULT_LOCATION_BY_NATION = {NATIONS[int(k)]: _locations[v] for k, v in data["default_locations"].items()}
 
-# List of all locations (including generated defaults)
-LOCATIONS = [
-    SEWER,
-    STATION,
-    MARKET,
-    RESIDENTIAL,
-    SECRET_LAB,
-    *DEFAULT_LOCATION_BY_NATION.values(),
-]
+# Export location variables for convenience
+globals().update(_locations)
+
+LOCATIONS = list(_locations.values()) + list({loc for loc in DEFAULT_LOCATION_BY_NATION.values() if loc not in _locations.values()})
+
+__all__ = [
+    "Nation",
+    "Location",
+    "NATIONS",
+    "NATION_BY_NAME",
+    "DEFAULT_LOCATION_BY_NATION",
+    "LOCATIONS",
+] + list(_locations.keys())

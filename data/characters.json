@@ -1,0 +1,173 @@
+{
+  "npcs": [
+    {
+      "name": "상인 정",
+      "age": 45,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 50, "C": 60, "E": 70, "A": 80, "N": 40},
+      "affiliation": "인류연합국 상인조합",
+      "job": "상인",
+      "status": "평민",
+      "schedule": {"0": "RESIDENTIAL", "1": "MARKET", "2": "MARKET", "3": "MARKET", "4": "RESIDENTIAL", "5": "RESIDENTIAL"},
+      "agility": 5,
+      "stats": {"strength": 4, "perception": 6, "endurance": 5, "charisma": 8, "intelligence": 6}
+      ,
+      "inventory": ["BROKEN_PART" , "GOLD_NECKLACE"],
+      "shop": {
+        "IR_EYE_LEFT_PART": 15,
+        "BROKEN_PART": 3,
+        "WOODEN_CLUB": 8,
+        "IRON_PIPE": 10,
+        "SWORD": 25,
+        "PISTOL": 40
+      },
+      "blueprints": {
+        "IR_EYE_LEFT_PART": 30
+      }
+    },
+    {
+      "name": "로봇 42",
+      "age": 10,
+      "gender": "none",
+      "origin": "전계국",
+      "personality": {"O": 20, "C": 80, "E": 30, "A": 20, "N": 10},
+      "affiliation": "전계국",
+      "job": "경비",
+      "status": "정예",
+      "schedule": {"0": "STATION", "1": "STATION", "2": "STATION", "3": "STATION", "4": "STATION", "5": "STATION"},
+      "agility": 5,
+      "stats": {"strength": 6, "perception": 5, "endurance": 6, "charisma": 3, "intelligence": 4},
+      "blueprint_drop": "IR_EYE_LEFT_PART",
+      "inventory": ["LASER_PISTOL"]
+    },
+    {
+      "name": "닥터 홍",
+      "age": 50,
+      "gender": "female",
+      "origin": "인류연합국",
+      "personality": {"O": 60, "C": 70, "E": 50, "A": 60, "N": 30},
+      "affiliation": "연합 의료 협회",
+      "job": "의공사",
+      "status": "정예",
+      "schedule": {"0": "CLINIC_LEGAL", "1": "CLINIC_LEGAL", "2": "CLINIC_LEGAL", "3": "CLINIC_LEGAL", "4": "CLINIC_LEGAL", "5": "RESIDENTIAL"},
+      "agility": 5,
+      "stats": {"strength": 4, "perception": 6, "endurance": 5, "charisma": 6, "intelligence": 8}
+      ,
+      "inventory": ["BRAIN_INTERFACE_CHIP"],
+      "blueprints": {"BRAIN_INTERFACE_CHIP": 50}
+    },
+    {
+      "name": "기술자 철",
+      "age": 40,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 40, "C": 30, "E": 60, "A": 50, "N": 50},
+      "affiliation": "무허가 시술사",
+      "job": "의공사",
+      "status": "평민",
+      "schedule": {"0": "CLINIC_ILLEGAL", "4": "CLINIC_ILLEGAL", "5": "CLINIC_ILLEGAL"},
+      "agility": 5,
+      "stats": {"strength": 5, "perception": 5, "endurance": 5, "charisma": 4, "intelligence": 7},
+      "inventory": ["PREC_EYE_RIGHT_PART"],
+      "blueprint_drop": "PREC_EYE_RIGHT_PART"
+    },
+    {
+      "name": "은하",
+      "age": 30,
+      "gender": "female",
+      "origin": "인류연합국",
+      "personality": {"O": 70, "C": 70, "E": 60, "A": 90, "N": 20},
+      "affiliation": "연합 사회복지국",
+      "job": "사회복지사",
+      "status": "평민",
+      "schedule": {"0": "SHELTER", "1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "SHELTER", "5": "SHELTER"},
+      "agility": 5,
+      "stats": {"strength": 4, "perception": 7, "endurance": 5, "charisma": 8, "intelligence": 6},
+      "inventory": ["BOARDING_PASS" , "SILVER_RING"]
+    },
+    {
+      "name": "상담가 민호",
+      "age": 35,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 50, "C": 60, "E": 65, "A": 70, "N": 30},
+      "affiliation": "직업소개소",
+      "job": "상담가",
+      "status": "평민",
+      "schedule": {"1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "JOB_CENTER"},
+      "agility": 5,
+      "stats": {"strength": 5, "perception": 6, "endurance": 5, "charisma": 7, "intelligence": 6}
+    },
+    {
+      "name": "지휘관 백",
+      "age": 40,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 40, "C": 80, "E": 60, "A": 50, "N": 30},
+      "affiliation": "인류연합국 군", 
+      "job": "지휘관",
+      "status": "특수",
+      "schedule": {"0": "SPECIAL_BASE", "1": "SPECIAL_BASE", "2": "SPECIAL_BASE", "3": "SPECIAL_BASE", "4": "SPECIAL_BASE"},
+      "agility": 6,
+      "stats": {"strength": 8, "perception": 6, "endurance": 7, "charisma": 5, "intelligence": 6},
+      "inventory": ["PISTOL"]
+    },
+    {
+      "name": "갱단원 칼",
+      "age": 28,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 30, "C": 30, "E": 60, "A": 60, "N": 50},
+      "affiliation": "슬럼 갱단",
+      "job": "갱단원",
+      "status": "평민",
+      "schedule": {"0": "SLUM_MARKET", "1": "SLUM_MARKET", "2": "SLUM_MARKET", "3": "SLUM_MARKET", "4": "SLUM_MARKET", "5": "SLUM_SHACK"},
+      "agility": 6,
+      "stats": {"strength": 7, "perception": 5, "endurance": 6, "charisma": 4, "intelligence": 4},
+      "inventory": ["IRON_PIPE"]
+    },
+    {
+      "name": "교도소장 박",
+      "age": 55,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 40, "C": 70, "E": 50, "A": 50, "N": 30},
+      "affiliation": "교정국",
+      "job": "교도소장",
+      "status": "정예",
+      "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
+      "agility": 5,
+      "stats": {"strength": 6, "perception": 6, "endurance": 6, "charisma": 5, "intelligence": 5},
+      "inventory": ["PISTOL"]
+    },
+    {
+      "name": "안드로이드 경비 A",
+      "age": 10,
+      "gender": "none",
+      "origin": "전계국",
+      "personality": {"O": 20, "C": 80, "E": 30, "A": 20, "N": 10},
+      "affiliation": "교정국",
+      "job": "경비",
+      "status": "정예",
+      "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
+      "agility": 6,
+      "stats": {"strength": 6, "perception": 5, "endurance": 6, "charisma": 2, "intelligence": 4},
+      "inventory": ["LASER_PISTOL"]
+    },
+    {
+      "name": "안드로이드 경비 B",
+      "age": 10,
+      "gender": "none",
+      "origin": "전계국",
+      "personality": {"O": 20, "C": 80, "E": 30, "A": 20, "N": 10},
+      "affiliation": "교정국",
+      "job": "경비",
+      "status": "정예",
+      "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
+      "agility": 6,
+      "stats": {"strength": 6, "perception": 5, "endurance": 6, "charisma": 2, "intelligence": 4},
+      "inventory": ["LASER_PISTOL"]
+    }
+  ]
+}
