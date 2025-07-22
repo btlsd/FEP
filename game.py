@@ -487,10 +487,14 @@ class Game:
         if self.player.has_flag("stealth"):
             chance += 20
         if random.randint(1, 100) <= chance:
-            item = random.choice(npc.inventory)
-            npc.inventory.remove(item)
-            self.player.add_item(item)
-            print(f"{npc.name}에게서 {item.name}을 훔쳤습니다.")
+            small = [it for it in npc.inventory if getattr(it, "volume", 1) <= 1]
+            if not small:
+                print("훔칠 만한 작은 물건이 없습니다.")
+            else:
+                item = random.choice(small)
+                npc.inventory.remove(item)
+                self.player.add_item(item)
+                print(f"{npc.name}에게서 {item.name}을 훔쳤습니다.")
         else:
             print(f"{npc.name}에게 들켰습니다!")
             npc.affinity = max(0, npc.affinity - 10)
@@ -832,6 +836,12 @@ class Game:
             return
         if self.player.has_flag("stealth") or self.player.has_flag("infiltrating"):
             print(f"{npc.name}이(가) 당신의 등장에 깜짝 놀랍니다!")
+            change = 1 if npc.affinity >= 80 else -5
+            npc.affinity = max(0, min(100, npc.affinity + change))
+            if change > 0:
+                print("호감도가 약간 상승했습니다.")
+            else:
+                print("호감도가 감소했습니다.")
             self.player.flags.discard("stealth")
             if self.player.has_flag("infiltrating"):
                 self.player.flags.discard("infiltrating")

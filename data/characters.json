@@ -12,7 +12,7 @@
       "schedule": {"0": "RESIDENTIAL", "1": "MARKET", "2": "MARKET", "3": "MARKET", "4": "RESIDENTIAL", "5": "RESIDENTIAL"},
       "agility": 5
       ,
-      "inventory": ["BROKEN_PART"],
+      "inventory": ["BROKEN_PART" , "GOLD_NECKLACE"],
       "shop": {
         "IR_EYE_LEFT_PART": 15,
         "BROKEN_PART": 3,
@@ -79,7 +79,7 @@
       "status": "평민",
       "schedule": {"0": "SHELTER", "1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "SHELTER", "5": "SHELTER"},
       "agility": 5
-      ,"inventory": ["BOARDING_PASS"]
+      ,"inventory": ["BOARDING_PASS" , "SILVER_RING"]
     },
     {
       "name": "상담가 민호",

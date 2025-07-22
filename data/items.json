@@ -35,4 +35,6 @@
   "TAIL_PART": {"name": "사이버 꼬리 부품", "weight": 3, "volume": 3, "printable": true},
   "COLD_SKIN_PART": {"name": "단열 피부 부품", "weight": 1, "volume": 1, "printable": true},
   "BEAUTY_SKIN_PART": {"name": "미용 피부 부품", "weight": 1, "volume": 1, "printable": true}
+,  "GOLD_NECKLACE": {"name": "금 목걸이", "weight": 0.2, "volume": 0.2}
+,  "SILVER_RING": {"name": "은 반지", "weight": 0.1, "volume": 0.05}
 }
