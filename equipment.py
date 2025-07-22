@@ -37,6 +37,7 @@ class BodyMod:
         weapon_damage=0,
         memory_bonus=0,
         wireless=False,
+        weapon_range=None,
     ):
         self.name = name
         self.slot = slot  # e.g. 'arm', 'eye'
@@ -50,6 +51,7 @@ class BodyMod:
         self.weapon_damage = weapon_damage
         self.memory_bonus = memory_bonus
         self.wireless = wireless
+        self.weapon_range = weapon_range
 
 
 # Default equipment items
@@ -153,6 +155,7 @@ HIDDEN_MELEE_ARM = BodyMod(
     flags=["melee_arm", "conceal_slot"],
     required_item=HIDDEN_MELEE_ARM_PART,
     weapon_damage=7,
+    weapon_range="melee",
 )
 
 HIDDEN_RANGED_ARM = BodyMod(
@@ -162,6 +165,7 @@ HIDDEN_RANGED_ARM = BodyMod(
     required_item=HIDDEN_RANGED_ARM_PART,
     weapon_damage=10,
     needs_brain=True,
+    weapon_range="ranged",
 )
 
 # Exotic enhancements

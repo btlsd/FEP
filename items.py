@@ -17,6 +17,7 @@ class Item:
         material=None,
         quality=1.0,
         durability=None,
+        weapon_range=None,
     ):
         self.name = name
         self.weight = weight
@@ -37,6 +38,7 @@ class Item:
             self.damage = int(damage * quality)
         else:
             self.damage = damage
+        self.weapon_range = weapon_range
 
 
 def _load_items():
@@ -58,6 +60,7 @@ def _load_items():
             val.get("material"),
             val.get("quality", 1.0),
             val.get("durability"),
+            val.get("range"),
         )
     return items
 

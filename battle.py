@@ -2,9 +2,26 @@ import random
 from utils import choose_option, roll_check
 
 
-def gauge_cost(agility):
+def _active_weapon(combatant):
+    """Return equipped weapon or weapon-providing mod if any."""
+    weapon = getattr(combatant, "weapon", None)
+    if not weapon:
+        for mod in getattr(combatant, "mods", {}).values():
+            if getattr(mod, "weapon_damage", 0) > 0:
+                weapon = mod
+                break
+    return weapon
+
+
+def gauge_cost(combatant):
     """Return how much of the turn gauge is consumed per tick."""
-    return min(99, 50 + agility * 5)
+    agility = getattr(combatant, "agility", 5)
+    cost = min(99, 50 + agility * 5)
+    weapon = _active_weapon(combatant)
+    if weapon and getattr(weapon, "weapon_range", None) == "melee":
+        weight = getattr(weapon, "weight", 0)
+        cost = max(10, cost - int(weight * 2))
+    return cost
 
 
 def wireless_intrusion(victim):
@@ -32,6 +49,18 @@ def attempt_hack(attacker, defender):
     return True
 
 
+def attack_hit(attacker, defender, weapon):
+    """Determine if an attack hits using stats and weapon weight."""
+    base = 70 + getattr(attacker, "agility", 5) * 2 + getattr(attacker, "perception", 5)
+    base -= getattr(defender, "agility", 5) * 2
+    weight = getattr(weapon, "weight", 0)
+    w_range = getattr(weapon, "weapon_range", None)
+    if w_range:
+        base -= int(weight * 2)
+    base = max(5, min(95, base))
+    return roll_check(base)
+
+
 def start_battle(player, npc, ambush=None):
     """Run a simple turn-based battle between player and npc.
 
@@ -45,8 +74,8 @@ def start_battle(player, npc, ambush=None):
     }
     turns = 0
     while player.health > 0 and npc.health > 0:
-        gauges[player] -= gauge_cost(player.agility)
-        gauges[npc] -= gauge_cost(npc.agility)
+        gauges[player] -= gauge_cost(player)
+        gauges[npc] -= gauge_cost(npc)
         wireless_intrusion(player)
         wireless_intrusion(npc)
         if gauges[player] <= 0:
@@ -55,13 +84,9 @@ def start_battle(player, npc, ambush=None):
                 target_idx = choose_option(["머리", "몸통", "팔", "다리"], allow_back=False)
                 target_names = ["머리", "몸통", "팔", "다리"]
                 t_name = target_names[target_idx]
-                weapon = getattr(player, "weapon", None)
-                w_dmg = getattr(weapon, "damage", 0)
+                weapon = _active_weapon(player)
+                w_dmg = getattr(weapon, "damage", getattr(weapon, "weapon_damage", 0))
                 w_type = getattr(weapon, "weapon_type", None)
-                if not weapon:
-                    for mod in getattr(player, "mods", {}).values():
-                        w_dmg = max(w_dmg, getattr(mod, "weapon_damage", 0))
-                        w_type = w_type or getattr(mod, "weapon_type", None)
                 dmg = random.randint(5, 10) + getattr(player, "strength", 5) + w_dmg
                 extra_msg = ""
                 if w_type == "냉병기" and t_name != "몸통" and random.random() < 0.3:
@@ -70,8 +95,11 @@ def start_battle(player, npc, ambush=None):
                 if w_type == "둔기" and t_name == "머리" and random.random() < 0.3:
                     extra_msg = f" {npc.name}을 기절시켰습니다!"
                     gauges[npc] += 100
-                npc.health -= dmg
-                print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.{extra_msg}")
+                if attack_hit(player, npc, weapon):
+                    npc.health -= dmg
+                    print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.{extra_msg}")
+                else:
+                    print("공격이 빗나갔습니다!")
             elif action == 1:
                 if not attempt_hack(player, npc):
                     print("사용 가능한 기술이 없습니다.")
@@ -87,13 +115,9 @@ def start_battle(player, npc, ambush=None):
             if npc.health <= 0:
                 break
         if gauges[npc] <= 0 and npc.health > 0:
-            weapon = getattr(npc, "weapon", None)
-            w_dmg = getattr(weapon, "damage", 0)
+            weapon = _active_weapon(npc)
+            w_dmg = getattr(weapon, "damage", getattr(weapon, "weapon_damage", 0))
             w_type = getattr(weapon, "weapon_type", None)
-            if not weapon:
-                for mod in getattr(npc, "mods", {}).values():
-                    w_dmg = max(w_dmg, getattr(mod, "weapon_damage", 0))
-                    w_type = w_type or getattr(mod, "weapon_type", None)
             if (
                 npc.has_flag("wireless")
                 and player.has_flag("wireless")
@@ -104,8 +128,11 @@ def start_battle(player, npc, ambush=None):
             if w_type == "둔기" and random.random() < 0.1:
                 print(f"{npc.name}이(가) 머리를 강타하여 당신이 기절합니다!")
                 gauges[player] += 100
-            player.health -= dmg
-            print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.")
+            if attack_hit(npc, player, weapon):
+                player.health -= dmg
+                print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.")
+            else:
+                print(f"{npc.name}의 공격이 빗나갔습니다.")
             gauges[npc] = 100
             turns += 1
     if player.health <= 0:
