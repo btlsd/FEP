@@ -1090,55 +1090,31 @@ class Game:
         self.step(action)
 
     def choose_action(self):
-        opts = [
-            "일하기",
-            "식사",
-            "잠자기",
-            "탐험",
-            "소지품 확인",
-            "장비 장착",
-            "스탯 측정",
-            "씻기",
-            "신체 개조",
-            "미디어 시청",
-            "운동",
-            "책 읽기",
-            "영상 학습",
-            "데이터 다운로드",
-        ]
-        added = []
-        for key in ACTIONS:
-            name = ACTIONS[key]
-            if name not in opts:
-                opts.append(name)
-                added.append(key)
-        if getattr(self.player.location, "printer", False):
-            opts.append("프린팅")
-        if getattr(self.player.location, "job_office", False):
-            opts.append("직업 찾기")
-        if getattr(self.player.location, "housing_office", False) or getattr(self.player.location, "housing_market", False):
-            opts.append("주거지 거래")
-        if getattr(self.player.location, "bank", False):
-            opts.extend(["입금", "출금"])
-        idx = self.prompt(opts, path=["행동"])
-        if idx is None:
-            return
-        actions = [
-            self.work,
-            self.eat,
-            self.sleep,
-            self.explore,
-            self.player.show_inventory,
-            self.change_equipment,
-            self.measure_stats,
-            self.wash,
-            self.modify_body,
-            self.watch_media,
-            self.exercise,
-            self.read_book,
-            self.study_video,
-            self.download_data,
-        ]
+        opts = []
+        actions = []
+
+        def add(option, func, cond=True):
+            if cond:
+                opts.append(option)
+                actions.append(func)
+
+        add("일하기", self.work, self.player.stamina >= 20 and self.player.satiety >= 20 and self.player.weekday in {0, 1, 3, 4})
+        cost = int(5 * getattr(self.player.location, "cost_mult", 1.0))
+        add("식사", self.eat, self.player.money.get(self.player.location.nation.currency, 0) >= cost)
+        add("잠자기", self.sleep, getattr(self.player.location, "sleep_spot", False))
+        add("탐험", self.explore)
+        add("소지품 확인", self.player.show_inventory)
+        add("장비 장착", self.change_equipment)
+        can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
+        add("스탯 측정", self.measure_stats, can_measure)
+        wash_fee = 2
+        add("씻기", self.wash, getattr(self.player.location, "wash_spot", False) and self.player.money.get(self.player.location.nation.currency, 0) >= wash_fee)
+        add("신체 개조", self.modify_body, getattr(self.player.location, "mod_shop", False))
+        add("미디어 시청", self.watch_media, self.player.money.get(self.player.location.nation.currency, 0) >= 2)
+        add("운동", self.exercise, self.player.stamina >= 10)
+        add("책 읽기", self.read_book)
+        add("영상 학습", self.study_video, self.player.money.get(self.player.location.nation.currency, 0) >= 1)
+        add("데이터 다운로드", self.download_data, self.player.has_flag("interface"))
         extra_map = {
             "wait": self.wait,
             "sleep": self.sleep,
@@ -1150,16 +1126,37 @@ class Game:
             "watch_media": self.watch_media,
             "exercise": self.exercise,
         }
-        for key in added:
-            actions.append(extra_map.get(key, self.wait))
+
+        for key in ACTIONS:
+            name = ACTIONS[key]
+            if name not in opts:
+                opts.append(name)
+                actions.append(extra_map.get(key, self.wait))
+
+        from items import _ITEMS
+
         if getattr(self.player.location, "printer", False):
-            actions.append(self.print_item)
+            printable = [k for k, p in self.player.blueprints.items() if p >= 100 and _ITEMS[k].printable]
+            if printable:
+                opts.append("프린팅")
+                actions.append(self.print_item)
         if getattr(self.player.location, "job_office", False):
+            opts.append("직업 찾기")
             actions.append(self.find_job)
         if getattr(self.player.location, "housing_office", False) or getattr(self.player.location, "housing_market", False):
+            opts.append("주거지 거래")
             actions.append(self.housing_trade)
         if getattr(self.player.location, "bank", False):
-            actions.extend([self.deposit_money, self.withdraw_money])
+            if any(self.player.money.values()):
+                opts.append("입금")
+                actions.append(self.deposit_money)
+            if any(self.player.bank.values()):
+                opts.append("출금")
+                actions.append(self.withdraw_money)
+
+        idx = self.prompt(opts, path=["행동"])
+        if idx is None:
+            return
         action = actions[idx]
         if action is self.player.show_inventory:
             action()
@@ -1167,42 +1164,33 @@ class Game:
             self.step(action)
 
     def open_menu(self):
-        options = [
-            "스탯 확인",
-            "소지품 확인",
-            "장비 장착",
-            "스탯 측정",
-            "데이터 확인",
-            "저장",
-            "불러오기",
-            "종료",
-        ]
-        idx = self.prompt(options, path=["메뉴"])
+        opts = []
+        actions = []
+
+        def add(option, func, cond=True):
+            if cond:
+                opts.append(option)
+                actions.append(func)
+
+        add("스탯 확인", self.player.status)
+        add("소지품 확인", self.player.show_inventory)
+        add("장비 장착", self.change_equipment)
+        can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
+        add("스탯 측정", self.measure_stats, can_measure)
+        add("데이터 확인", self.player.show_data, bool(self.player.blueprints))
+        add("저장", self.save)
+        add("불러오기", self.load)
+        add("종료", None)
+
+        idx = self.prompt(opts, path=["메뉴"])
         if idx is None:
             return True
-        if idx == 0:
-            self.player.status()
-            return True
-        if idx == 1:
-            self.player.show_inventory()
-            return True
-        if idx == 2:
-            self.change_equipment()
-            return True
-        if idx == 3:
-            self.measure_stats()
-            return True
-        if idx == 4:
-            self.player.show_data()
-            return True
-        if idx == 5:
-            self.save()
-            return True
-        if idx == 6:
-            self.load()
-            return True
-        print("게임을 종료합니다.")
-        return False
+        action = actions[idx]
+        if action is None:
+            print("게임을 종료합니다.")
+            return False
+        action()
+        return True
 
     def play(self):
         self.running = True
