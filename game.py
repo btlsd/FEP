@@ -23,7 +23,7 @@ from items import (
 )
 from equipment import BODY_MODS
 from gui import draw_screen
-from utils import choose_option, roll_check
+from utils import choose_option, roll_check, progress_bar
 import json
 import os
 
@@ -118,6 +118,25 @@ class Game:
     def prompt(self, options, path=None, allow_back=True):
         """Wrapper around ``choose_option`` with menu path support."""
         return choose_option(options, allow_back=allow_back, path=path)
+
+    def travel_effect(self, dest, mode="도보"):
+        """Show travel narration with a progress bar."""
+        start = self.player.location
+        print(f"{start.name} -> {dest.name}")
+        print(start.get_description(self.player.time, self.player.season))
+        print("-" * 30)
+        if mode == "도보":
+            mid = "주변 거리를 천천히 걸어갑니다."
+        elif mode == "정거장":
+            mid = f"{start.nation.transport}을 이용해 이동합니다."
+        elif mode == "제트팩":
+            mid = "제트팩을 가동해 하늘을 날아갑니다."
+        else:
+            mid = f"{start.nation.transport}을 이용해 먼 거리를 이동합니다."
+        print(mid)
+        progress_bar("이동 중 ")
+        print(dest.get_description(self.player.time, self.player.season))
+        print("-" * 30)
 
     def hospitalize(self):
         p = self.player
@@ -295,30 +314,6 @@ class Game:
         tax = int(income * 0.2)
         net = income - tax
         self.player.add_money(net, currency)
-    def update_characters(self):
-        for npc in self.characters:
-            npc.update_location(self.player.time)
-
-    def advance_time(self):
-        self.player.time += 1
-        if self.player.time > 2:
-            self.player.time = 0
-            self.player.end_day()
-
-    def work(self):
-        if self.player.stamina < 20 or self.player.satiety < 20:
-            print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
-            return
-        income = 10 + self.player.intelligence // 2 + self.player.strength // 2
-        self.player.money += income
-        stamina_cost = max(10, 20 - self.player.strength)
-        satiety_cost = max(5, 10 - self.player.endurance // 2)
-        self.player.stamina -= stamina_cost
-        self.player.satiety -= satiety_cost
-        self.player.cleanliness -= 5
-        self.player.experience += 1
-        self.player.adjust_fame(1)
-        print(f"일해서 {net}{currency}를 벌었습니다. (세금 {tax}{currency})")
 
     def eat(self):
         price = int(5 * getattr(self.player.location, "cost_mult", 1.0))
@@ -836,9 +831,9 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != self.player.location:
+            self.travel_effect(dest, "도보")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"도보로 {self.player.location.name}으로 이동했습니다.")
 
     def move_station(self):
         current = self.player.location
@@ -861,9 +856,9 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != self.player.location:
+            self.travel_effect(dest, "정거장")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"{dest.name}으로 이동했습니다.")
 
     def move_jetpack(self):
         if not self.player.has_flag("jetpack"):
@@ -894,9 +889,9 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != current:
+            self.travel_effect(dest, "제트팩")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"제트팩으로 {dest.name}에 도착했습니다.")
 
     def interact(self):
         nearby = [c for c in self.characters if c.location == self.player.location and c.is_alive()]
@@ -959,12 +954,11 @@ class Game:
         if idx is None:
             return
         nation = NATIONS[idx]
-        self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
+        dest = DEFAULT_LOCATION_BY_NATION[nation]
+        self.travel_effect(dest, "국가 이동")
+        self.player.location = dest
         if use_ticket:
             self.player.inventory.remove(BOARDING_PASS)
-        print(
-            f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
-        )
 
     def kidnap_fight_sequence(self):
         p = self.player

@@ -38,3 +38,15 @@ def roll_check(chance):
     outcome = "성공" if roll <= chance else "실패"
     print(f"목표 {chance} - 결과 {roll} => {outcome}")
     return roll <= chance
+
+import sys
+import time
+
+
+def progress_bar(prefix: str = "", length: int = 10, delay: float = 0.2) -> None:
+    """Print a simple text progress bar."""
+    for i in range(length):
+        bar = "#" * (i + 1) + "-" * (length - i - 1)
+        print(f"\r{prefix}[{bar}]", end="", flush=True)
+        time.sleep(delay)
+    print(f"\r{prefix}[{'#' * length}]")
