@@ -32,6 +32,9 @@
       "평민": "편한 마음으로 둘러보세요, {player}.",
       "실험체": "당신에 대한 기록을 조회 중입니다, {player}."
     },
+    "fame": {
+      "famous": "오, 당신이 그 유명한 {player}님이군요!"
+    },
     "personality": {
       "HHHHH": "성격 HHHHH형 인사",
       "HHHHL": "성격 HHHHL형 인사",

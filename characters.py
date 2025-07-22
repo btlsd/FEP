@@ -42,6 +42,11 @@ class Character:
         job,
         schedule,
         agility=5,
+        strength=5,
+        perception=5,
+        endurance=5,
+        charisma=5,
+        intelligence=5,
         age=None,
         gender=None,
         origin=None,
@@ -73,8 +78,14 @@ class Character:
         self.blueprints = blueprints or {}
         self.blueprint_drop = blueprint_drop
         self.inventory = inventory or []
-        self.health = 50
+        self.strength = strength
+        self.perception = perception
+        self.endurance = endurance
+        self.charisma = charisma
+        self.intelligence = intelligence
         self.agility = agility
+        self.max_health = 50 + self.endurance * 10
+        self.health = self.max_health
         self.flags = set()
 
     def update_location(self, time_idx):
@@ -213,6 +224,7 @@ def _load_npcs():
         if "inventory" in entry:
             from items import _ITEMS
             inventory = [_ITEMS[key] for key in entry["inventory"] if key in _ITEMS]
+        stats = entry.get("stats", {})
         npcs.append(
             Character(
                 entry["name"],
@@ -221,6 +233,11 @@ def _load_npcs():
                 entry.get("job", ""),
                 schedule,
                 agility=entry.get("agility", 5),
+                strength=stats.get("strength", 5),
+                perception=stats.get("perception", 5),
+                endurance=stats.get("endurance", 5),
+                charisma=stats.get("charisma", 5),
+                intelligence=stats.get("intelligence", 5),
                 age=entry.get("age"),
                 gender=entry.get("gender"),
                 origin=entry.get("origin"),
@@ -277,6 +294,7 @@ class Player:
         self.money = {NATIONS[0].currency: 20}
         self.bank = {n.currency: 0 for n in NATIONS}
         self.experience = 0
+        self.fame = 0
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -356,6 +374,11 @@ class Player:
     def has_money(self, amount, currency):
         return self.money.get(currency, 0) >= amount
 
+    def adjust_fame(self, amount):
+        self.fame += amount
+        if self.fame < 0:
+            self.fame = 0
+
     def describe_stat(self, value):
         if value >= 20:
             return "초인적이다"
@@ -388,6 +411,7 @@ class Player:
         if bank_str:
             print(f"은행 예금: {bank_str}")
         print(f"경험치: {self.experience}")
+        print(f"유명세: {self.fame}")
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
         print(f"거주지: {self.home.name}")
         if self.loan_balance:
@@ -538,6 +562,7 @@ class Player:
             self.home = APARTMENT
             self.location = APARTMENT
             print(f"정부 지원으로 50{cur}을 빌리고 임대 아파트에 입주했습니다.")
+        self.adjust_fame(5)
 
     def process_monthly_costs(self):
         currency = self.home.nation.currency
@@ -773,6 +798,7 @@ class Player:
             "money": self.money,
             "bank": self.bank,
             "experience": self.experience,
+            "fame": self.fame,
             "day": self.day,
             "weekday": self.weekday,
             "time": self.time,
@@ -815,6 +841,7 @@ class Player:
         player.bank = {n.currency: 0 for n in NATIONS}
         player.bank.update(data.get("bank", {}))
         player.experience = data.get("experience", 0)
+        player.fame = data.get("fame", 0)
         player.day = data.get("day", 1)
         player.weekday = data.get("weekday", 0)
         player.time = data.get("time", 0)

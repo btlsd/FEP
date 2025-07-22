@@ -42,6 +42,8 @@ def _personality_code(p):
 def greeting(npc, player):
     d = _DIALOGUES.get("greetings", {})
     parts = []
+    if player.fame >= 50 and "famous" in d.get("fame", {}):
+        parts.append(d["fame"]["famous"])
     if npc.gender and npc.gender in d.get("gender", {}):
         parts.append(d["gender"][npc.gender])
 

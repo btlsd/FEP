@@ -258,6 +258,7 @@ class Game:
         self.player.satiety -= satiety_cost
         self.player.cleanliness -= 5
         self.player.experience += 1
+        self.player.adjust_fame(1)
         print(f"일해서 {net}{currency}를 벌었습니다. (세금 {tax}{currency})")
 
     def eat(self):
@@ -380,9 +381,11 @@ class Game:
             seg = self.battle_time(turns)
             if not win:
                 self.imprison("pickpocket")
+                self.player.adjust_fame(-2)
                 return 0
             else:
                 print("갱단원을 물리쳤습니다.")
+                self.player.adjust_fame(2)
                 return seg
         roll = random.randint(1, 100)
         if roll <= 20 + self.player.perception:
@@ -864,6 +867,9 @@ class Game:
                 scan = choose_option(["잔해 스캔", "그만두기"])
                 if scan == 0:
                     self.scan_remains(npc)
+                self.player.adjust_fame(2)
+            else:
+                self.player.adjust_fame(-2)
             segments = self.battle_time(turns)
             return segments
 
@@ -981,6 +987,7 @@ class Game:
         if "gang_contact" not in p.flags:
             p.add_flag("gang_contact")
             print("감옥에서 범죄 조직과 연결되었습니다.")
+        p.adjust_fame(-5)
         p.location = SLUM_MARKET
         print(f"{days}일 후 풀려나 빈민가로 돌아왔습니다.")
 
