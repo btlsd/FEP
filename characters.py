@@ -42,11 +42,6 @@ class Character:
         job,
         schedule,
         agility=5,
-        strength=5,
-        perception=5,
-        endurance=5,
-        charisma=5,
-        intelligence=5,
         age=None,
         gender=None,
         origin=None,
@@ -78,42 +73,12 @@ class Character:
         self.blueprints = blueprints or {}
         self.blueprint_drop = blueprint_drop
         self.inventory = inventory or []
-        self.strength = strength
-        self.perception = perception
-        self.endurance = endurance
-        self.charisma = charisma
-        self.intelligence = intelligence
-        self.agility = agility
-        self.max_health = 50 + self.endurance * 10
-        self.health = self.max_health
-        self.flags = set()
-        self.alive = True
-    DEFAULT_LOCATION_BY_NATION,
-    SEWER,
-    STATION,
-    MARKET,
-    RESIDENTIAL,
-)
-
-TIME_OF_DAY = ["아침", "낮", "밤"]
-
-class Character:
-    def __init__(self, name, personality, affiliation, job, schedule, agility=5):
-        self.name = name
-        self.personality = personality
-        self.affiliation = affiliation
-        self.job = job
-        self.schedule = schedule  # time index -> Location
-        self.location = schedule.get(0, SEWER)
-        self.affinity = 50
         self.health = 50
         self.agility = agility
+        self.flags = set()
 
     def update_location(self, time_idx):
         self.location = self.schedule.get(time_idx, self.location)
-
-    def is_alive(self):
-        return self.alive and self.health > 0
 
     def has_flag(self, flag):
         return flag in self.flags
@@ -122,13 +87,6 @@ class Character:
         from dialogues import greeting
 
         print(greeting(self, player))
-    def talk(self, player):
-        if self.affinity >= 70:
-            print(f"{self.name}은(는) 반갑게 당신을 맞이합니다.")
-        elif self.affinity >= 30:
-            print(f"{self.name}은(는) 무난하게 대화에 응합니다.")
-        else:
-            print(f"{self.name}은(는) 시큰둥한 반응을 보입니다.")
         gain = max(1, player.charisma // 2)
         self.affinity = min(100, self.affinity + gain)
 
@@ -211,14 +169,6 @@ class Character:
                 print("돈이 부족합니다.")
                 return
             player.add_blueprint_progress(key, 100)
-        price = 5
-        if player.money < price:
-            print("돈이 부족합니다.")
-            return
-        player.money -= price
-        player.satiety = min(player.max_satiety, player.satiety + 20 + player.endurance)
-        player.stamina = min(player.max_stamina, player.stamina + 10 + player.strength // 2)
-        print(f"{self.name}에게서 음식을 구입했습니다.")
 
     def lend_money(self, player):
         if self.affinity >= 60:
@@ -263,7 +213,6 @@ def _load_npcs():
         if "inventory" in entry:
             from items import _ITEMS
             inventory = [_ITEMS[key] for key in entry["inventory"] if key in _ITEMS]
-        stats = entry.get("stats", {})
         npcs.append(
             Character(
                 entry["name"],
@@ -272,11 +221,6 @@ def _load_npcs():
                 entry.get("job", ""),
                 schedule,
                 agility=entry.get("agility", 5),
-                strength=stats.get("strength", 5),
-                perception=stats.get("perception", 5),
-                endurance=stats.get("endurance", 5),
-                charisma=stats.get("charisma", 5),
-                intelligence=stats.get("intelligence", 5),
                 age=entry.get("age"),
                 gender=entry.get("gender"),
                 origin=entry.get("origin"),
@@ -317,45 +261,6 @@ class Player:
             "agility": self.agility,
             "intuition": self.intuition,
         }
-            player.money += amount
-            self.affinity -= 5
-            print(f"{self.name}은(는) {amount}원을 빌려주었습니다.")
-        else:
-            print(f"{self.name}은(는) 돈을 빌려주지 않습니다.")
-
-    def fight(self, player):
-        from battle import start_battle
-
-        start_battle(player, self)
-
-
-NPCS = [
-    Character(
-        "상인 정",
-        "친절한",
-        "인류연합국 상인조합",
-        "상인",
-        {0: MARKET, 1: MARKET, 2: RESIDENTIAL},
-    ),
-    Character(
-        "로봇 42",
-        "차가운",
-        "전계국",
-        "경비",
-        {0: STATION, 1: STATION, 2: STATION},
-    ),
-]
-
-class Player:
-    def __init__(self, name):
-        self.name = name
-        # 기본 능력치
-        self.strength = 5
-        self.perception = 5
-        self.endurance = 5
-        self.charisma = 5
-        self.intelligence = 5
-        self.agility = 5
 
         self.max_health = 100 + self.endurance * 10
         self.max_stamina = 100 + self.endurance * 5
@@ -372,7 +277,6 @@ class Player:
         self.money = {NATIONS[0].currency: 20}
         self.bank = {n.currency: 0 for n in NATIONS}
         self.experience = 0
-        self.fame = 0
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -391,11 +295,6 @@ class Player:
         self.appliance_usage = 0
         # 시간은 0~5까지의 4시간 간격 구간으로 취급한다
         self.time = 0  # 0=새벽,1=아침,2=오전,3=오후,4=저녁,5=밤
-        self.money = 20
-        self.experience = 0
-        self.day = 1
-        self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
-        self.time = 0  # 0=아침,1=낮,2=밤
 
         # Inventory and equipment
         self.base_capacity = 5
@@ -413,12 +312,12 @@ class Player:
         # installed body modifications by slot
         self.mods = {}
         self.flags = set()
+        self.accurate_stats = False
         self.job = None
         # blueprint progress by item key
         self.blueprints = {}
         self.skills = set()
         self.max_skills = 3 + self.intelligence // 2
-        self.killed_npcs = []
 
         self.flags.update(self.equipment["clothing"].flags)
         self.recalculate_stats()
@@ -458,11 +357,6 @@ class Player:
     def has_money(self, amount, currency):
         return self.money.get(currency, 0) >= amount
 
-    def adjust_fame(self, amount):
-        self.fame += amount
-        if self.fame < 0:
-            self.fame = 0
-
     def describe_stat(self, value):
         if value >= 20:
             return "초인적이다"
@@ -481,17 +375,11 @@ class Player:
         bonus = sum(getattr(m, "memory_bonus", 0) for m in self.mods.values())
         self.max_skills = base + bonus
 
-    def status(self):
-        print(f"\n{self.day}일차 {WEEKDAYS[self.weekday]}요일 {TIME_OF_DAY[self.time]}")
-        self.equipment = {
-            "clothing": CLOTHES_WITH_POCKETS,
-            "bag": None,
-        }
-        # installed body modifications by slot
-        self.mods = {}
+    def status(self, detailed=None):
+        if detailed is None:
+            detailed = self.has_flag("interface") or self.accurate_stats
 
-    def status(self):
-        print(f"\n{self.day}일차 {TIME_OF_DAY[self.time]}")
+        print(f"\n{self.day}일차 {WEEKDAYS[self.weekday]}요일 {TIME_OF_DAY[self.time]}")
         print(f"{self.name}의 상태:")
         print(f"건강: {self.health}/{self.max_health}")
         print(f"포만감: {self.satiety}/{self.max_satiety}")
@@ -504,7 +392,6 @@ class Player:
         if bank_str:
             print(f"은행 예금: {bank_str}")
         print(f"경험치: {self.experience}")
-        print(f"유명세: {self.fame}")
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
         print(f"거주지: {self.home.name}")
         if self.loan_balance:
@@ -514,11 +401,9 @@ class Player:
         print(f"나이: {self.age}")
         if self.skills:
             print("습득 기술: " + ", ".join(sorted(self.skills)))
-        nearby = [c.name for c in NPCS if c.location == self.location and c.is_alive()]
+        nearby = [c.name for c in NPCS if c.location == self.location]
         if nearby:
             print("주변 인물: " + ", ".join(nearby))
-        if self.killed_npcs:
-            print("사망시킨 인물: " + ", ".join(self.killed_npcs))
         print()
         for key, label in [
             ("strength", "근력"),
@@ -530,7 +415,7 @@ class Player:
             ("intuition", "직감"),
         ]:
             val = getattr(self, key)
-            if "brain" in self.mods:
+            if detailed:
                 print(f"{label}: {val}")
             else:
                 print(f"{label}: {self.describe_stat(val)}")
@@ -545,24 +430,6 @@ class Player:
         est_text = str(est) if self.perception >= 10 else f"약 {est}"
         print(f"소지 무게: {est_text}/{self.carrying_capacity()}")
         print()
-        print(f"돈: {self.money}원")
-        print(f"경험치: {self.experience}")
-        print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
-        nearby = [c.name for c in NPCS if c.location == self.location]
-        if nearby:
-            print("주변 인물: " + ", ".join(nearby))
-        print()
-        print(f"힘: {self.strength}")
-        print(f"지각: {self.perception}")
-        print(f"인내심: {self.endurance}")
-        print(f"매력: {self.charisma}")
-        print(f"지능: {self.intelligence}")
-        print(f"민첩: {self.agility}")
-        if self.mods:
-            print("개조: " + ", ".join(m.name for m in self.mods.values()))
-        est = self.estimated_weight()
-        est_text = str(est) if self.perception >= 10 else f"약 {est}"
-        print(f"소지 무게: {est_text}/{self.carrying_capacity()}\n")
 
     def is_alive(self):
         return self.health > 0
@@ -608,10 +475,6 @@ class Player:
         self.satiety -= 5
         self.cleanliness -= 10
         self.satisfaction -= 5
-    def end_day(self):
-        self.day += 1
-        self.satiety -= 5
-        self.cleanliness -= 10
         if self.satiety <= 0:
             self.health += self.satiety
             self.satiety = 0
@@ -635,7 +498,6 @@ class Player:
             self.process_monthly_costs()
         self.weather = random.choice(WEATHER_BY_SEASON[self.season])
         self.update_smell()
-        self.recalc_derived_stats()
 
     def recalc_derived_stats(self):
         self.max_health = 100 + self.endurance * 10
@@ -680,7 +542,6 @@ class Player:
             self.home = APARTMENT
             self.location = APARTMENT
             print(f"정부 지원으로 50{cur}을 빌리고 임대 아파트에 입주했습니다.")
-        self.adjust_fame(5)
 
     def process_monthly_costs(self):
         currency = self.home.nation.currency
@@ -790,7 +651,6 @@ class Player:
                     qual = getattr(it, "quality", 1.0)
                     line += f" [재질: {mat}, 제련도: {qual}]"
                 print(line)
-                print(f"- {it.name} (무게 {w_text}, 부피 {v_text})")
             total = self.estimated_weight()
             if self.perception < 10:
                 total_text = f"약 {total}"
@@ -849,6 +709,12 @@ class Player:
             print(f"{self.weapon.name}을(를) 해제했습니다.")
             self.weapon = None
 
+    def measure_stats(self):
+        """Perform a detailed stat check and remember the results."""
+        self.accurate_stats = True
+        print("정밀 검사 결과:")
+        self.status(detailed=True)
+
     def show_data(self):
         if not self.blueprints:
             print("획득한 데이터가 없습니다.")
@@ -862,26 +728,15 @@ class Player:
     # Body modification helpers
     def install_mod(self, mod):
         loc = self.location
-        exo_shop = getattr(loc, "exo_shop", False)
-        shop_type = getattr(loc, "mod_shop", None)
-        if mod.slot == "exo":
-            if not exo_shop:
-                print("엑소슈트 개조는 전용 작업장에서만 가능합니다.")
-                return
-            eq = self.equipment.get("clothing")
-            if not eq or "exosuit" not in getattr(eq, "flags", []):
-                print("엑소슈트를 착용해야 개조할 수 있습니다.")
-                return
-        else:
-            if not shop_type:
-                print("이곳에서는 개조 시술을 받을 수 없습니다.")
-                return
+        if not getattr(loc, "mod_shop", None):
+            print("이곳에서는 개조 시술을 받을 수 없습니다.")
+            return
         if mod.required_item and mod.required_item not in self.inventory:
             print(f"{mod.required_item.name}이(가) 없어 개조를 진행할 수 없습니다.")
             return
         if mod.required_item and mod.required_item in self.inventory:
             self.inventory.remove(mod.required_item)
-        if shop_type == "illegal":
+        if loc.mod_shop == "illegal":
             roll = random.random()
             if roll < 0.2:
                 print("시술이 실패해 부상을 입었습니다!")
@@ -890,9 +745,6 @@ class Player:
             elif roll < 0.4:
                 print("가품 부품이 사용되어 효과가 없습니다.")
                 return
-
-    # Body modification helpers
-    def install_mod(self, mod):
         current = self.mods.get(mod.slot)
         if current:
             print(f"{current.name}을(를) 제거하고 {mod.name}을(를) 장착합니다.")
@@ -904,9 +756,6 @@ class Player:
         self.recalculate_stats()
         if mod.needs_brain and "brain" not in self.mods:
             print("뇌 인터페이스가 없어 고성능 기능을 이용할 수 없습니다.")
-        for stat, value in mod.stat_changes.items():
-            setattr(self, stat, getattr(self, stat) + value)
-        self.recalc_derived_stats()
 
     def remove_mod(self, mod):
         if self.mods.get(mod.slot) != mod:
@@ -934,7 +783,6 @@ class Player:
             "money": self.money,
             "bank": self.bank,
             "experience": self.experience,
-            "fame": self.fame,
             "day": self.day,
             "weekday": self.weekday,
             "time": self.time,
@@ -958,7 +806,6 @@ class Player:
             "job": self.job,
             "blueprints": self.blueprints,
             "skills": list(self.skills),
-            "kills": self.killed_npcs,
         }
 
     @classmethod
@@ -978,7 +825,6 @@ class Player:
         player.bank = {n.currency: 0 for n in NATIONS}
         player.bank.update(data.get("bank", {}))
         player.experience = data.get("experience", 0)
-        player.fame = data.get("fame", 0)
         player.day = data.get("day", 1)
         player.weekday = data.get("weekday", 0)
         player.time = data.get("time", 0)
@@ -1016,9 +862,5 @@ class Player:
         player.job = data.get("job")
         player.blueprints = data.get("blueprints", {})
         player.skills = set(data.get("skills", []))
-        player.killed_npcs = data.get("kills", [])
         return player
-        for stat, value in mod.stat_changes.items():
-            setattr(self, stat, getattr(self, stat) - value)
-        self.recalc_derived_stats()
 

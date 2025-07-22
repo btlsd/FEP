@@ -531,6 +531,13 @@ class Game:
         else:
             self.player.equip_weapon(item)
 
+    def measure_stats(self):
+        """Check player's stats with accurate measurement if equipment or facility allows."""
+        if not (self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)):
+            print("정밀 검사 장비가 필요합니다.")
+            return
+        self.player.measure_stats()
+
     def wait(self):
         print("가만히 시간을 보냅니다.")
 
@@ -1090,6 +1097,7 @@ class Game:
             "탐험",
             "소지품 확인",
             "장비 장착",
+            "스탯 측정",
             "씻기",
             "신체 개조",
             "미디어 시청",
@@ -1122,6 +1130,7 @@ class Game:
             self.explore,
             self.player.show_inventory,
             self.change_equipment,
+            self.measure_stats,
             self.wash,
             self.modify_body,
             self.watch_media,
@@ -1158,7 +1167,16 @@ class Game:
             self.step(action)
 
     def open_menu(self):
-        options = ["스탯 확인", "소지품 확인", "데이터 확인", "저장", "불러오기", "종료"]
+        options = [
+            "스탯 확인",
+            "소지품 확인",
+            "장비 장착",
+            "스탯 측정",
+            "데이터 확인",
+            "저장",
+            "불러오기",
+            "종료",
+        ]
         idx = self.prompt(options, path=["메뉴"])
         if idx is None:
             return True
@@ -1169,12 +1187,18 @@ class Game:
             self.player.show_inventory()
             return True
         if idx == 2:
-            self.player.show_data()
+            self.change_equipment()
             return True
         if idx == 3:
-            self.save()
+            self.measure_stats()
             return True
         if idx == 4:
+            self.player.show_data()
+            return True
+        if idx == 5:
+            self.save()
+            return True
+        if idx == 6:
             self.load()
             return True
         print("게임을 종료합니다.")
