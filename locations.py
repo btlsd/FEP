@@ -34,6 +34,7 @@ class Location:
         residence=False,
         price=0,
         rent_price=0,
+        cost_mult=1.0,
         government=False,
         hospital=False,
         jail=False,
@@ -68,6 +69,7 @@ class Location:
         self.residence = residence
         self.price = price
         self.rent_price = rent_price
+        self.cost_mult = cost_mult
         self.government = government
         self.hospital = hospital
         self.jail = jail
@@ -143,6 +145,7 @@ for entry in data["locations"]:
         entry.get("residence", False),
         entry.get("price", 0),
         entry.get("rent_price", 0),
+        entry.get("cost_mult", 1.0),
         entry.get("government", False),
         entry.get("hospital", False),
         entry.get("jail", False),

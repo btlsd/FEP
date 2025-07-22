@@ -39,7 +39,8 @@
       "indoors": true,
       "station": true,
       "printer": true,
-      "open_times": [0,1,2,3,4]
+      "open_times": [0,1,2,3,4],
+      "cost_mult": 1.2
     },
     {
       "key": "AIRPORT",
@@ -58,7 +59,8 @@
       "indoors": true,
       "station": true,
       "international": true,
-      "open_times": [0,1,2,3,4,5]
+      "open_times": [0,1,2,3,4,5],
+      "cost_mult": 1.2
     },
     {
       "key": "MARKET",
@@ -75,13 +77,15 @@
       },
       "nation": 0,
       "open_times": [1,2,3,4],
+      "cost_mult": 1.2,
       "printer": true,
       "season_desc": {
         "0": "봄바람에 꽃 향기가 가득하다.",
         "1": "여름 햇살로 무척 덥다.",
         "2": "가을에는 단풍이 상점을 물들인다.",
         "3": "겨울이라 길가에 눈이 쌓여 있다."
-      }
+      },
+      "cost_mult": 1.2
     },
     {
       "key": "RESIDENTIAL",
@@ -141,7 +145,8 @@
       "nation": 0,
       "indoors": true,
       "mod_shop": "legal",
-      "open_times": [0,1,2,3,4]
+      "open_times": [0,1,2,3,4],
+      "cost_mult": 1.2
     },
     {
       "key": "EXO_WORKSHOP",
@@ -159,7 +164,8 @@
       "nation": 0,
       "indoors": true,
       "exo_shop": true,
-      "open_times": [1,2,3,4]
+      "open_times": [1,2,3,4],
+      "cost_mult": 1.2
     },
     {
       "key": "CLINIC_ILLEGAL",
@@ -179,7 +185,8 @@
       "mod_shop": "illegal",
       "open_times": [0,4,5],
       "security": 1,
-      "danger": 1
+      "danger": 1,
+      "cost_mult": 0.7
     },
     {
       "key": "SLUM_MARKET",
@@ -195,7 +202,8 @@
         "5": "밤에는 분위기가 험악하다."
       },
       "nation": 0,
-      "housing_market": true
+      "housing_market": true,
+      "cost_mult": 0.7
     },
     {
   "key": "SHELTER",
@@ -256,7 +264,8 @@
   "price": 20,
   "restricted": true,
   "sleep_spot": true,
-  "wash_spot": false
+  "wash_spot": false,
+  "cost_mult": 0.6
 },
     {
   "key": "APARTMENT",

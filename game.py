@@ -89,9 +89,12 @@ TRAININGS = {
     },
 }
 
+# 대한민국 기준 최저 시급을 단위화한 값
+MINIMUM_WAGE = 10
+
 # 직업별 급여 정보 (시급 또는 월급)
 JOB_PAY = {
-    "임시 노동자": {"type": "hourly", "rate": 10},
+    "임시 노동자": {"type": "hourly", "rate": MINIMUM_WAGE},
     "도시 계획자": {"type": "monthly", "rate": 300},
     "군사 요원": {"type": "monthly", "rate": 250},
     "토지 개관자": {"type": "monthly", "rate": 220},
@@ -293,7 +296,7 @@ class Game:
         print(f"일해서 {net}{currency}를 벌었습니다. (세금 {tax}{currency})")
 
     def eat(self):
-        price = 5
+        price = int(5 * getattr(self.player.location, "cost_mult", 1.0))
         currency = self.player.location.nation.currency
         if not self.player.spend_money(price, currency):
             print("음식을 살 돈이 부족합니다.")
