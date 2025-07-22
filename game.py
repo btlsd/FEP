@@ -498,7 +498,6 @@ class Game:
                 print("경찰에게 체포되었습니다!")
                 self.imprison("lockpick")
                 return 0
-        self.player.flags.discard("stealth")
         self.player.stamina -= 5
 
     def lockpick(self):
@@ -533,7 +532,6 @@ class Game:
                 print("경찰에게 체포되었습니다!")
                 self.imprison()
                 return 0
-        self.player.flags.discard("stealth")
         self.player.stamina -= 5
 
     def print_item(self):
@@ -832,6 +830,12 @@ class Game:
         action_idx = choose_option(["대화", "거래", "돈 빌리기", "전투"])
         if action_idx is None:
             return
+        if self.player.has_flag("stealth") or self.player.has_flag("infiltrating"):
+            print(f"{npc.name}이(가) 당신의 등장에 깜짝 놀랍니다!")
+            self.player.flags.discard("stealth")
+            if self.player.has_flag("infiltrating"):
+                self.player.flags.discard("infiltrating")
+                self.player.infiltration_origin = None
         if action_idx == 0:
             npc.talk(self.player)
         elif action_idx == 1:
