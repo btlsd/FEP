@@ -282,6 +282,7 @@ class Player:
         self.arrears = 0
         self.kidnap_due = False
         self.home_ambush = False
+        self.infiltration_origin = None
         self.month_day = 1
         self.month = 1
         self.season = 0
@@ -778,6 +779,7 @@ class Player:
             "arrears": self.arrears,
             "kidnap_due": self.kidnap_due,
             "home_ambush": self.home_ambush,
+            "infiltration_origin": getattr(self.infiltration_origin, "key", None),
             "month_day": self.month_day,
             "month": self.month,
             "season": self.season,
@@ -819,6 +821,8 @@ class Player:
         player.arrears = data.get("arrears", 0)
         player.kidnap_due = data.get("kidnap_due", False)
         player.home_ambush = data.get("home_ambush", False)
+        origin_key = data.get("infiltration_origin")
+        player.infiltration_origin = LOCATIONS_BY_KEY.get(origin_key)
         player.month_day = data.get("month_day", 1)
         player.month = data.get("month", 1)
         player.season = data.get("season", 0)

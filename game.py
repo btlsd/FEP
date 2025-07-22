@@ -147,6 +147,37 @@ class Game:
         p.home_ambush = False
         return False
 
+    def check_infiltration(self):
+        p = self.player
+        if not p.has_flag("infiltrating"):
+            return 0
+        chance = 30 - p.agility - p.perception // 2
+        if p.has_flag("stealth"):
+            chance -= 10
+        if chance < 10:
+            chance = 10
+        if random.randint(1, 100) <= chance:
+            print("경비에게 발각되었습니다!")
+            p.flags.discard("stealth")
+            p.flags.discard("infiltrating")
+            origin = p.infiltration_origin or p.home
+            p.infiltration_origin = None
+            if random.random() < 0.5:
+                p.location = origin
+                print("밖으로 끌려나왔습니다.")
+                return 0
+            guard = Character("경비 로봇", {}, p.location.nation.name, "경비", {}, agility=6)
+            win, turns = guard.fight(p, ambush="npc")
+            seg = self.battle_time(turns)
+            if win:
+                print("경비를 물리쳤습니다.")
+                p.add_flag("infiltrating")
+                return seg
+            else:
+                self.imprison()
+                return 0
+        return 0
+
     def save(self, filename="save.json"):
         data = {
             "player": self.player.to_dict(),
@@ -665,7 +696,10 @@ class Game:
             print(f"필요 능력치: {req_text}. 다음 시험 때 다시 도전하세요.")
 
     def attempt_enter(self, dest):
-        if getattr(dest, "restricted", False) and not self.player.has_flag(f"access_{getattr(dest,'key',dest.name)}"):
+        unauthorized = getattr(dest, "restricted", False) and not self.player.has_flag(
+            f"access_{getattr(dest,'key',dest.name)}"
+        )
+        if unauthorized:
             chance = 70
             if self.player.has_flag("stealth"):
                 chance = 40
@@ -673,9 +707,14 @@ class Game:
                 print("경비에게 발각되어 들어갈 수 없습니다!")
                 self.player.flags.discard("stealth")
                 return False
-            else:
-                print("몰래 침입에 성공했습니다.")
-                self.player.flags.discard("stealth")
+            print("몰래 침입에 성공했습니다.")
+            self.player.flags.discard("stealth")
+            self.player.add_flag("infiltrating")
+            self.player.infiltration_origin = self.player.location
+        else:
+            self.player.flags.discard("stealth")
+            self.player.flags.discard("infiltrating")
+            self.player.infiltration_origin = None
         return True
 
     def move_walk(self):
@@ -914,8 +953,11 @@ class Game:
         segs = action()
         if self.running:
             self.check_health()
+        extra = 0
         if self.running:
-            self.advance_time(segs if isinstance(segs, int) else 1)
+            extra = self.check_infiltration()
+        if self.running:
+            self.advance_time((segs if isinstance(segs, int) else 1) + extra)
 
     def choose_move(self):
         opts = ["도보 이동"]
