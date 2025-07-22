@@ -114,4 +114,5 @@ def start_battle(player, npc, ambush=None):
     else:
         print(f"{npc.name}을(를) 쓰러뜨렸습니다!")
         npc.affinity = max(0, npc.affinity - 20)
+        npc.alive = False
         return True, turns

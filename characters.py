@@ -87,9 +87,13 @@ class Character:
         self.max_health = 50 + self.endurance * 10
         self.health = self.max_health
         self.flags = set()
+        self.alive = True
 
     def update_location(self, time_idx):
         self.location = self.schedule.get(time_idx, self.location)
+
+    def is_alive(self):
+        return self.alive and self.health > 0
 
     def has_flag(self, flag):
         return flag in self.flags
@@ -335,6 +339,7 @@ class Player:
         self.blueprints = {}
         self.skills = set()
         self.max_skills = 3 + self.intelligence // 2
+        self.killed_npcs = []
 
         self.flags.update(self.equipment["clothing"].flags)
         self.recalculate_stats()
@@ -421,9 +426,11 @@ class Player:
         print(f"나이: {self.age}")
         if self.skills:
             print("습득 기술: " + ", ".join(sorted(self.skills)))
-        nearby = [c.name for c in NPCS if c.location == self.location]
+        nearby = [c.name for c in NPCS if c.location == self.location and c.is_alive()]
         if nearby:
             print("주변 인물: " + ", ".join(nearby))
+        if self.killed_npcs:
+            print("사망시킨 인물: " + ", ".join(self.killed_npcs))
         print()
         for key, label in [
             ("strength", "근력"),
@@ -822,6 +829,7 @@ class Player:
             "job": self.job,
             "blueprints": self.blueprints,
             "skills": list(self.skills),
+            "kills": self.killed_npcs,
         }
 
     @classmethod
@@ -879,5 +887,6 @@ class Player:
         player.job = data.get("job")
         player.blueprints = data.get("blueprints", {})
         player.skills = set(data.get("skills", []))
+        player.killed_npcs = data.get("kills", [])
         return player
 

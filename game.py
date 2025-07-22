@@ -8,7 +8,7 @@ from locations import (
     HOSPITAL,
 )
 
-from characters import NPCS, Player, Character
+from characters import NPCS, Player, Character, LOCATIONS_BY_KEY
 from items import (
     BROKEN_PART,
     CITY_PLANNER_CERT,
@@ -42,6 +42,7 @@ CRIME_SENTENCES = {
     },
     "lockpick": {"인류연합국": 365, "거합": 180, "탐랑": 120, "전계국": 540},
     "hack": {"인류연합국": 120, "거합": 60, "탐랑": 90, "전계국": 240},
+    "murder": {"인류연합국": 1095, "거합": 730, "탐랑": 365, "전계국": 1460},
 }
 
 # 각 직업별 요구 능력치와 자격증 매핑
@@ -193,10 +194,30 @@ class Game:
             self.imprison()
             return False, seg
 
+    def handle_npc_death(self, npc):
+        npc.alive = False
+        npc.location = None
+        npc.inventory = []
+        self.player.killed_npcs.append(npc.name)
+        watchers = [c for c in self.characters if c.location == self.player.location and c.is_alive() and c != npc]
+        if watchers:
+            self.imprison("murder")
+        else:
+            self.player.adjust_fame(-5)
+
     def save(self, filename="save.json"):
+        from items import item_key
         data = {
             "player": self.player.to_dict(),
-            "npcs": {c.name: {"affinity": c.affinity} for c in self.characters},
+            "npcs": {
+                c.name: {
+                    "affinity": c.affinity,
+                    "alive": c.alive,
+                    "location": getattr(c.location, "key", None) if c.location else None,
+                    "inventory": [item_key(it) for it in c.inventory],
+                }
+                for c in self.characters
+            },
         }
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -209,15 +230,25 @@ class Game:
         except FileNotFoundError:
             print("세이브 파일이 없습니다.")
             return
+        from items import _ITEMS
+        from characters import LOCATIONS_BY_KEY
         self.player = Player.from_dict(data.get("player", {}))
         for c in self.characters:
-            if c.name in data.get("npcs", {}):
-                c.affinity = data["npcs"][c.name].get("affinity", c.affinity)
+            info = data.get("npcs", {}).get(c.name)
+            if not info:
+                continue
+            c.affinity = info.get("affinity", c.affinity)
+            c.alive = info.get("alive", True)
+            loc_key = info.get("location")
+            if loc_key:
+                c.location = LOCATIONS_BY_KEY.get(loc_key, c.location)
+            c.inventory = [_ITEMS[k] for k in info.get("inventory", []) if k in _ITEMS]
         print("불러오기 완료.")
 
     def update_characters(self):
         for npc in self.characters:
-            npc.update_location(self.player.time)
+            if npc.is_alive():
+                npc.update_location(self.player.time)
 
     def advance_time(self, segments=1):
         for _ in range(max(1, int(segments))):
@@ -478,7 +509,7 @@ class Game:
         print("은신 상태로 주변을 살핍니다.")
 
     def pickpocket(self):
-        targets = [c for c in self.characters if c.location == self.player.location and c.inventory]
+        targets = [c for c in self.characters if c.location == self.player.location and c.inventory and c.is_alive()]
         if not targets:
             print("소매치기할 대상이 없습니다.")
             return
@@ -832,7 +863,7 @@ class Game:
             print(f"제트팩으로 {dest.name}에 도착했습니다.")
 
     def interact(self):
-        nearby = [c for c in self.characters if c.location == self.player.location]
+        nearby = [c for c in self.characters if c.location == self.player.location and c.is_alive()]
         if not nearby:
             print("주변에 대화할 사람이 없습니다.")
             return
@@ -864,6 +895,8 @@ class Game:
         elif action_idx == 3:
             win, turns = npc.fight(self.player)
             if win:
+                if npc.health <= 0:
+                    self.handle_npc_death(npc)
                 scan = choose_option(["잔해 스캔", "그만두기"])
                 if scan == 0:
                     self.scan_remains(npc)

@@ -50,7 +50,7 @@ def draw_screen(player, npcs=NPCS):
             print("국가 간 이동이 가능한 정거장이 있습니다.")
         else:
             print("이곳에는 장거리 이동을 위한 정거장이 있습니다.")
-    nearby = [c.name for c in npcs if c.location == location]
+    nearby = [c.name for c in npcs if c.location == location and c.is_alive()]
     if nearby:
         print("주변 인물: " + ", ".join(nearby))
     else:
