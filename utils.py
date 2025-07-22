@@ -1,12 +1,17 @@
 """Helper utilities for input handling."""
 
 
-def choose_option(options, allow_back=True):
+def choose_option(options, allow_back=True, path=None):
     """Display numbered options and return the selected index.
 
-    Returns None if the user chooses to go back when allow_back is True.
+    If *path* is provided, it should be a sequence of strings representing
+    the menu hierarchy and will be printed above the options. Returns ``None``
+    if the user chooses to go back when ``allow_back`` is ``True``.
     """
     while True:
+        if path:
+            print(" > ".join(path))
+            print("-" * 30)
         for i, opt in enumerate(options, 1):
             print(f"{i}. {opt}")
         if allow_back:
