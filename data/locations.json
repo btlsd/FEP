@@ -121,7 +121,9 @@
       "indoors": true,
       "open_times": [5],
       "restricted": true,
-      "locked_relic": true
+      "locked_relic": true,
+      "security": 2,
+      "danger": 2
     },
     {
       "key": "CLINIC_LEGAL",
@@ -157,7 +159,9 @@
       "nation": 0,
       "indoors": true,
       "mod_shop": "illegal",
-      "open_times": [0,4,5]
+      "open_times": [0,4,5],
+      "security": 1,
+      "danger": 1
     },
     {
       "key": "SLUM_MARKET",
@@ -293,7 +297,9 @@
       "restricted": true,
       "sleep_spot": true,
       "wash_spot": true,
-      "open_times": [0,1,2,3,4,5]
+      "open_times": [0,1,2,3,4,5],
+      "security": 2,
+      "danger": 1
     },
     {
       "key": "JOB_CENTER",
@@ -365,7 +371,9 @@
       },
       "nation": 0,
       "indoors": true,
-      "restricted": true
+      "restricted": true,
+      "security": 2,
+      "danger": 2
     },
     {
       "key": "CAPITAL_GEOHAP",

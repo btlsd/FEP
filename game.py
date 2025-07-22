@@ -151,32 +151,47 @@ class Game:
         p = self.player
         if not p.has_flag("infiltrating"):
             return 0
-        chance = 30 - p.agility - p.perception // 2
+        chance = 30 + p.location.security * 10 - p.agility - p.perception // 2
         if p.has_flag("stealth"):
             chance -= 10
         if chance < 10:
             chance = 10
         if random.randint(1, 100) <= chance:
             print("경비에게 발각되었습니다!")
-            p.flags.discard("stealth")
-            p.flags.discard("infiltrating")
-            origin = p.infiltration_origin or p.home
-            p.infiltration_origin = None
-            if random.random() < 0.5:
-                p.location = origin
-                print("밖으로 끌려나왔습니다.")
-                return 0
-            guard = Character("경비 로봇", {}, p.location.nation.name, "경비", {}, agility=6)
-            win, turns = guard.fight(p, ambush="npc")
-            seg = self.battle_time(turns)
-            if win:
-                print("경비를 물리쳤습니다.")
-                p.add_flag("infiltrating")
-                return seg
-            else:
-                self.imprison()
-                return 0
+            success, seg = self.handle_detection(p.location)
+            return seg
         return 0
+
+    def handle_detection(self, location, entering=False):
+        p = self.player
+        danger = getattr(location, "danger", 0)
+        origin = p.location if entering else (p.infiltration_origin or p.home)
+        p.flags.discard("stealth")
+        if danger <= 0:
+            if not entering:
+                p.location = origin
+                p.flags.discard("infiltrating")
+                p.infiltration_origin = None
+            print("밖으로 끌려나왔습니다.")
+            return False, 0
+        guard_name = "경비 로봇" if danger == 1 else "정예 경비 로봇"
+        agility = 6 if danger == 1 else 8
+        guard = Character(guard_name, {}, location.nation.name, "경비", {}, agility=agility)
+        win, turns = guard.fight(p, ambush="npc")
+        seg = self.battle_time(turns)
+        if win:
+            print(f"{guard_name}을 물리쳤습니다.")
+            if entering:
+                p.add_flag("infiltrating")
+                p.infiltration_origin = origin
+                p.location = location
+                print("경비를 따돌리고 내부로 침입했습니다.")
+            else:
+                p.add_flag("infiltrating")
+            return True, seg
+        else:
+            self.imprison()
+            return False, seg
 
     def save(self, filename="save.json"):
         data = {
@@ -700,13 +715,13 @@ class Game:
             f"access_{getattr(dest,'key',dest.name)}"
         )
         if unauthorized:
-            chance = 70
+            chance = 50 + dest.security * 10
             if self.player.has_flag("stealth"):
-                chance = 40
+                chance -= 30
             if random.randint(1, 100) <= chance:
-                print("경비에게 발각되어 들어갈 수 없습니다!")
-                self.player.flags.discard("stealth")
-                return False
+                print("경비에게 발각되었습니다!")
+                success, _ = self.handle_detection(dest, entering=True)
+                return success
             print("몰래 침입에 성공했습니다.")
             self.player.flags.discard("stealth")
             self.player.add_flag("infiltrating")

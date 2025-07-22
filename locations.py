@@ -39,6 +39,8 @@ class Location:
         sleep_spot=False,
         wash_spot=False,
         season_desc=None,
+        security=0,
+        danger=0,
     ):
         self.name = name
         self.description = description
@@ -70,6 +72,8 @@ class Location:
         self.sleep_spot = sleep_spot
         self.wash_spot = wash_spot
         self.season_desc = season_desc or {}
+        self.security = security
+        self.danger = danger
 
     def get_description(self, time_idx, season=None):
         # descriptions keys might be strings in JSON
@@ -142,6 +146,8 @@ for entry in data["locations"]:
         entry.get("sleep_spot", False),
         entry.get("wash_spot", False),
         entry.get("season_desc"),
+        entry.get("security", 0),
+        entry.get("danger", 0),
     )
     loc.key = entry["key"]
     _locations[entry["key"]] = loc
