@@ -23,7 +23,7 @@ from items import (
 )
 from equipment import BODY_MODS
 from gui import draw_screen
-from utils import choose_option, roll_check
+from utils import choose_option, roll_check, progress_bar
 import json
 import os
 
@@ -102,9 +102,8 @@ JOB_PAY = {
     "창작자": {"type": "monthly", "rate": 200},
     "사회복지사": {"type": "monthly", "rate": 210},
     "탐정": {"type": "hourly", "rate": 40},
-    "경비": {"type": "hourly", "rate": 15},
+"경비": {"type": "hourly", "rate": 15},
 }
-)
 
 from characters import NPCS, Player
 from items import BROKEN_PART
@@ -115,6 +114,29 @@ class Game:
     def __init__(self, player):
         self.player = player
         self.characters = NPCS
+
+    def prompt(self, options, path=None, allow_back=True):
+        """Wrapper around ``choose_option`` with menu path support."""
+        return choose_option(options, allow_back=allow_back, path=path)
+
+    def travel_effect(self, dest, mode="도보"):
+        """Show travel narration with a progress bar."""
+        start = self.player.location
+        print(f"{start.name} -> {dest.name}")
+        print(start.get_description(self.player.time, self.player.season))
+        print("-" * 30)
+        if mode == "도보":
+            mid = "주변 거리를 천천히 걸어갑니다."
+        elif mode == "정거장":
+            mid = f"{start.nation.transport}을 이용해 이동합니다."
+        elif mode == "제트팩":
+            mid = "제트팩을 가동해 하늘을 날아갑니다."
+        else:
+            mid = f"{start.nation.transport}을 이용해 먼 거리를 이동합니다."
+        print(mid)
+        progress_bar("이동 중 ")
+        print(dest.get_description(self.player.time, self.player.season))
+        print("-" * 30)
 
     def hospitalize(self):
         p = self.player
@@ -292,30 +314,6 @@ class Game:
         tax = int(income * 0.2)
         net = income - tax
         self.player.add_money(net, currency)
-    def update_characters(self):
-        for npc in self.characters:
-            npc.update_location(self.player.time)
-
-    def advance_time(self):
-        self.player.time += 1
-        if self.player.time > 2:
-            self.player.time = 0
-            self.player.end_day()
-
-    def work(self):
-        if self.player.stamina < 20 or self.player.satiety < 20:
-            print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
-            return
-        income = 10 + self.player.intelligence // 2 + self.player.strength // 2
-        self.player.money += income
-        stamina_cost = max(10, 20 - self.player.strength)
-        satiety_cost = max(5, 10 - self.player.endurance // 2)
-        self.player.stamina -= stamina_cost
-        self.player.satiety -= satiety_cost
-        self.player.cleanliness -= 5
-        self.player.experience += 1
-        self.player.adjust_fame(1)
-        print(f"일해서 {net}{currency}를 벌었습니다. (세금 {tax}{currency})")
 
     def eat(self):
         price = int(5 * getattr(self.player.location, "cost_mult", 1.0))
@@ -376,7 +374,7 @@ class Game:
 
     def read_book(self):
         opts = ["기초 수리술", "고전 문학"]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "책 읽기"])
         if idx is None:
             return
         self.player.learn_skill(opts[idx])
@@ -387,7 +385,7 @@ class Game:
 
     def study_video(self):
         opts = ["기초 전투술", "기초 프로그래밍"]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "영상 학습"])
         if idx is None:
             return
         if not self.player.spend_money(1, self.player.location.nation.currency):
@@ -401,7 +399,7 @@ class Game:
             print("뇌 인터페이스가 필요합니다.")
             return
         opts = ["고급 설계 데이터", "희귀 지식"]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "데이터 다운로드"])
         if idx is None:
             return
         cost = 10
@@ -501,7 +499,7 @@ class Game:
             company = f" [{mod.company}]" if mod.company else ""
             opts.append(f"{mod.name}{company} (부위: {mod.slot}){req}")
             mods.append(mod)
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "신체 개조"])
         if idx is None:
             return
         self.player.install_mod(mods[idx])
@@ -517,7 +515,7 @@ class Game:
         if not choices:
             print("장비할 수 있는 아이템이 없습니다.")
             return
-        idx = choose_option([it.name for it in choices])
+        idx = self.prompt([it.name for it in choices], path=["행동", "장비 장착"])
         if idx is None:
             return
         item = choices[idx]
@@ -545,7 +543,7 @@ class Game:
         if not targets:
             print("소매치기할 대상이 없습니다.")
             return
-        idx = choose_option([t.name for t in targets])
+        idx = self.prompt([t.name for t in targets], path=["행동", "소매치기"])
         if idx is None:
             return
         npc = targets[idx]
@@ -619,7 +617,7 @@ class Game:
         if not available:
             print("사용 가능한 설계도가 없습니다.")
             return
-        idx = choose_option([_ITEMS[key].name for key in available])
+        idx = self.prompt([_ITEMS[key].name for key in available], path=["행동", "프린팅"])
         if idx is None:
             return
         key = available[idx]
@@ -640,7 +638,7 @@ class Game:
         if not currencies:
             print("소지한 현금이 없습니다.")
             return
-        idx = choose_option([f"{cur} ({self.player.money[cur]})" for cur in currencies])
+        idx = self.prompt([f"{cur} ({self.player.money[cur]})" for cur in currencies], path=["행동", "입금"])
         if idx is None:
             return
         cur = currencies[idx]
@@ -663,7 +661,7 @@ class Game:
         if not available:
             print("예금된 돈이 없습니다.")
             return
-        idx = choose_option([f"{cur} ({self.player.bank[cur]})" for cur in available])
+        idx = self.prompt([f"{cur} ({self.player.bank[cur]})" for cur in available], path=["행동", "출금"])
         if idx is None:
             return
         cur = available[idx]
@@ -705,7 +703,7 @@ class Game:
         if not options:
             print("거래할 주거지가 없습니다.")
             return
-        idx = choose_option(options)
+        idx = self.prompt(options, path=["행동", "주거지 거래"])
         if idx is None:
             return
         action, house = actions[idx]
@@ -746,7 +744,7 @@ class Game:
         if not getattr(self.player.location, "job_office", False):
             print("이곳에서는 직업을 소개받을 수 없습니다.")
             return
-        idx = choose_option(["단순 노동", "직업 교육 프로그램", "아직 결정하지 않는다"])
+        idx = self.prompt(["단순 노동", "직업 교육 프로그램", "아직 결정하지 않는다"], path=["행동", "직업 찾기"])
         if idx is None or idx == 2:
             print("결정을 미루었습니다.")
             return
@@ -755,7 +753,7 @@ class Game:
             print("당신은 임시 노동자로 등록되었습니다.")
             return
         # training path
-        cat_idx = choose_option(["정부 소속 직업", "일반 직업"])
+        cat_idx = self.prompt(["정부 소속 직업", "일반 직업"], path=["행동", "직업 찾기", "교육 과정"])
         if cat_idx is None:
             return
         want_gov = cat_idx == 0
@@ -763,7 +761,8 @@ class Game:
         if not jobs:
             print("해당 분류의 과정이 없습니다.")
             return
-        job_idx = choose_option(jobs)
+        selected_cat = "정부 소속 직업" if want_gov else "일반 직업"
+        job_idx = self.prompt(jobs, path=["행동", "직업 찾기", "교육 과정", selected_cat])
         if job_idx is None:
             print("등록을 취소했습니다.")
             return
@@ -816,7 +815,7 @@ class Game:
         if not options:
             print("이곳에서 이동할 수 있는 장소가 없습니다.")
             return
-        idx = choose_option([d.name for d in options])
+        idx = self.prompt([d.name for d in options], path=["이동", "도보 이동"])
         if idx is None:
             return
         dest = options[idx]
@@ -832,16 +831,16 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != self.player.location:
+            self.travel_effect(dest, "도보")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"도보로 {self.player.location.name}으로 이동했습니다.")
 
     def move_station(self):
         current = self.player.location
         if not current.station or not current.connections:
             print("정거장에서만 사용할 수 있습니다.")
             return
-        idx = choose_option([d.name for d in current.connections])
+        idx = self.prompt([d.name for d in current.connections], path=["이동", "정거장 이동"])
         if idx is None:
             return
         dest = current.connections[idx]
@@ -857,9 +856,9 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != self.player.location:
+            self.travel_effect(dest, "정거장")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"{dest.name}으로 이동했습니다.")
 
     def move_jetpack(self):
         if not self.player.has_flag("jetpack"):
@@ -874,7 +873,7 @@ class Game:
         if not options:
             print("이 나라에서 이동할 장소가 없습니다.")
             return
-        idx = choose_option([l.name for l in options])
+        idx = self.prompt([l.name for l in options], path=["이동", "제트팩 비행"])
         if idx is None:
             return
         dest = options[idx]
@@ -890,20 +889,20 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != current:
+            self.travel_effect(dest, "제트팩")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"제트팩으로 {dest.name}에 도착했습니다.")
 
     def interact(self):
         nearby = [c for c in self.characters if c.location == self.player.location and c.is_alive()]
         if not nearby:
             print("주변에 대화할 사람이 없습니다.")
             return
-        idx = choose_option([f"{n.name} ({n.job})" for n in nearby])
+        idx = self.prompt([f"{n.name} ({n.job})" for n in nearby], path=["NPC 선택"])
         if idx is None:
             return
         npc = nearby[idx]
-        action_idx = choose_option(["대화", "거래", "돈 빌리기", "전투"])
+        action_idx = self.prompt(["대화", "거래", "돈 빌리기", "전투"], path=["NPC 선택", npc.name])
         if action_idx is None:
             return
         if self.player.has_flag("stealth") or self.player.has_flag("infiltrating"):
@@ -929,7 +928,7 @@ class Game:
             if win:
                 if npc.health <= 0:
                     self.handle_npc_death(npc)
-                scan = choose_option(["잔해 스캔", "그만두기"])
+                scan = self.prompt(["잔해 스캔", "그만두기"], path=["NPC 선택", npc.name, "전투 결과"])
                 if scan == 0:
                     self.scan_remains(npc)
                 self.player.adjust_fame(2)
@@ -951,16 +950,15 @@ class Game:
             print("탑승권이 없어 이동할 수 없습니다.")
             return
         opts = [f"{n.name} - {n.description}" for n in NATIONS]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["이동", "국가 이동"])
         if idx is None:
             return
         nation = NATIONS[idx]
-        self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
+        dest = DEFAULT_LOCATION_BY_NATION[nation]
+        self.travel_effect(dest, "국가 이동")
+        self.player.location = dest
         if use_ticket:
             self.player.inventory.remove(BOARDING_PASS)
-        print(
-            f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
-        )
 
     def kidnap_fight_sequence(self):
         p = self.player
@@ -1078,7 +1076,7 @@ class Game:
             if self.player.location.international:
                 opts.append("국가 이동")
                 moves.append(self.travel)
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["이동"])
         if idx is None:
             return
         action = moves[idx]
@@ -1114,7 +1112,7 @@ class Game:
             opts.append("주거지 거래")
         if getattr(self.player.location, "bank", False):
             opts.extend(["입금", "출금"])
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동"])
         if idx is None:
             return
         actions = [
@@ -1161,7 +1159,7 @@ class Game:
 
     def open_menu(self):
         options = ["스탯 확인", "소지품 확인", "데이터 확인", "저장", "불러오기", "종료"]
-        idx = choose_option(options)
+        idx = self.prompt(options, path=["메뉴"])
         if idx is None:
             return True
         if idx == 0:
@@ -1191,7 +1189,7 @@ class Game:
                 if not self.running:
                     break
             draw_screen(self.player, self.characters)
-            idx = choose_option(["이동", "NPC 선택", "행동", "메뉴"], allow_back=False)
+            idx = self.prompt(["이동", "NPC 선택", "행동", "메뉴"], allow_back=False, path=["메인 메뉴"])
             if idx == 0:
                 self.choose_move()
             elif idx == 1:
