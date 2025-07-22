@@ -522,6 +522,12 @@ class Game:
         self.player.stamina -= 5
 
     def hack(self):
+        if not self.player.has_flag("interface"):
+            print("뇌 인터페이스가 필요합니다.")
+            return
+        if not self.player.has_flag("wireless"):
+            print("무선 기능이 없어 해킹을 시도할 수 없습니다.")
+            return
         chance = 30 + self.player.intelligence * 2
         if self.player.has_flag("stealth"):
             chance += 10

@@ -75,9 +75,13 @@ class Character:
         self.inventory = inventory or []
         self.health = 50
         self.agility = agility
+        self.flags = set()
 
     def update_location(self, time_idx):
         self.location = self.schedule.get(time_idx, self.location)
+
+    def has_flag(self, flag):
+        return flag in self.flags
 
     def talk(self, player):
         from dialogues import greeting

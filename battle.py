@@ -1,10 +1,35 @@
 import random
-from utils import choose_option
+from utils import choose_option, roll_check
 
 
 def gauge_cost(agility):
     """Return how much of the turn gauge is consumed per tick."""
     return min(99, 50 + agility * 5)
+
+
+def wireless_intrusion(victim):
+    """Random chance for wireless hacking damage."""
+    if getattr(victim, "has_flag", lambda x: False)("wireless"):
+        if random.random() < 0.1:
+            dmg = 5
+            victim.health -= dmg
+            print(f"{victim.name}의 무선 인터페이스가 해킹당해 {dmg}의 피해!")
+
+
+def attempt_hack(attacker, defender):
+    """Try to hack the opponent, returning True if action consumed."""
+    if not getattr(attacker, "has_flag", lambda x: False)("wireless"):
+        return False
+    if not getattr(defender, "has_flag", lambda x: False)("wireless"):
+        return False
+    chance = 40 + getattr(attacker, "intelligence", 5) * 5 - getattr(defender, "intelligence", 5) * 5
+    if roll_check(max(5, min(95, chance))):
+        dmg = random.randint(10, 20)
+        defender.health -= dmg
+        print(f"{attacker.name}의 해킹 성공! {defender.name}에게 {dmg}의 피해를 주었습니다.")
+    else:
+        print(f"{attacker.name}의 해킹이 실패했습니다.")
+    return True
 
 
 def start_battle(player, npc, ambush=None):
@@ -22,6 +47,8 @@ def start_battle(player, npc, ambush=None):
     while player.health > 0 and npc.health > 0:
         gauges[player] -= gauge_cost(player.agility)
         gauges[npc] -= gauge_cost(npc.agility)
+        wireless_intrusion(player)
+        wireless_intrusion(npc)
         if gauges[player] <= 0:
             action = choose_option(["공격", "기술", "도주"], allow_back=False)
             if action == 0:
@@ -46,7 +73,8 @@ def start_battle(player, npc, ambush=None):
                 npc.health -= dmg
                 print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.{extra_msg}")
             elif action == 1:
-                print("사용 가능한 기술이 없습니다.")
+                if not attempt_hack(player, npc):
+                    print("사용 가능한 기술이 없습니다.")
             else:
                 flee_chance = 50 + player.agility * 5 - npc.agility * 5
                 if random.randint(1, 100) <= flee_chance:
@@ -66,6 +94,12 @@ def start_battle(player, npc, ambush=None):
                 for mod in getattr(npc, "mods", {}).values():
                     w_dmg = max(w_dmg, getattr(mod, "weapon_damage", 0))
                     w_type = w_type or getattr(mod, "weapon_type", None)
+            if (
+                npc.has_flag("wireless")
+                and player.has_flag("wireless")
+                and random.random() < 0.3
+            ):
+                attempt_hack(npc, player)
             dmg = random.randint(5, 10) + getattr(npc, "strength", 5) + w_dmg
             if w_type == "둔기" and random.random() < 0.1:
                 print(f"{npc.name}이(가) 머리를 강타하여 당신이 기절합니다!")

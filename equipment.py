@@ -36,6 +36,7 @@ class BodyMod:
         needs_brain=False,
         weapon_damage=0,
         memory_bonus=0,
+        wireless=False,
     ):
         self.name = name
         self.slot = slot  # e.g. 'arm', 'eye'
@@ -48,6 +49,7 @@ class BodyMod:
         self.needs_brain = needs_brain
         self.weapon_damage = weapon_damage
         self.memory_bonus = memory_bonus
+        self.wireless = wireless
 
 
 # Default equipment items
@@ -73,8 +75,17 @@ from items import (
     HIDDEN_RANGED_ARM_PART,
 )
 
-BRAIN_INTERFACE = BodyMod(
-    "신경 인터페이스",
+WIRELESS_INTERFACE = BodyMod(
+    "무선 뇌 인터페이스",
+    "brain",
+    stat_add={},
+    flags=["interface", "wireless"],
+    required_item=BRAIN_INTERFACE_CHIP,
+    memory_bonus=2,
+    wireless=True,
+)
+WIRED_INTERFACE = BodyMod(
+    "유선 뇌 인터페이스",
     "brain",
     stat_add={},
     flags=["interface"],
@@ -225,7 +236,8 @@ JETPACK_EXO_SUIT = Equipment(
 )
 
 BODY_MODS = [
-    BRAIN_INTERFACE,
+    WIRELESS_INTERFACE,
+    WIRED_INTERFACE,
     IR_EYE_LEFT,
     IR_EYE_RIGHT,
     PREC_EYE_LEFT,
