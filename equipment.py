@@ -19,6 +19,11 @@ class Equipment(Item):
         self.stat_changes = stat_changes or {}
         self.flags = flags or []
 
+    def __init__(self, name, weight, capacity, can_enter_buildings=True, volume=1):
+        super().__init__(name, weight, volume)
+        self.capacity = capacity
+        self.can_enter_buildings = can_enter_buildings
+
 
 class BodyMod:
     """Cybernetic or biological enhancement."""
@@ -52,6 +57,12 @@ class BodyMod:
         self.memory_bonus = memory_bonus
         self.wireless = wireless
         self.weapon_range = weapon_range
+    def __init__(self, name, slot, stat_changes=None, skills=None, flags=None):
+        self.name = name
+        self.slot = slot  # e.g. 'arm', 'eye'
+        self.stat_changes = stat_changes or {}
+        self.skills = skills or []
+        self.flags = flags or []
 
 
 # Default equipment items
@@ -310,3 +321,8 @@ EQUIPMENT_BY_NAME = {
 }
 
 BODY_MODS_BY_NAME = {mod.name: mod for mod in BODY_MODS}
+CYBER_EYE = BodyMod("강화 시야", "eye", {"perception": 2}, skills=["야간시"])
+POWER_ARM = BodyMod("강화 팔", "arm", {"strength": 3})
+LIGHT_LEG = BodyMod("경량 다리", "leg", {"agility": 2})
+
+BODY_MODS = [CYBER_EYE, POWER_ARM, LIGHT_LEG]

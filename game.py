@@ -104,6 +104,12 @@ JOB_PAY = {
     "탐정": {"type": "hourly", "rate": 40},
     "경비": {"type": "hourly", "rate": 15},
 }
+)
+
+from characters import NPCS, Player
+from items import BROKEN_PART
+from equipment import BODY_MODS
+from gui import draw_screen
 
 class Game:
     def __init__(self, player):
@@ -286,6 +292,22 @@ class Game:
         tax = int(income * 0.2)
         net = income - tax
         self.player.add_money(net, currency)
+    def update_characters(self):
+        for npc in self.characters:
+            npc.update_location(self.player.time)
+
+    def advance_time(self):
+        self.player.time += 1
+        if self.player.time > 2:
+            self.player.time = 0
+            self.player.end_day()
+
+    def work(self):
+        if self.player.stamina < 20 or self.player.satiety < 20:
+            print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
+            return
+        income = 10 + self.player.intelligence // 2 + self.player.strength // 2
+        self.player.money += income
         stamina_cost = max(10, 20 - self.player.strength)
         satiety_cost = max(5, 10 - self.player.endurance // 2)
         self.player.stamina -= stamina_cost
