@@ -144,6 +144,24 @@
       "open_times": [0,1,2,3,4]
     },
     {
+      "key": "EXO_WORKSHOP",
+      "name": "엑소슈트 작업장",
+      "description": "엑소슈트 개조를 전문으로 하는 공업 지구의 공장",
+      "zone": "공업 지구",
+      "descriptions": {
+        "0": "새벽에도 기계 소리가 끊이지 않는다.",
+        "1": "아침부터 기술자들이 분주하다.",
+        "2": "오전에는 시험 운전이 이어진다.",
+        "3": "오후에도 불꽃과 소음이 가득하다.",
+        "4": "저녁에는 정비로 마무리한다.",
+        "5": "밤이면 경비만 남아 있다."
+      },
+      "nation": 0,
+      "indoors": true,
+      "exo_shop": true,
+      "open_times": [1,2,3,4]
+    },
+    {
       "key": "CLINIC_ILLEGAL",
       "name": "음침한 뒷골목 클리닉",
       "description": "불법 개조를 해 주는 위험한 곳",
@@ -524,6 +542,7 @@
     ["STATION", "AIRPORT"],
     {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
     ["RESIDENTIAL", "CLINIC_LEGAL"],
+    ["STATION", "EXO_WORKSHOP"],
     ["RESIDENTIAL", "APARTMENT"],
     ["RESIDENTIAL", "SHELTER"],
     ["RESIDENTIAL", "HOSPITAL"],

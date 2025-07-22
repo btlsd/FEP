@@ -750,15 +750,26 @@ class Player:
     # Body modification helpers
     def install_mod(self, mod):
         loc = self.location
-        if not getattr(loc, "mod_shop", None):
-            print("이곳에서는 개조 시술을 받을 수 없습니다.")
-            return
+        exo_shop = getattr(loc, "exo_shop", False)
+        shop_type = getattr(loc, "mod_shop", None)
+        if mod.slot == "exo":
+            if not exo_shop:
+                print("엑소슈트 개조는 전용 작업장에서만 가능합니다.")
+                return
+            eq = self.equipment.get("clothing")
+            if not eq or "exosuit" not in getattr(eq, "flags", []):
+                print("엑소슈트를 착용해야 개조할 수 있습니다.")
+                return
+        else:
+            if not shop_type:
+                print("이곳에서는 개조 시술을 받을 수 없습니다.")
+                return
         if mod.required_item and mod.required_item not in self.inventory:
             print(f"{mod.required_item.name}이(가) 없어 개조를 진행할 수 없습니다.")
             return
         if mod.required_item and mod.required_item in self.inventory:
             self.inventory.remove(mod.required_item)
-        if loc.mod_shop == "illegal":
+        if shop_type == "illegal":
             roll = random.random()
             if roll < 0.2:
                 print("시술이 실패해 부상을 입었습니다!")

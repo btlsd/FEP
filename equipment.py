@@ -73,6 +73,9 @@ from items import (
     BRAIN_INTERFACE_CHIP,
     HIDDEN_MELEE_ARM_PART,
     HIDDEN_RANGED_ARM_PART,
+    EXO_POWER_PART,
+    EXO_AGILITY_PART,
+    EXO_JETPACK_PART,
 )
 
 WIRELESS_INTERFACE = BodyMod(
@@ -214,6 +217,31 @@ BEAUTY_SKIN = BodyMod(
     required_item=BEAUTY_SKIN_PART,
 )
 
+# Exosuit upgrades
+EXO_POWER_UP = BodyMod(
+    "엑소슈트 파워 업그레이드",
+    "exo",
+    stat_add={"strength": 2},
+    required_item=EXO_POWER_PART,
+    flags=["exo_power"],
+)
+
+EXO_AGILITY_UP = BodyMod(
+    "엑소슈트 민첩 업그레이드",
+    "exo",
+    stat_add={"agility": 2},
+    required_item=EXO_AGILITY_PART,
+    flags=["exo_agility"],
+)
+
+EXO_JETPACK_MOD = BodyMod(
+    "엑소슈트 제트팩",
+    "exo",
+    stat_add={"agility": 1},
+    required_item=EXO_JETPACK_PART,
+    flags=["jetpack"],
+)
+
 EXO_SUIT = Equipment(
     "엑소 슈트",
     8,
@@ -253,6 +281,9 @@ BODY_MODS = [
     TAIL_IMPLANT,
     COLD_RESIST_SKIN,
     BEAUTY_SKIN,
+    EXO_POWER_UP,
+    EXO_AGILITY_UP,
+    EXO_JETPACK_MOD,
 ]
 
 # Lookup dictionaries for saving/loading

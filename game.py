@@ -459,20 +459,27 @@ class Game:
 
     def modify_body(self):
         shop_type = getattr(self.player.location, "mod_shop", None)
-        if not shop_type:
+        exo_shop = getattr(self.player.location, "exo_shop", False)
+        if not shop_type and not exo_shop:
             print("이곳에서는 개조 시술을 받을 수 없습니다.")
             return
         if shop_type == "illegal":
             print("불법 시술소입니다. 실패하거나 가품을 사용할 위험이 있습니다.")
         opts = []
+        mods = []
         for mod in BODY_MODS:
+            if mod.slot == "exo" and not exo_shop:
+                continue
+            if mod.slot != "exo" and not shop_type:
+                continue
             req = f" - 필요 부품: {mod.required_item.name}" if mod.required_item else ""
             company = f" [{mod.company}]" if mod.company else ""
             opts.append(f"{mod.name}{company} (부위: {mod.slot}){req}")
+            mods.append(mod)
         idx = choose_option(opts)
         if idx is None:
             return
-        self.player.install_mod(BODY_MODS[idx])
+        self.player.install_mod(mods[idx])
 
     def change_equipment(self):
         from equipment import Equipment

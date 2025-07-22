@@ -21,6 +21,7 @@ class Location:
         descriptions=None,
         open_times=None,
         mod_shop=None,
+        exo_shop=False,
         station=False,
         international=False,
         job_office=False,
@@ -54,6 +55,7 @@ class Location:
         # list of allowed time indexes (0~5)
         self.open_times = open_times if open_times is not None else list(range(6))
         self.mod_shop = mod_shop  # "legal" or "illegal"
+        self.exo_shop = exo_shop
         self.station = station
         self.international = international
         self.job_office = job_office
@@ -128,6 +130,7 @@ for entry in data["locations"]:
         entry.get("descriptions"),
         entry.get("open_times"),
         entry.get("mod_shop"),
+        entry.get("exo_shop", False),
         entry.get("station", False),
         entry.get("international", False),
         entry.get("job_office", False),
