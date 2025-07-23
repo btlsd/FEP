@@ -102,7 +102,18 @@ JOB_PAY = {
     "창작자": {"type": "monthly", "rate": 200},
     "사회복지사": {"type": "monthly", "rate": 210},
     "탐정": {"type": "hourly", "rate": 40},
-"경비": {"type": "hourly", "rate": 15},
+    "경비": {"type": "hourly", "rate": 15},
+    "용병": {"type": "hourly", "rate": 50},
+}
+
+# 적성 검사용 직업 추천 목록
+APTITUDE_JOBS = {
+    "strength": ["우주 광부", "군사 요원"],
+    "perception": ["드론 조종사", "탐정"],
+    "endurance": ["환경 정비원", "우주 광부"],
+    "charisma": ["VR 엔터테이너", "사회복지사"],
+    "intelligence": ["데이터 분석가", "로봇 관리자"],
+    "agility": ["고속 배송원", "경비"],
 }
 
 from characters import NPCS, Player
@@ -137,6 +148,43 @@ class Game:
         progress_bar("이동 중 ")
         print(dest.get_description(self.player.time, self.player.season))
         print("-" * 30)
+
+    def aptitude_test(self):
+        """Recommend jobs based on the player's current stats."""
+        print("상담가가 간단한 적성 검사를 진행합니다...")
+        p = self.player
+        stats = {
+            "strength": p.strength,
+            "perception": p.perception,
+            "endurance": p.endurance,
+            "charisma": p.charisma,
+            "intelligence": p.intelligence,
+            "agility": p.agility,
+        }
+        ordered = sorted(stats.items(), key=lambda x: x[1], reverse=True)
+        print("추천 직업:")
+        shown = set()
+        for stat, val in ordered:
+            for job in APTITUDE_JOBS.get(stat, []):
+                if job not in shown:
+                    print(f"- {job}")
+                    shown.add(job)
+                    if len(shown) >= 3:
+                        return
+
+    def offer_mercenary(self):
+        """An NPC approaches with a mercenary offer when leaving the job center."""
+        if self.player.has_flag("mercenary_offer"):
+            return
+        self.player.add_flag("mercenary_offer")
+        recruiter = Character("모집원 케인", {}, self.player.location.nation.name, "모집원", {})
+        print(f"\n{recruiter.name}이 다가와 속삭입니다. \"용병 일을 해 볼 생각 없나?\"")
+        choice = choose_option(["수락한다", "거절한다"], allow_back=False)
+        if choice == 0:
+            self.player.start_job("용병")
+            print("당신은 용병단과 계약했습니다.")
+        else:
+            print("모집원은 씁쓸한 표정으로 돌아섭니다.")
 
     def hospitalize(self):
         p = self.player
@@ -751,15 +799,20 @@ class Game:
         if not getattr(self.player.location, "job_office", False):
             print("이곳에서는 직업을 소개받을 수 없습니다.")
             return
-        idx = self.prompt(["단순 노동", "직업 교육 프로그램", "아직 결정하지 않는다"], path=["행동", "직업 찾기"])
-        if idx is None or idx == 2:
+        idx = self.prompt(["적성 검사", "단순 노동", "직업 교육 프로그램", "아직 결정하지 않는다"], path=["행동", "직업 찾기"])
+        if idx is None or idx == 3:
             print("결정을 미루었습니다.")
             return
         if idx == 0:
+            self.aptitude_test()
+            return
+        if idx == 1:
             self.player.start_job("임시 노동자")
             print("당신은 임시 노동자로 등록되었습니다.")
+            self.offer_mercenary()
             return
         # training path
+        self.aptitude_test()
         cat_idx = self.prompt(["정부 소속 직업", "일반 직업"], path=["행동", "직업 찾기", "교육 과정"])
         if cat_idx is None:
             return
@@ -789,6 +842,7 @@ class Game:
             req_text = ", ".join(f"{k} {v}+" for k, v in req.items())
             print("교육은 마쳤지만 요구 능력치가 부족해 시험에 불합격했습니다.")
             print(f"필요 능력치: {req_text}. 다음 시험 때 다시 도전하세요.")
+        self.offer_mercenary()
 
     def attempt_enter(self, dest):
         unauthorized = getattr(dest, "restricted", False) and not self.player.has_flag(
