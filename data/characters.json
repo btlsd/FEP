@@ -24,7 +24,8 @@
       },
       "blueprints": {
         "IR_EYE_LEFT_PART": 30
-      }
+      },
+      "groups": {"인류연합국": 0, "인류연합국 상인조합": 0}
     },
     {
       "name": "로봇 42",
@@ -39,7 +40,8 @@
       "agility": 5,
       "stats": {"strength": 6, "perception": 5, "endurance": 6, "charisma": 3, "intelligence": 4},
       "blueprint_drop": "IR_EYE_LEFT_PART",
-      "inventory": ["LASER_PISTOL"]
+      "inventory": ["LASER_PISTOL"],
+      "groups": {"전계국": 1}
     },
     {
       "name": "닥터 홍",
@@ -55,7 +57,8 @@
       "stats": {"strength": 4, "perception": 6, "endurance": 5, "charisma": 6, "intelligence": 8}
       ,
       "inventory": ["BRAIN_INTERFACE_CHIP"],
-      "blueprints": {"BRAIN_INTERFACE_CHIP": 50}
+      "blueprints": {"BRAIN_INTERFACE_CHIP": 50},
+      "groups": {"인류연합국": 1, "연합 의료 협회": 1}
     },
     {
       "name": "기술자 철",
@@ -70,7 +73,8 @@
       "agility": 5,
       "stats": {"strength": 5, "perception": 5, "endurance": 5, "charisma": 4, "intelligence": 7},
       "inventory": ["PREC_EYE_RIGHT_PART"],
-      "blueprint_drop": "PREC_EYE_RIGHT_PART"
+      "blueprint_drop": "PREC_EYE_RIGHT_PART",
+      "groups": {"인류연합국": 0, "무허가 시술사": 1}
     },
     {
       "name": "은하",
@@ -84,7 +88,8 @@
       "schedule": {"0": "SHELTER", "1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "SHELTER", "5": "SHELTER"},
       "agility": 5,
       "stats": {"strength": 4, "perception": 7, "endurance": 5, "charisma": 8, "intelligence": 6},
-      "inventory": ["BOARDING_PASS" , "SILVER_RING"]
+      "inventory": ["BOARDING_PASS" , "SILVER_RING"],
+      "groups": {"인류연합국": 0, "연합 사회복지국": 0}
     },
     {
       "name": "상담가 민호",
@@ -97,7 +102,8 @@
       "status": "평민",
       "schedule": {"1": "JOB_CENTER", "2": "JOB_CENTER", "3": "JOB_CENTER", "4": "JOB_CENTER"},
       "agility": 5,
-      "stats": {"strength": 5, "perception": 6, "endurance": 5, "charisma": 7, "intelligence": 6}
+      "stats": {"strength": 5, "perception": 6, "endurance": 5, "charisma": 7, "intelligence": 6},
+      "groups": {"인류연합국": 0, "직업소개소": 0}
     },
     {
       "name": "지휘관 백",
@@ -111,7 +117,8 @@
       "schedule": {"0": "SPECIAL_BASE", "1": "SPECIAL_BASE", "2": "SPECIAL_BASE", "3": "SPECIAL_BASE", "4": "SPECIAL_BASE"},
       "agility": 6,
       "stats": {"strength": 8, "perception": 6, "endurance": 7, "charisma": 5, "intelligence": 6},
-      "inventory": ["PISTOL"]
+      "inventory": ["PISTOL"],
+      "groups": {"인류연합국": 2, "인류연합국 군": 2}
     },
     {
       "name": "갱단원 칼",
@@ -125,7 +132,8 @@
       "schedule": {"0": "SLUM_MARKET", "1": "SLUM_MARKET", "2": "SLUM_MARKET", "3": "SLUM_MARKET", "4": "SLUM_MARKET", "5": "SLUM_SHACK"},
       "agility": 6,
       "stats": {"strength": 7, "perception": 5, "endurance": 6, "charisma": 4, "intelligence": 4},
-      "inventory": ["IRON_PIPE"]
+      "inventory": ["IRON_PIPE"],
+      "groups": {"인류연합국": 0, "슬럼 갱단": 0}
     },
     {
       "name": "교도소장 박",
@@ -139,7 +147,8 @@
       "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
       "agility": 5,
       "stats": {"strength": 6, "perception": 6, "endurance": 6, "charisma": 5, "intelligence": 5},
-      "inventory": ["PISTOL"]
+      "inventory": ["PISTOL"],
+      "groups": {"인류연합국": 1, "교정국": 2}
     },
     {
       "name": "안드로이드 경비 A",
@@ -153,7 +162,8 @@
       "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
       "agility": 6,
       "stats": {"strength": 6, "perception": 5, "endurance": 6, "charisma": 2, "intelligence": 4},
-      "inventory": ["LASER_PISTOL"]
+      "inventory": ["LASER_PISTOL"],
+      "groups": {"전계국": 1, "교정국": 1}
     },
     {
       "name": "안드로이드 경비 B",
@@ -167,7 +177,8 @@
       "schedule": {"0": "JAIL", "1": "JAIL", "2": "JAIL", "3": "JAIL", "4": "JAIL", "5": "JAIL"},
       "agility": 6,
       "stats": {"strength": 6, "perception": 5, "endurance": 6, "charisma": 2, "intelligence": 4},
-      "inventory": ["LASER_PISTOL"]
+      "inventory": ["LASER_PISTOL"],
+      "groups": {"전계국": 1, "교정국": 1}
     }
   ]
 }

@@ -21,6 +21,18 @@ from utils import choose_option
 
 LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
+# Load group definitions
+def _load_groups():
+    path = os.path.join(os.path.dirname(__file__), "data", "groups.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}
+    return {g["name"]: g.get("ranks", []) for g in data.get("groups", [])}
+
+GROUPS = _load_groups()
+
 # 새벽, 아침, 오전, 오후, 저녁, 밤의 여섯 구간
 TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
 WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
@@ -50,6 +62,7 @@ class Character:
         blueprints=None,
         blueprint_drop=None,
         inventory=None,
+        groups=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -73,6 +86,7 @@ class Character:
         self.blueprints = blueprints or {}
         self.blueprint_drop = blueprint_drop
         self.inventory = inventory or []
+        self.groups = groups or {}
         self.health = 50
         self.agility = agility
         self.flags = set()
@@ -210,6 +224,7 @@ def _load_npcs():
             from items import _ITEMS
             blueprints = {key: price for key, price in entry["blueprints"].items() if key in _ITEMS}
         inventory = None
+        groups = entry.get("groups")
         if "inventory" in entry:
             from items import _ITEMS
             inventory = [_ITEMS[key] for key in entry["inventory"] if key in _ITEMS]
@@ -229,6 +244,7 @@ def _load_npcs():
                 blueprints=blueprints,
                 blueprint_drop=entry.get("blueprint_drop"),
                 inventory=inventory,
+                groups=groups,
             )
         )
     return npcs
@@ -728,19 +744,24 @@ class Player:
             print(f"- {name} {prog}%")
 
     # Group and quest helpers
-    def join_group(self, name):
+    def join_group(self, name, rank=0):
         if name in self.groups:
             print(f"이미 {name}에 소속되어 있습니다.")
             return
-        self.groups[name] = 1
-        print(f"{name}에 가입했습니다. (1단계)")
+        self.groups[name] = rank
+        ranks = GROUPS.get(name)
+        title = ranks[rank] if ranks and rank < len(ranks) else f"{rank+1}단계"
+        print(f"{name}에 가입했습니다. ({title})")
 
     def promote_group(self, name):
         if name not in self.groups:
             print(f"{name}에 가입되어 있지 않습니다.")
             return
         self.groups[name] += 1
-        print(f"{name}에서 {self.groups[name]}단계로 진급했습니다.")
+        rank = self.groups[name]
+        ranks = GROUPS.get(name)
+        title = ranks[rank] if ranks and rank < len(ranks) else f"{rank+1}단계"
+        print(f"{name}에서 {title}으로 진급했습니다.")
 
     def add_quest(self, name, target=None):
         self.quests.append({"name": name, "target": target, "done": False})
