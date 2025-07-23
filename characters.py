@@ -161,7 +161,14 @@ class Character:
                     continue
             if info.get("auto"):
                 print(f"{self.name}이(가) 강제로 '{info['name']}' 퀘스트를 시작합니다!")
-                player.add_quest(info['name'], target=info.get('target'), qid=qid)
+                player.add_quest(
+                    info['name'],
+                    target=info.get('target'),
+                    qid=qid,
+                    item=info.get('item'),
+                    alt_stats=info.get('alt_stats'),
+                    kill=info.get('kill'),
+                )
                 if qid == "interface_implant":
                     from equipment import WIRED_INTERFACE
                     player.add_item(BRAIN_INTERFACE_CHIP)
@@ -173,7 +180,16 @@ class Character:
                 return
             ans = input(f"{self.name}: '{info['name']}' 퀘스트를 도와주시겠습니까? (y/n) ")
             if ans.lower().startswith("y"):
-                player.add_quest(info['name'], target=info.get('target'), qid=qid)
+                if info.get('reason'):
+                    print(info['reason'])
+                player.add_quest(
+                    info['name'],
+                    target=info.get('target'),
+                    qid=qid,
+                    item=info.get('item'),
+                    alt_stats=info.get('alt_stats'),
+                    kill=info.get('kill'),
+                )
                 if qid == "deliver_box":
                     print("은하가 닥터 홍에게 전해 달라는 의료 상자를 건넸습니다.")
                 if qid == "join_gang":
@@ -843,8 +859,16 @@ class Player:
         title = ranks[rank] if ranks and rank < len(ranks) else f"{rank+1}단계"
         print(f"{name}에서 {title}으로 진급했습니다.")
 
-    def add_quest(self, name, target=None, qid=None):
-        self.quests.append({"id": qid, "name": name, "target": target, "done": False})
+    def add_quest(self, name, target=None, qid=None, item=None, alt_stats=None, kill=False):
+        self.quests.append({
+            "id": qid,
+            "name": name,
+            "target": target,
+            "item": item,
+            "alt_stats": alt_stats,
+            "kill": kill,
+            "done": False,
+        })
 
     def get_quest_index(self, qid):
         for i, q in enumerate(self.quests):
@@ -864,22 +888,40 @@ class Player:
             self.quests[idx]["done"] = True
 
     def process_quest_completion(self, npc):
+        from items import _ITEMS, item_key
         for i, q in enumerate(self.quests):
             if q.get("done"):
                 continue
-            if q.get("target") == npc.name:
-                self.complete_quest(i)
-                print(f"'{q['name']}' 퀘스트를 완료했습니다.")
-                if q.get("id") == "deliver_box":
-                    from equipment import WIRED_INTERFACE
-                    self.add_item(BRAIN_INTERFACE_CHIP)
-                    next_q = QUESTS.get("interface_implant")
-                    if next_q:
-                        print(f"{npc.name}이(가) 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
-                        self.add_quest(next_q['name'], target=npc.name, qid="interface_implant")
-                        self.install_mod(WIRED_INTERFACE)
-                        idx2 = self.get_quest_index("interface_implant")
-                        self.complete_quest(idx2)
+            if q.get("target") != npc.name:
+                continue
+            need = q.get("item")
+            satisfied = True
+            if need:
+                idx_item = next((j for j, it in enumerate(self.inventory) if item_key(it) == need), None)
+                if idx_item is not None:
+                    item = self.inventory.pop(idx_item)
+                    print(f"{npc.name}에게 {item.name}을 건넸습니다.")
+                else:
+                    alt = q.get("alt_stats")
+                    if alt and all(getattr(self, s, 0) >= v for s, v in alt.items()):
+                        print(f"{npc.name}의 문제를 직접 해결해 주었습니다.")
+                    else:
+                        print(f"{_ITEMS[need].name}이(가) 필요합니다.")
+                        satisfied = False
+            if not satisfied:
+                continue
+            self.complete_quest(i)
+            print(f"'{q['name']}' 퀘스트를 완료했습니다.")
+            if q.get("id") == "deliver_box":
+                from equipment import WIRED_INTERFACE
+                self.add_item(BRAIN_INTERFACE_CHIP)
+                next_q = QUESTS.get("interface_implant")
+                if next_q:
+                    print(f"{npc.name}이(가) 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
+                    self.add_quest(next_q['name'], target=npc.name, qid="interface_implant")
+                    self.install_mod(WIRED_INTERFACE)
+                    idx2 = self.get_quest_index("interface_implant")
+                    self.complete_quest(idx2)
 
     def show_quests(self):
         if not self.quests:
@@ -1000,6 +1042,9 @@ class Player:
                     "id": q.get("id"),
                     "name": q["name"],
                     "target": getattr(q.get("target"), "key", None),
+                    "item": q.get("item"),
+                    "alt_stats": q.get("alt_stats"),
+                    "kill": q.get("kill", False),
                     "done": q.get("done", False),
                 }
                 for q in self.quests
@@ -1066,7 +1111,15 @@ class Player:
         quests = []
         for q in data.get("quests", []):
             target = LOCATIONS_BY_KEY.get(q.get("target")) if q.get("target") else None
-            quests.append({"id": q.get("id"), "name": q.get("name"), "target": target, "done": q.get("done", False)})
+            quests.append({
+                "id": q.get("id"),
+                "name": q.get("name"),
+                "target": target,
+                "item": q.get("item"),
+                "alt_stats": q.get("alt_stats"),
+                "kill": q.get("kill", False),
+                "done": q.get("done", False),
+            })
         player.quests = quests
         return player
 

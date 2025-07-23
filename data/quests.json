@@ -20,6 +20,15 @@
       "name": "슬럼 갱단 가입",
       "giver": "갱단원 칼",
       "requires_crime": true
+    },
+    {
+      "id": "fix_drone",
+      "name": "정비공 철의 드론 수리",
+      "giver": "기술자 철",
+      "target": "기술자 철",
+      "item": "BATTERY_PACK",
+      "reason": "드론에 장착할 배터리가 필요하지만, 직접 수리해 줄 수 있다면 배터리를 가져올 필요는 없다.",
+      "alt_stats": {"intelligence": 8}
     }
   ]
 }

@@ -4,7 +4,8 @@
   "PREC_EYE_LEFT_PART": {"name": "정밀전자 사이버 눈(좌)", "weight": 1, "volume": 1, "printable": true},
   "PREC_EYE_RIGHT_PART": {"name": "정밀전자 사이버 눈(우)", "weight": 1, "volume": 1, "printable": true},
   "BRAIN_INTERFACE_CHIP": {"name": "뇌 인터페이스 칩", "weight": 1, "volume": 1, "printable": true},
-  "BROKEN_PART": {"name": "부서진 부품", "weight": 2, "volume": 2}
+  "BROKEN_PART": {"name": "부서진 부품", "weight": 2, "volume": 2},
+  "BATTERY_PACK": {"name": "고성능 배터리", "weight": 1, "volume": 1}
   ,
   "BOARDING_PASS": {"name": "탑승권", "weight": 0.1, "volume": 0.1}
   ,
