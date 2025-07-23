@@ -38,6 +38,7 @@ class BodyMod:
         memory_bonus=0,
         wireless=False,
         weapon_range=None,
+        armor=0,
     ):
         self.name = name
         self.slot = slot  # e.g. 'arm', 'eye'
@@ -52,6 +53,7 @@ class BodyMod:
         self.memory_bonus = memory_bonus
         self.wireless = wireless
         self.weapon_range = weapon_range
+        self.armor = armor
 
 
 # Default equipment items
@@ -78,6 +80,8 @@ from items import (
     EXO_POWER_PART,
     EXO_AGILITY_PART,
     EXO_JETPACK_PART,
+    STEEL_BONE_PART,
+    ARMORED_SKIN_PART,
 )
 
 WIRELESS_INTERFACE = BodyMod(
@@ -221,6 +225,22 @@ BEAUTY_SKIN = BodyMod(
     required_item=BEAUTY_SKIN_PART,
 )
 
+REINFORCED_SKELETON = BodyMod(
+    "강화 골격",
+    "skeleton",
+    stat_add={"strength": 1},
+    required_item=STEEL_BONE_PART,
+    armor=3,
+)
+
+ARMORED_SKIN = BodyMod(
+    "강화 피부",
+    "skin",
+    stat_add={"endurance": 1},
+    required_item=ARMORED_SKIN_PART,
+    armor=2,
+)
+
 # Exosuit upgrades
 EXO_POWER_UP = BodyMod(
     "엑소슈트 파워 업그레이드",
@@ -285,6 +305,8 @@ BODY_MODS = [
     TAIL_IMPLANT,
     COLD_RESIST_SKIN,
     BEAUTY_SKIN,
+    REINFORCED_SKELETON,
+    ARMORED_SKIN,
     EXO_POWER_UP,
     EXO_AGILITY_UP,
     EXO_JETPACK_MOD,

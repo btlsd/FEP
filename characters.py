@@ -71,6 +71,7 @@ class Character:
         job,
         schedule,
         agility=5,
+        stats=None,
         age=None,
         gender=None,
         origin=None,
@@ -105,8 +106,15 @@ class Character:
         self.inventory = inventory or []
         self.groups = groups or {}
         self.health = 50
+        stats = stats or {}
+        self.strength = stats.get("strength", 5)
+        self.perception = stats.get("perception", 5)
+        self.endurance = stats.get("endurance", 5)
+        self.intelligence = stats.get("intelligence", 5)
+        self.charisma = stats.get("charisma", 5)
         self.agility = agility
         self.flags = set()
+        self.armor = 0
 
     def is_mechanical(self):
         text = f"{self.name} {self.job or ''} {self.affiliation or ''}"
@@ -349,6 +357,7 @@ def _load_npcs():
                 entry.get("job", ""),
                 schedule,
                 agility=entry.get("agility", 5),
+                stats=entry.get("stats"),
                 age=entry.get("age"),
                 gender=entry.get("gender"),
                 origin=entry.get("origin"),
@@ -447,6 +456,7 @@ class Player:
         self.weather = random.choice(WEATHER_BY_SEASON[self.season])
         self.shower_count = 0
         self.appliance_usage = 0
+        self.armor = 0
         # 시간은 0~5까지의 4시간 간격 구간으로 취급한다
         self.time = 0  # 0=새벽,1=아침,2=오전,3=오후,4=저녁,5=밤
 
@@ -686,6 +696,7 @@ class Player:
         for mod in self.mods.values():
             for stat, mul in mod.stat_mult.items():
                 setattr(self, stat, int(getattr(self, stat) * mul))
+        self.armor = sum(getattr(m, "armor", 0) for m in self.mods.values())
         self.recalc_derived_stats()
         self.update_memory_capacity()
         self.update_smell()

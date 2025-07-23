@@ -40,8 +40,10 @@
   "BEAUTY_SKIN_PART": {"name": "미용 피부 부품", "weight": 1, "volume": 1, "printable": true},
   "EXO_POWER_PART": {"name": "엑소슈트 파워 모듈", "weight": 2, "volume": 2, "printable": true},
   "EXO_AGILITY_PART": {"name": "엑소슈트 민첩 모듈", "weight": 2, "volume": 2, "printable": true},
-  "EXO_JETPACK_PART": {"name": "엑소슈트 제트팩 모듈", "weight": 3, "volume": 3, "printable": true},
-  "GOLD_NECKLACE": {"name": "금 목걸이", "weight": 0.2, "volume": 0.2},
+    "EXO_JETPACK_PART": {"name": "엑소슈트 제트팩 모듈", "weight": 3, "volume": 3, "printable": true},
+    "STEEL_BONE_PART": {"name": "강화 골격 부품", "weight": 3, "volume": 3, "printable": true},
+    "ARMORED_SKIN_PART": {"name": "강화 피부 부품", "weight": 2, "volume": 2, "printable": true},
+    "GOLD_NECKLACE": {"name": "금 목걸이", "weight": 0.2, "volume": 0.2},
   "SILVER_RING": {"name": "은 반지", "weight": 0.1, "volume": 0.05}
   }
 }
