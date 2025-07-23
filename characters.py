@@ -106,6 +106,20 @@ class Character:
         self.agility = agility
         self.flags = set()
 
+    def is_mechanical(self):
+        text = f"{self.name} {self.job or ''} {self.affiliation or ''}"
+        for kw in ["로봇", "기계", "드론", "안드로이드"]:
+            if kw in text:
+                return True
+        return False
+
+    def can_express(self):
+        if not self.is_mechanical():
+            return True
+        if "탐랑" in (self.affiliation or ""):
+            return True
+        return "탐랑" in (self.groups or {})
+
     def update_location(self, time_idx):
         self.location = self.schedule.get(time_idx, self.location)
 
@@ -347,6 +361,29 @@ def _load_npcs():
 
 
 NPCS = _load_npcs()
+
+def find_npc(name):
+    return next((n for n in NPCS if n.name == name), None)
+
+def describe_affinity_change(npc, delta):
+    if delta == 0 or npc is None:
+        return
+    if not npc.can_express():
+        print(f"{npc.name}의 표정 변화를 읽기 어렵다.")
+        return
+    if delta > 8:
+        mood = "함박 웃음을 짓는다"
+    elif delta > 3:
+        mood = "밝게 미소 짓는다"
+    elif delta > 0:
+        mood = "살며시 미소 짓는다"
+    elif delta < -8:
+        mood = "노골적으로 불쾌해 보인다"
+    elif delta < -3:
+        mood = "얼굴이 굳는다"
+    else:
+        mood = "약간 실망한 기색을 보인다"
+    print(f"{npc.name}이(가) {mood}.")
 
 class Player:
     def __init__(self, name, gender="none", stats=None):
@@ -893,11 +930,32 @@ class Player:
 
     def fail_quest(self, idx, reason=None):
         if 0 <= idx < len(self.quests) and not self.quests[idx].get("done"):
-            self.quests[idx]["failed"] = True
-            msg = f"'{self.quests[idx]['name']}' 퀘스트가 실패했습니다."
+            q = self.quests[idx]
+            q["failed"] = True
+            msg = f"'{q['name']}' 퀘스트가 실패했습니다."
             if reason:
                 msg += f" ({reason})"
             print(msg)
+            data = QUESTS.get(q.get("id"))
+            if data:
+                delta = data.get("fail_affinity", 0)
+                giver = data.get("giver")
+                if delta and giver:
+                    npc = find_npc(giver)
+                    if npc:
+                        npc.affinity = max(0, min(100, npc.affinity + delta))
+                        describe_affinity_change(npc, delta)
+                rank_ch = data.get("fail_rank")
+                gname = data.get("group")
+                if rank_ch and gname and gname in self.groups:
+                    self.groups[gname] = max(0, self.groups[gname] + rank_ch)
+                    ranks = GROUPS.get(gname)
+                    rank = self.groups[gname]
+                    title = ranks[rank] if ranks and rank < len(ranks) else f"{rank+1}단계"
+                    if rank_ch < 0:
+                        print(f"{gname}에서 {title}으로 강등되었습니다.")
+                    else:
+                        print(f"{gname}에서 {title}으로 승진했습니다.")
 
     def fail_noisy_quests(self):
         for i, q in enumerate(self.quests):

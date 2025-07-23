@@ -38,6 +38,9 @@
       "item": "GOLD_NECKLACE",
       "min_affinity": 40,
       "fail_on_noise": true,
+      "fail_affinity": -10,
+      "fail_rank": -1,
+      "group": "슬럼 갱단",
       "reason": "칼은 최대한 조용히 임무를 수행하라고 당부한다. 시끄러워지면 장물을 팔 수 없다고 한다."
     }
   ]
