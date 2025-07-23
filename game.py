@@ -315,6 +315,8 @@ class Game:
         npc.location = None
         npc.inventory = []
         self.player.killed_npcs.append(npc.name)
+        self.player.record_crime()
+        self.player.process_kill(npc.name)
         watchers = [c for c in self.characters if c.location == self.player.location and c.is_alive() and c != npc]
         if watchers:
             self.imprison("murder")
@@ -656,6 +658,7 @@ class Game:
         if idx is None:
             return
         npc = targets[idx]
+        self.player.record_crime()
         chance = 30 + self.player.agility + self.player.perception
         if self.player.has_flag("stealth"):
             chance += 20
@@ -682,6 +685,7 @@ class Game:
         if not getattr(loc, "locked_relic", False) or self.player.has_flag("relic_unlocked"):
             print("따야 할 자물쇠가 없습니다.")
             return
+        self.player.record_crime()
         chance = 40 + self.player.agility + self.player.intelligence
         if roll_check(chance):
             print("자물쇠를 따는 데 성공했습니다.")
@@ -701,6 +705,7 @@ class Game:
         if not self.player.has_flag("wireless"):
             print("무선 기능이 없어 해킹을 시도할 수 없습니다.")
             return
+        self.player.record_crime()
         chance = 30 + self.player.intelligence * 2
         if self.player.has_flag("stealth"):
             chance += 10
@@ -903,6 +908,7 @@ class Game:
             f"access_{getattr(dest,'key',dest.name)}"
         )
         if unauthorized:
+            self.player.record_crime()
             chance = 50 + dest.security * 10
             if self.player.has_flag("stealth"):
                 chance -= 30

@@ -14,6 +14,12 @@
       "giver": "닥터 홍",
       "requires": "deliver_box",
       "auto": true
+    },
+    {
+      "id": "join_gang",
+      "name": "슬럼 갱단 가입",
+      "giver": "갱단원 칼",
+      "requires_crime": true
     }
   ]
 }

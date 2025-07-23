@@ -133,6 +133,32 @@ class Character:
             min_aff = info.get("min_affinity")
             if min_aff and self.affinity < min_aff:
                 continue
+            stats_req = info.get("min_stats")
+            if stats_req:
+                ok = True
+                for stat, val in stats_req.items():
+                    if getattr(player, stat, 0) < val:
+                        ok = False
+                        break
+                if not ok:
+                    continue
+            group_req = info.get("group")
+            if group_req:
+                if isinstance(group_req, str):
+                    if group_req not in player.groups:
+                        continue
+                else:
+                    gname = group_req.get("name")
+                    grank = group_req.get("rank", 0)
+                    if player.groups.get(gname, -1) < grank:
+                        continue
+            if info.get("requires_crime") and not player.has_committed_crime():
+                continue
+            defeat_req = info.get("requires_defeat")
+            if defeat_req:
+                names = defeat_req if isinstance(defeat_req, list) else [defeat_req]
+                if not all(n in player.killed_npcs for n in names):
+                    continue
             if info.get("auto"):
                 print(f"{self.name}이(가) 강제로 '{info['name']}' 퀘스트를 시작합니다!")
                 player.add_quest(info['name'], target=info.get('target'), qid=qid)
@@ -141,12 +167,19 @@ class Character:
                     player.add_item(BRAIN_INTERFACE_CHIP)
                     player.install_mod(WIRED_INTERFACE)
                     player.complete_quest(player.get_quest_index(qid))
+                if qid == "join_gang":
+                    player.join_group("슬럼 갱단")
+                    player.complete_quest(player.get_quest_index(qid))
                 return
             ans = input(f"{self.name}: '{info['name']}' 퀘스트를 도와주시겠습니까? (y/n) ")
             if ans.lower().startswith("y"):
                 player.add_quest(info['name'], target=info.get('target'), qid=qid)
                 if qid == "deliver_box":
                     print("은하가 닥터 홍에게 전해 달라는 의료 상자를 건넸습니다.")
+                if qid == "join_gang":
+                    player.join_group("슬럼 갱단")
+                    idx = player.get_quest_index(qid)
+                    player.complete_quest(idx)
                 return
 
     def trade(self, player):
@@ -381,6 +414,8 @@ class Player:
         self.max_skills = 3 + self.intelligence // 2
         self.groups = {}
         self.quests = []
+        self.killed_npcs = []
+        self.crime_count = 0
 
         self.flags.update(self.equipment["clothing"].flags)
         self.recalculate_stats()
@@ -861,6 +896,21 @@ class Player:
                     route = " -> ".join(loc.name for loc in path)
                     print(color_text(route, "36"))
 
+    def process_kill(self, name):
+        for i, q in enumerate(self.quests):
+            if q.get("done"):
+                continue
+            if q.get("target") == name and q.get("kill"):
+                self.complete_quest(i)
+                print(f"'{q['name']}' 퀘스트를 완료했습니다.")
+
+    # Crime tracking
+    def record_crime(self):
+        self.crime_count += 1
+
+    def has_committed_crime(self):
+        return self.crime_count > 0
+
     # Body modification helpers
     def install_mod(self, mod):
         loc = self.location
@@ -943,6 +993,8 @@ class Player:
             "blueprints": self.blueprints,
             "skills": list(self.skills),
             "groups": self.groups,
+            "crime_count": self.crime_count,
+            "killed": self.killed_npcs,
             "quests": [
                 {
                     "id": q.get("id"),
@@ -1009,6 +1061,8 @@ class Player:
         player.blueprints = data.get("blueprints", {})
         player.skills = set(data.get("skills", []))
         player.groups = data.get("groups", {})
+        player.crime_count = data.get("crime_count", 0)
+        player.killed_npcs = data.get("killed", [])
         quests = []
         for q in data.get("quests", []):
             target = LOCATIONS_BY_KEY.get(q.get("target")) if q.get("target") else None
