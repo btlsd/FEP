@@ -1,4 +1,5 @@
 {
+  "_comment": "NPC definitions with stats, schedule and shops.",
   "npcs": [
     {
       "name": "상인 정",

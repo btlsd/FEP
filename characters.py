@@ -23,6 +23,7 @@ LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
 # Load group definitions
 def _load_groups():
+    """Return a mapping of group name to rank list from ``groups.json``."""
     path = os.path.join(os.path.dirname(__file__), "data", "groups.json")
     try:
         with open(path, encoding="utf-8") as f:
@@ -35,6 +36,7 @@ GROUPS = _load_groups()
 
 # Load quest definitions
 def _load_quests():
+    """Return a dict of quests keyed by ID from ``quests.json``."""
     path = os.path.join(os.path.dirname(__file__), "data", "quests.json")
     try:
         with open(path, encoding="utf-8") as f:
@@ -315,29 +317,30 @@ class Character:
 
 
 def _load_npcs():
+    """Load NPC definitions from ``characters.json``."""
     path = os.path.join(os.path.dirname(__file__), "data", "characters.json")
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
+
+    from items import _ITEMS  # import once for efficiency
+
     loc_map = LOCATIONS_BY_KEY
     npcs = []
     for entry in raw.get("npcs", []):
         schedule = {int(k): loc_map[v] for k, v in entry.get("schedule", {}).items()}
+
         shop = None
         if "shop" in entry:
-            shop = {}
-            from items import _ITEMS
-            for key, price in entry["shop"].items():
-                if key in _ITEMS:
-                    shop[_ITEMS[key]] = price
+            shop = { _ITEMS[key]: price for key, price in entry["shop"].items() if key in _ITEMS }
+
         blueprints = None
         if "blueprints" in entry:
-            from items import _ITEMS
-            blueprints = {key: price for key, price in entry["blueprints"].items() if key in _ITEMS}
+            blueprints = { key: price for key, price in entry["blueprints"].items() if key in _ITEMS }
+
         inventory = None
-        groups = entry.get("groups")
         if "inventory" in entry:
-            from items import _ITEMS
             inventory = [_ITEMS[key] for key in entry["inventory"] if key in _ITEMS]
+
         npcs.append(
             Character(
                 entry["name"],
@@ -354,7 +357,7 @@ def _load_npcs():
                 blueprints=blueprints,
                 blueprint_drop=entry.get("blueprint_drop"),
                 inventory=inventory,
-                groups=groups,
+                groups=entry.get("groups"),
             )
         )
     return npcs
@@ -363,9 +366,11 @@ def _load_npcs():
 NPCS = _load_npcs()
 
 def find_npc(name):
+    """Return the NPC object with the given name or ``None`` if missing."""
     return next((n for n in NPCS if n.name == name), None)
 
 def describe_affinity_change(npc, delta):
+    """Print an NPC expression description reflecting affinity ``delta``."""
     if delta == 0 or npc is None:
         return
     if not npc.can_express():
@@ -929,6 +934,7 @@ class Player:
             self.quests[idx]["done"] = True
 
     def fail_quest(self, idx, reason=None):
+        """Mark quest at ``idx`` as failed and apply penalties."""
         if 0 <= idx < len(self.quests) and not self.quests[idx].get("done"):
             q = self.quests[idx]
             q["failed"] = True
@@ -958,6 +964,7 @@ class Player:
                         print(f"{gname}에서 {title}으로 승진했습니다.")
 
     def fail_noisy_quests(self):
+        """Fail any active quests that require stealth when noise occurs."""
         for i, q in enumerate(self.quests):
             if q.get("fail_on_noise") and not q.get("done") and not q.get("failed"):
                 self.fail_quest(i, "시끄러운 행동")
@@ -1078,6 +1085,7 @@ class Player:
 
     # Saving and loading
     def to_dict(self):
+        """Serialize the player to a plain dictionary for saving."""
         from items import item_key
 
         return {
@@ -1138,6 +1146,7 @@ class Player:
 
     @classmethod
     def from_dict(cls, data):
+        """Create a ``Player`` instance from saved data."""
         from items import _ITEMS
         from equipment import EQUIPMENT_BY_NAME, BODY_MODS_BY_NAME
 

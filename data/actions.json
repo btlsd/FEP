@@ -1,4 +1,5 @@
 {
+  "_comment": "Available actions players can perform.",
   "actions": [
     {"key": "wait", "name": "기다리기"},
     {"key": "sleep", "name": "잠자기"},

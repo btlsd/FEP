@@ -1,4 +1,6 @@
 {
+  "_comment": "Item data keyed by ID.",
+  "items": {
   "IR_EYE_LEFT_PART": {"name": "아이리움 사이버 눈(좌)", "weight": 1, "volume": 1, "printable": true},
   "IR_EYE_RIGHT_PART": {"name": "아이리움 사이버 눈(우)", "weight": 1, "volume": 1, "printable": true},
   "PREC_EYE_LEFT_PART": {"name": "정밀전자 사이버 눈(좌)", "weight": 1, "volume": 1, "printable": true},
@@ -41,4 +43,5 @@
   "EXO_JETPACK_PART": {"name": "엑소슈트 제트팩 모듈", "weight": 3, "volume": 3, "printable": true},
   "GOLD_NECKLACE": {"name": "금 목걸이", "weight": 0.2, "volume": 0.2},
   "SILVER_RING": {"name": "은 반지", "weight": 0.1, "volume": 0.05}
+  }
 }

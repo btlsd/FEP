@@ -1,4 +1,5 @@
 {
+  "_comment": "Nations and locations available in the game.",
   "nations": [
     {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가", "currency": "연화", "transport": "자동운행 차량과 열차"},
     {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가", "currency": "거합권", "transport": "거대한 동식물 이용"},

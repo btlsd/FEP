@@ -1,4 +1,5 @@
 {
+  "_comment": "List of organizations and their rank titles.",
   "groups": [
     {"name": "인류연합국", "ranks": ["평민", "정예", "특수"]},
     {"name": "거합", "ranks": ["평민", "정예", "특수"]},

@@ -1,4 +1,5 @@
 {
+  "_comment": "Quest definitions used by NPCs.",
   "quests": [
     {
       "id": "deliver_box",
