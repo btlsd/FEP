@@ -173,18 +173,55 @@ class Game:
                         return
 
     def offer_mercenary(self):
-        """An NPC approaches with a mercenary offer when leaving the job center."""
-        if self.player.has_flag("mercenary_offer"):
+        """A shady recruiter approaches after leaving the job center."""
+        p = self.player
+        if p.job == "용병" or p.has_flag("mercenary_contact"):
             return
-        self.player.add_flag("mercenary_offer")
-        recruiter = Character("모집원 케인", {}, self.player.location.nation.name, "모집원", {})
+        recruiter = Character("모집원 케인", {}, p.location.nation.name, "모집원", {})
         print(f"\n{recruiter.name}이 다가와 속삭입니다. \"용병 일을 해 볼 생각 없나?\"")
         choice = choose_option(["수락한다", "거절한다"], allow_back=False)
         if choice == 0:
-            self.player.start_job("용병")
+            p.start_job("용병")
             print("당신은 용병단과 계약했습니다.")
         else:
-            print("모집원은 씁쓸한 표정으로 돌아섭니다.")
+            print("모집원은 연락처를 남기고 자리를 뜹니다. 마음이 바뀌면 연락하라네요.")
+            p.add_flag("mercenary_contact")
+
+    def contact_mercenary(self):
+        """Call the mercenary recruiter for a dangerous test."""
+        p = self.player
+        if not p.has_flag("mercenary_contact"):
+            print("연락처가 없습니다.")
+            return 0
+        print("\n모집원 케인에게 연락해 임무를 요청했습니다. 당신은 혹독한 전투에 투입됩니다.")
+        score = p.strength + p.endurance + p.agility
+        if score < 20:
+            print("압도적인 적에게 순식간에 제압당했습니다!")
+            p.health = -50
+            self.check_health()
+            return 2
+        if score < 35:
+            print("강적에게 밀려 간신히 도망쳤습니다.")
+            p.health = max(1, p.health - 30)
+            print("용병단은 당신의 생존력을 높이 평가하며 정식 스카웃 제의를 보냅니다.")
+            choice = choose_option(["수락한다", "거절한다"], allow_back=False)
+            if choice == 0:
+                p.start_job("용병")
+                p.flags.discard("mercenary_contact")
+                print("당신은 용병단에 합류했습니다.")
+            else:
+                print("언제든 다시 연락하라고 합니다.")
+            return 2
+        print("치열한 싸움 끝에 적을 쓰러뜨렸습니다!")
+        print("용병단은 당신의 실력에 감탄하며 간절히 입단을 요청합니다.")
+        choice = choose_option(["수락한다", "거절한다"], allow_back=False)
+        if choice == 0:
+            p.start_job("용병")
+            print("용병단에 입단했습니다.")
+            p.flags.discard("mercenary_contact")
+        else:
+            print("모집원은 아쉬워하면서도 연락을 기다립니다.")
+        return 3
 
     def hospitalize(self):
         p = self.player
@@ -1169,6 +1206,7 @@ class Game:
         add("책 읽기", self.read_book)
         add("영상 학습", self.study_video, self.player.money.get(self.player.location.nation.currency, 0) >= 1)
         add("데이터 다운로드", self.download_data, self.player.has_flag("interface"))
+        add("용병단 연락", self.contact_mercenary, self.player.has_flag("mercenary_contact") and self.player.job != "용병")
         extra_map = {
             "wait": self.wait,
             "sleep": self.sleep,
