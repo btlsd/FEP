@@ -512,6 +512,23 @@ class Game:
 
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
+        if self.player.location.zone == "외부 세계" and roll_check(60):
+            beast = Character(
+                "괴생명체",
+                {},
+                self.player.location.nation.name,
+                "괴수",
+                {},
+                agility=7,
+            )
+            print("기괴한 생명체가 길을 막아섭니다!")
+            win, turns = beast.fight(self.player, ambush="npc")
+            seg = self.battle_time(turns)
+            if win:
+                print("괴생명체를 물리쳤습니다.")
+            else:
+                self.check_health()
+            return seg
         if self.player.location.zone == "빈민가" and roll_check(40):
             gang = Character("슬럼 갱단원", {}, self.player.location.nation.name, "갱단원", {}, agility=6)
             gang.weapon = IRON_PIPE

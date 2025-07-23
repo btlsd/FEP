@@ -43,6 +43,22 @@
       "cost_mult": 1.2
     },
     {
+      "key": "WILDERNESS",
+      "name": "외부 황야",
+      "description": "문명 구역 밖의 거친 황야",
+      "zone": "외부 세계",
+      "descriptions": {
+        "0": "새벽의 황야는 적막하다.",
+        "1": "아침에는 괴생명체의 흔적이 보인다.",
+        "2": "오전엔 먼지바람이 거세다.",
+        "3": "오후가 되면 기계 짐승들의 울음이 들린다.",
+        "4": "저녁엔 서서히 어둠이 내려앉는다.",
+        "5": "밤에는 무언가의 그림자가 어른거린다."
+      },
+      "nation": 0,
+      "danger": 3
+    },
+    {
       "key": "AIRPORT",
       "name": "국가간 공항",
       "description": "다른 나라로 가는 항공기가 오가는 공항",
@@ -549,6 +565,7 @@
     ["STATION", "MARKET"],
     ["STATION", "RESIDENTIAL"],
     ["STATION", "AIRPORT"],
+    ["STATION", "WILDERNESS"],
     {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
     ["RESIDENTIAL", "CLINIC_LEGAL"],
     ["STATION", "EXO_WORKSHOP"],
