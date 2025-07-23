@@ -29,6 +29,16 @@
       "item": "BATTERY_PACK",
       "reason": "드론에 장착할 배터리가 필요하지만, 직접 수리해 줄 수 있다면 배터리를 가져올 필요는 없다.",
       "alt_stats": {"intelligence": 8}
+    },
+    {
+      "id": "quiet_theft",
+      "name": "조용한 귀금속 절도",
+      "giver": "갱단원 칼",
+      "target": "상인 정",
+      "item": "GOLD_NECKLACE",
+      "min_affinity": 40,
+      "fail_on_noise": true,
+      "reason": "칼은 최대한 조용히 임무를 수행하라고 당부한다. 시끄러워지면 장물을 팔 수 없다고 한다."
     }
   ]
 }

@@ -296,6 +296,7 @@ class Game:
         guard = Character(guard_name, {}, location.nation.name, "경비", {}, agility=agility)
         win, turns = guard.fight(p, ambush="npc")
         seg = self.battle_time(turns)
+        p.fail_noisy_quests()
         if win:
             print(f"{guard_name}을 물리쳤습니다.")
             if entering:
@@ -322,6 +323,7 @@ class Game:
             self.imprison("murder")
         else:
             self.player.adjust_fame(-5)
+        self.player.fail_noisy_quests()
 
     def save(self, filename="save.json"):
         from items import item_key
@@ -525,6 +527,7 @@ class Game:
             )
             print("기괴한 생명체가 길을 막아섭니다!")
             win, turns = beast.fight(self.player, ambush="npc")
+            self.player.fail_noisy_quests()
             seg = self.battle_time(turns)
             if win:
                 print("괴생명체를 물리쳤습니다.")
@@ -536,6 +539,7 @@ class Game:
             gang.weapon = IRON_PIPE
             print("슬럼 갱단원이 시비를 걸어옵니다!")
             win, turns = gang.fight(self.player, ambush="npc")
+            self.player.fail_noisy_quests()
             seg = self.battle_time(turns)
             if not win:
                 self.imprison("pickpocket")
@@ -673,6 +677,7 @@ class Game:
                 print(f"{npc.name}에게서 {item.name}을 훔쳤습니다.")
         else:
             print(f"{npc.name}에게 들켰습니다!")
+            self.player.fail_noisy_quests()
             npc.affinity = max(0, npc.affinity - 10)
             if roll_check(50):
                 print("경찰에게 체포되었습니다!")
@@ -692,6 +697,7 @@ class Game:
             self.player.add_flag("relic_unlocked")
         else:
             print("자물쇠따기에 실패했습니다.")
+            self.player.fail_noisy_quests()
             if roll_check(50):
                 print("경찰에게 체포되었습니다!")
                 self.imprison("hack")
@@ -716,6 +722,7 @@ class Game:
             print(f"해킹에 성공해 {gain}{currency}을 얻었습니다.")
         else:
             print("해킹에 실패했습니다.")
+            self.player.fail_noisy_quests()
             if roll_check(50):
                 print("경찰에게 체포되었습니다!")
                 self.imprison()
@@ -1046,6 +1053,7 @@ class Game:
             npc.lend_money(self.player)
         elif action_idx == 3:
             win, turns = npc.fight(self.player)
+            self.player.fail_noisy_quests()
             if win:
                 if npc.health <= 0:
                     self.handle_npc_death(npc)
@@ -1086,6 +1094,7 @@ class Game:
         bot = Character("납치 로봇", {}, p.location.nation.name, "로봇", {}, agility=6)
         bot.health = 40
         win, turns = bot.fight(p, ambush="npc")
+        p.fail_noisy_quests()
         segments = self.battle_time(turns)
         if not win:
             self.resolve_kidnap()
@@ -1095,6 +1104,7 @@ class Game:
         strong.health = 60
         print("더 강한 로봇이 나타났습니다!")
         win2, turns2 = strong.fight(p, ambush="npc")
+        p.fail_noisy_quests()
         segments += self.battle_time(turns2)
         if win2:
             commander = Character("지휘관 백", {}, p.location.nation.name, "지휘관", {})
@@ -1157,6 +1167,7 @@ class Game:
         p = self.player
         p.location = JAIL
         print("당신은 체포되어 감옥에 수감되었습니다.")
+        p.fail_noisy_quests()
         nation = p.location.nation.name
         days = 1
         if crime and crime in CRIME_SENTENCES:

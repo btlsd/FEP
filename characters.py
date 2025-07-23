@@ -168,6 +168,7 @@ class Character:
                     item=info.get('item'),
                     alt_stats=info.get('alt_stats'),
                     kill=info.get('kill'),
+                    fail_on_noise=info.get('fail_on_noise', False),
                 )
                 if qid == "interface_implant":
                     from equipment import WIRED_INTERFACE
@@ -189,6 +190,7 @@ class Character:
                     item=info.get('item'),
                     alt_stats=info.get('alt_stats'),
                     kill=info.get('kill'),
+                    fail_on_noise=info.get('fail_on_noise', False),
                 )
                 if qid == "deliver_box":
                     print("은하가 닥터 홍에게 전해 달라는 의료 상자를 건넸습니다.")
@@ -859,7 +861,7 @@ class Player:
         title = ranks[rank] if ranks and rank < len(ranks) else f"{rank+1}단계"
         print(f"{name}에서 {title}으로 진급했습니다.")
 
-    def add_quest(self, name, target=None, qid=None, item=None, alt_stats=None, kill=False):
+    def add_quest(self, name, target=None, qid=None, item=None, alt_stats=None, kill=False, fail_on_noise=False):
         self.quests.append({
             "id": qid,
             "name": name,
@@ -867,7 +869,9 @@ class Player:
             "item": item,
             "alt_stats": alt_stats,
             "kill": kill,
+            "fail_on_noise": fail_on_noise,
             "done": False,
+            "failed": False,
         })
 
     def get_quest_index(self, qid):
@@ -886,6 +890,19 @@ class Player:
     def complete_quest(self, idx):
         if 0 <= idx < len(self.quests):
             self.quests[idx]["done"] = True
+
+    def fail_quest(self, idx, reason=None):
+        if 0 <= idx < len(self.quests) and not self.quests[idx].get("done"):
+            self.quests[idx]["failed"] = True
+            msg = f"'{self.quests[idx]['name']}' 퀘스트가 실패했습니다."
+            if reason:
+                msg += f" ({reason})"
+            print(msg)
+
+    def fail_noisy_quests(self):
+        for i, q in enumerate(self.quests):
+            if q.get("fail_on_noise") and not q.get("done") and not q.get("failed"):
+                self.fail_quest(i, "시끄러운 행동")
 
     def process_quest_completion(self, npc):
         from items import _ITEMS, item_key
@@ -918,7 +935,12 @@ class Player:
                 next_q = QUESTS.get("interface_implant")
                 if next_q:
                     print(f"{npc.name}이(가) 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
-                    self.add_quest(next_q['name'], target=npc.name, qid="interface_implant")
+                    self.add_quest(
+                        next_q['name'],
+                        target=npc.name,
+                        qid="interface_implant",
+                        fail_on_noise=next_q.get('fail_on_noise', False),
+                    )
                     self.install_mod(WIRED_INTERFACE)
                     idx2 = self.get_quest_index("interface_implant")
                     self.complete_quest(idx2)
@@ -930,7 +952,10 @@ class Player:
         from utils import find_path, color_text
         nav = any(getattr(m, "wireless", False) for m in self.mods.values())
         for i, q in enumerate(self.quests, 1):
-            status = "완료" if q.get("done") else "진행 중"
+            if q.get("failed"):
+                status = "실패"
+            else:
+                status = "완료" if q.get("done") else "진행 중"
             print(f"{i}. {q['name']} - {status}")
             if nav and q.get("target") and not q.get("done"):
                 path = find_path(self.location, q["target"])
@@ -1045,7 +1070,9 @@ class Player:
                     "item": q.get("item"),
                     "alt_stats": q.get("alt_stats"),
                     "kill": q.get("kill", False),
+                    "fail_on_noise": q.get("fail_on_noise", False),
                     "done": q.get("done", False),
+                    "failed": q.get("failed", False),
                 }
                 for q in self.quests
             ],
@@ -1118,7 +1145,9 @@ class Player:
                 "item": q.get("item"),
                 "alt_stats": q.get("alt_stats"),
                 "kill": q.get("kill", False),
+                "fail_on_noise": q.get("fail_on_noise", False),
                 "done": q.get("done", False),
+                "failed": q.get("failed", False),
             })
         player.quests = quests
         return player
