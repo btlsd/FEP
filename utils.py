@@ -50,3 +50,25 @@ def progress_bar(prefix: str = "", length: int = 10, delay: float = 0.2) -> None
         print(f"\r{prefix}[{bar}]", end="", flush=True)
         time.sleep(delay)
     print(f"\r{prefix}[{'#' * length}]")
+
+
+def color_text(text: str, code: str) -> str:
+    """Return text wrapped in an ANSI color code."""
+    return f"\033[{code}m{text}\033[0m"
+
+
+def find_path(start, goal):
+    """Return a list of locations from ``start`` to ``goal`` using BFS."""
+    from collections import deque
+
+    queue = deque([(start, [start])])
+    visited = {start}
+    while queue:
+        loc, path = queue.popleft()
+        if loc == goal:
+            return path
+        for nxt in loc.connections:
+            if nxt not in visited:
+                visited.add(nxt)
+                queue.append((nxt, path + [nxt]))
+    return None

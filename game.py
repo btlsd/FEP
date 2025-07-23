@@ -1270,6 +1270,7 @@ class Game:
         can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
         add("스탯 측정", self.measure_stats, can_measure)
         add("데이터 확인", self.player.show_data, bool(self.player.blueprints))
+        add("퀘스트 확인", self.player.show_quests, bool(self.player.quests))
         add("저장", self.save)
         add("불러오기", self.load)
         add("종료", None)

@@ -318,6 +318,8 @@ class Player:
         self.blueprints = {}
         self.skills = set()
         self.max_skills = 3 + self.intelligence // 2
+        self.groups = {}
+        self.quests = []
 
         self.flags.update(self.equipment["clothing"].flags)
         self.recalculate_stats()
@@ -725,6 +727,43 @@ class Player:
             name = _ITEMS[key].name
             print(f"- {name} {prog}%")
 
+    # Group and quest helpers
+    def join_group(self, name):
+        if name in self.groups:
+            print(f"이미 {name}에 소속되어 있습니다.")
+            return
+        self.groups[name] = 1
+        print(f"{name}에 가입했습니다. (1단계)")
+
+    def promote_group(self, name):
+        if name not in self.groups:
+            print(f"{name}에 가입되어 있지 않습니다.")
+            return
+        self.groups[name] += 1
+        print(f"{name}에서 {self.groups[name]}단계로 진급했습니다.")
+
+    def add_quest(self, name, target=None):
+        self.quests.append({"name": name, "target": target, "done": False})
+
+    def complete_quest(self, idx):
+        if 0 <= idx < len(self.quests):
+            self.quests[idx]["done"] = True
+
+    def show_quests(self):
+        if not self.quests:
+            print("진행 중인 퀘스트가 없습니다.")
+            return
+        from utils import find_path, color_text
+        nav = any(getattr(m, "wireless", False) for m in self.mods.values())
+        for i, q in enumerate(self.quests, 1):
+            status = "완료" if q.get("done") else "진행 중"
+            print(f"{i}. {q['name']} - {status}")
+            if nav and q.get("target") and not q.get("done"):
+                path = find_path(self.location, q["target"])
+                if path:
+                    route = " -> ".join(loc.name for loc in path)
+                    print(color_text(route, "36"))
+
     # Body modification helpers
     def install_mod(self, mod):
         loc = self.location
@@ -806,6 +845,11 @@ class Player:
             "job": self.job,
             "blueprints": self.blueprints,
             "skills": list(self.skills),
+            "groups": self.groups,
+            "quests": [
+                {"name": q["name"], "target": getattr(q.get("target"), "key", None), "done": q.get("done", False)}
+                for q in self.quests
+            ],
         }
 
     @classmethod
@@ -862,5 +906,11 @@ class Player:
         player.job = data.get("job")
         player.blueprints = data.get("blueprints", {})
         player.skills = set(data.get("skills", []))
+        player.groups = data.get("groups", {})
+        quests = []
+        for q in data.get("quests", []):
+            target = LOCATIONS_BY_KEY.get(q.get("target")) if q.get("target") else None
+            quests.append({"name": q.get("name"), "target": target, "done": q.get("done", False)})
+        player.quests = quests
         return player
 
