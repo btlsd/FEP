@@ -1,5 +1,6 @@
 import json
 import os
+from messages import get_message
 
 
 def _load_dialogues():
@@ -69,6 +70,9 @@ def greeting(npc, player):
         parts.append(d.get("default", "안녕하세요."))
 
     text = " ".join(parts)
+    extra = get_message("greeting_simple")
+    if extra:
+        text += " " + extra
     return text.format(player=player.name, npc=npc.name)
 
 
