@@ -1,5 +1,6 @@
 import random
 from utils import choose_option, roll_check
+from messages import get_message
 
 
 def _active_weapon(combatant):
@@ -120,7 +121,8 @@ def start_battle(player, npc, ambush=None):
                 if attack_hit(player, npc, weapon):
                     if crit_check(player):
                         dmg = int(dmg * 1.5)
-                        extra_msg += " 치명타!"
+                        # use a random phrase from messages.json when critting
+                        extra_msg += " " + get_message("critical_hit")
                     dmg = max(0, dmg - getattr(npc, "armor", 0))
                     npc.health -= dmg
                     print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.{extra_msg}")
@@ -161,7 +163,8 @@ def start_battle(player, npc, ambush=None):
             if attack_hit(npc, player, weapon):
                 if crit_check(npc):
                     dmg = int(dmg * 1.5)
-                    extra = " 치명타!"
+                    # NPCs also use the critical hit phrases
+                    extra = " " + get_message("critical_hit")
                 else:
                     extra = ""
                 dmg = max(0, dmg - getattr(player, "armor", 0))

@@ -1,0 +1,6 @@
+{
+  "_comment": "Miscellaneous text lines used throughout the game",
+  "messages": {
+    "critical_hit": ["치명적인 일격!", "강렬한 타격!", "치명타!"]
+  }
+}
