@@ -1,0 +1,19 @@
+{
+  "quests": [
+    {
+      "id": "deliver_box",
+      "name": "닥터 홍에게 의료 상자 전달",
+      "giver": "은하",
+      "target": "닥터 홍",
+      "min_affinity": 60,
+      "auto": false
+    },
+    {
+      "id": "interface_implant",
+      "name": "뇌 인터페이스 시험 참여",
+      "giver": "닥터 홍",
+      "requires": "deliver_box",
+      "auto": true
+    }
+  ]
+}

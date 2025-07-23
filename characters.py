@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from items import BROKEN_PART
+from items import BROKEN_PART, BRAIN_INTERFACE_CHIP
 from equipment import (
     Equipment,
     CLOTHES_WITH_POCKETS,
@@ -32,6 +32,21 @@ def _load_groups():
     return {g["name"]: g.get("ranks", []) for g in data.get("groups", [])}
 
 GROUPS = _load_groups()
+
+# Load quest definitions
+def _load_quests():
+    path = os.path.join(os.path.dirname(__file__), "data", "quests.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}
+    quests = {}
+    for q in data.get("quests", []):
+        quests[q["id"]] = q
+    return quests
+
+QUESTS = _load_quests()
 
 # 새벽, 아침, 오전, 오후, 저녁, 밤의 여섯 구간
 TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
@@ -103,6 +118,36 @@ class Character:
         print(greeting(self, player))
         gain = max(1, player.charisma // 2)
         self.affinity = min(100, self.affinity + gain)
+        self.offer_quest(player)
+        player.process_quest_completion(self)
+
+    def offer_quest(self, player):
+        for qid, info in QUESTS.items():
+            if info.get("giver") != self.name:
+                continue
+            if player.has_quest(qid):
+                continue
+            req = info.get("requires")
+            if req and not player.quest_completed(req):
+                continue
+            min_aff = info.get("min_affinity")
+            if min_aff and self.affinity < min_aff:
+                continue
+            if info.get("auto"):
+                print(f"{self.name}이(가) 강제로 '{info['name']}' 퀘스트를 시작합니다!")
+                player.add_quest(info['name'], target=info.get('target'), qid=qid)
+                if qid == "interface_implant":
+                    from equipment import WIRED_INTERFACE
+                    player.add_item(BRAIN_INTERFACE_CHIP)
+                    player.install_mod(WIRED_INTERFACE)
+                    player.complete_quest(player.get_quest_index(qid))
+                return
+            ans = input(f"{self.name}: '{info['name']}' 퀘스트를 도와주시겠습니까? (y/n) ")
+            if ans.lower().startswith("y"):
+                player.add_quest(info['name'], target=info.get('target'), qid=qid)
+                if qid == "deliver_box":
+                    print("은하가 닥터 홍에게 전해 달라는 의료 상자를 건넸습니다.")
+                return
 
     def trade(self, player):
         if self.job != "상인" or not self.shop:
@@ -763,12 +808,43 @@ class Player:
         title = ranks[rank] if ranks and rank < len(ranks) else f"{rank+1}단계"
         print(f"{name}에서 {title}으로 진급했습니다.")
 
-    def add_quest(self, name, target=None):
-        self.quests.append({"name": name, "target": target, "done": False})
+    def add_quest(self, name, target=None, qid=None):
+        self.quests.append({"id": qid, "name": name, "target": target, "done": False})
+
+    def get_quest_index(self, qid):
+        for i, q in enumerate(self.quests):
+            if q.get("id") == qid:
+                return i
+        return -1
+
+    def has_quest(self, qid):
+        return self.get_quest_index(qid) >= 0
+
+    def quest_completed(self, qid):
+        idx = self.get_quest_index(qid)
+        return idx >= 0 and self.quests[idx].get("done")
 
     def complete_quest(self, idx):
         if 0 <= idx < len(self.quests):
             self.quests[idx]["done"] = True
+
+    def process_quest_completion(self, npc):
+        for i, q in enumerate(self.quests):
+            if q.get("done"):
+                continue
+            if q.get("target") == npc.name:
+                self.complete_quest(i)
+                print(f"'{q['name']}' 퀘스트를 완료했습니다.")
+                if q.get("id") == "deliver_box":
+                    from equipment import WIRED_INTERFACE
+                    self.add_item(BRAIN_INTERFACE_CHIP)
+                    next_q = QUESTS.get("interface_implant")
+                    if next_q:
+                        print(f"{npc.name}이(가) 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
+                        self.add_quest(next_q['name'], target=npc.name, qid="interface_implant")
+                        self.install_mod(WIRED_INTERFACE)
+                        idx2 = self.get_quest_index("interface_implant")
+                        self.complete_quest(idx2)
 
     def show_quests(self):
         if not self.quests:
@@ -868,7 +944,12 @@ class Player:
             "skills": list(self.skills),
             "groups": self.groups,
             "quests": [
-                {"name": q["name"], "target": getattr(q.get("target"), "key", None), "done": q.get("done", False)}
+                {
+                    "id": q.get("id"),
+                    "name": q["name"],
+                    "target": getattr(q.get("target"), "key", None),
+                    "done": q.get("done", False),
+                }
                 for q in self.quests
             ],
         }
@@ -931,7 +1012,7 @@ class Player:
         quests = []
         for q in data.get("quests", []):
             target = LOCATIONS_BY_KEY.get(q.get("target")) if q.get("target") else None
-            quests.append({"name": q.get("name"), "target": target, "done": q.get("done", False)})
+            quests.append({"id": q.get("id"), "name": q.get("name"), "target": target, "done": q.get("done", False)})
         player.quests = quests
         return player
 
