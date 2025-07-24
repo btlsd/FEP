@@ -318,12 +318,30 @@ class Game:
         self.player.killed_npcs.append(npc.name)
         self.player.record_crime()
         self.player.process_kill(npc.name)
+        if (
+            npc.is_mechanical()
+            and (
+                "탐랑" in (npc.origin or "")
+                or "탐랑" in (npc.affiliation or "")
+                or (npc.groups and "탐랑" in npc.groups)
+            )
+        ):
+            self.player.adjust_nation_affinity("전계국", 5)
+            print("전계국과의 호감도가 크게 상승했습니다.")
         watchers = [c for c in self.characters if c.location == self.player.location and c.is_alive() and c != npc]
         if watchers:
             self.imprison("murder")
         else:
             self.player.adjust_fame(-5)
         self.player.fail_noisy_quests()
+
+    def capture_npc(self, npc):
+        npc.alive = False
+        npc.location = None
+        npc.inventory = []
+        self.player.killed_npcs.append(npc.name)
+        self.player.adjust_nation_affinity("전계국", 8)
+        print(f"{npc.name}을(를) 포획해 전계국으로 인도했습니다.")
 
     def save(self, filename="save.json"):
         from items import item_key
@@ -1072,10 +1090,27 @@ class Game:
             self.player.fail_noisy_quests()
             if win:
                 if npc.health <= 0:
-                    self.handle_npc_death(npc)
-                scan = self.prompt(["잔해 스캔", "그만두기"], path=["NPC 선택", npc.name, "전투 결과"])
-                if scan == 0:
-                    self.scan_remains(npc)
+                    capture = (
+                        npc.is_mechanical()
+                        and (
+                            "탐랑" in (npc.origin or "")
+                            or "탐랑" in (npc.affiliation or "")
+                            or (npc.groups and "탐랑" in npc.groups)
+                        )
+                    )
+                    if capture:
+                        choice = self.prompt(["포획", "잔해 스캔", "그만두기"], path=["NPC 선택", npc.name, "전투 결과"])
+                        if choice == 0:
+                            self.capture_npc(npc)
+                        else:
+                            self.handle_npc_death(npc)
+                            if choice == 1:
+                                self.scan_remains(npc)
+                    else:
+                        self.handle_npc_death(npc)
+                        choice = self.prompt(["잔해 스캔", "그만두기"], path=["NPC 선택", npc.name, "전투 결과"])
+                        if choice == 0:
+                            self.scan_remains(npc)
                 self.player.adjust_fame(2)
             else:
                 self.player.adjust_fame(-2)

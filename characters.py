@@ -242,6 +242,7 @@ class Character:
         print(merchant_intro(self, player))
         items = list(self.shop.items())
         bp_items = list(self.blueprints.items())
+        success = False
         choice = choose_option(["현금 거래", "물물 교환", "설계도 구매"])
         if choice is None:
             print("거래를 취소했습니다.")
@@ -269,6 +270,7 @@ class Character:
             player.spend_money(pay_price, pay_currency)
             player.add_item(item)
             print(f"{pay_currency}로 {pay_price} 지불했습니다.")
+            success = True
         elif choice == 1:
             if not player.inventory:
                 print("교환할 물건이 없습니다.")
@@ -290,6 +292,7 @@ class Character:
                 return
             player.add_item(item)
             print("교환이 완료되었습니다.")
+            success = True
         else:
             if not bp_items:
                 print("구매할 설계도가 없습니다.")
@@ -304,6 +307,14 @@ class Character:
                 print("돈이 부족합니다.")
                 return
             player.add_blueprint_progress(key, 100)
+            success = True
+
+        if success and (
+            "전계국" in (self.origin or "")
+            or "전계국" in (self.affiliation or "")
+            or (self.groups and "전계국" in self.groups)
+        ):
+            player.adjust_nation_affinity("전계국", 1)
 
     def lend_money(self, player):
         if self.affinity >= 60:
@@ -1020,6 +1031,15 @@ class Player:
                 continue
             self.complete_quest(i)
             print(f"'{q['name']}' 퀘스트를 완료했습니다.")
+            data = QUESTS.get(q.get("id"))
+            giver = data.get("giver") if data else None
+            giver_npc = find_npc(giver) if giver else None
+            if giver_npc and (
+                "전계국" in (giver_npc.origin or "")
+                or "전계국" in (giver_npc.affiliation or "")
+                or (giver_npc.groups and "전계국" in giver_npc.groups)
+            ):
+                self.adjust_nation_affinity("전계국", 3)
             if q.get("id") == "deliver_box":
                 from equipment import WIRED_INTERFACE
                 self.add_item(BRAIN_INTERFACE_CHIP)
