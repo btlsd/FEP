@@ -1040,6 +1040,17 @@ class Player:
                 or (giver_npc.groups and "전계국" in giver_npc.groups)
             ):
                 self.adjust_nation_affinity("전계국", 3)
+            if data:
+                rank_up = data.get("reward_rank")
+                gname = data.get("group")
+                if rank_up and gname:
+                    if isinstance(gname, dict):
+                        gname = gname.get("name")
+                    if gname:
+                        if gname not in self.groups:
+                            self.join_group(gname)
+                        for _ in range(rank_up):
+                            self.promote_group(gname)
             if q.get("id") == "deliver_box":
                 from equipment import WIRED_INTERFACE
                 self.add_item(BRAIN_INTERFACE_CHIP)

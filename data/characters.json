@@ -181,6 +181,62 @@
       "stats": {"strength": 6, "perception": 5, "endurance": 6, "charisma": 2, "intelligence": 4},
       "inventory": ["LASER_PISTOL"],
       "groups": {"전계국": 1, "교정국": 1}
+    },
+    {
+      "name": "해커 신",
+      "age": 27,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 70, "C": 40, "E": 50, "A": 30, "N": 40},
+      "affiliation": "다크웹단",
+      "job": "해커",
+      "status": "말단",
+      "schedule": {"2": "SLUM_SHACK", "3": "SLUM_SHACK", "4": "SLUM_MARKET"},
+      "agility": 6,
+      "stats": {"strength": 4, "perception": 7, "endurance": 5, "charisma": 5, "intelligence": 8},
+      "groups": {"인류연합국": 0, "다크웹단": 0}
+    },
+    {
+      "name": "브로커 리",
+      "age": 38,
+      "gender": "female",
+      "origin": "인류연합국",
+      "personality": {"O": 40, "C": 50, "E": 60, "A": 40, "N": 30},
+      "affiliation": "금융사기단",
+      "job": "브로커",
+      "status": "말단",
+      "schedule": {"1": "MARKET", "2": "MARKET", "3": "MARKET"},
+      "agility": 5,
+      "stats": {"strength": 4, "perception": 6, "endurance": 5, "charisma": 7, "intelligence": 7},
+      "groups": {"인류연합국": 0, "금융사기단": 0}
+    },
+    {
+      "name": "의사 장",
+      "age": 45,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 30, "C": 60, "E": 50, "A": 40, "N": 30},
+      "affiliation": "장기밀매단",
+      "job": "의사",
+      "status": "조수",
+      "schedule": {"0": "CLINIC_ILLEGAL", "4": "CLINIC_ILLEGAL"},
+      "agility": 5,
+      "stats": {"strength": 5, "perception": 6, "endurance": 6, "charisma": 4, "intelligence": 8},
+      "groups": {"인류연합국": 0, "장기밀매단": 0}
+    },
+    {
+      "name": "모집원 준",
+      "age": 33,
+      "gender": "male",
+      "origin": "인류연합국",
+      "personality": {"O": 50, "C": 50, "E": 60, "A": 50, "N": 30},
+      "affiliation": "라온단",
+      "job": "모집원",
+      "status": "신입",
+      "schedule": {"1": "JOB_CENTER", "2": "JOB_CENTER", "4": "SLUM_MARKET"},
+      "agility": 6,
+      "stats": {"strength": 7, "perception": 6, "endurance": 6, "charisma": 6, "intelligence": 6},
+      "groups": {"인류연합국": 0, "라온단": 0}
     }
   ]
 }
