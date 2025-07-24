@@ -1,0 +1,3 @@
+# Requirements for FEP
+# This project relies solely on Python's standard library.
+# The file is provided for compatibility with tools expecting requirements.txt

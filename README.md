@@ -9,6 +9,12 @@ life simulation game set in a far-future Seoul and beyond. All in-game text is i
 python game.py
 ```
 
+## Requirements
+
+All game modules rely solely on Python's standard library. The provided
+`requirements.txt` is mainly for convenience and can remain empty unless you
+add third-party libraries.
+
 
 During the game you will be prompted in Korean to choose among four main categories:
 
