@@ -1,6 +1,6 @@
 # Requirements for FEP
-# The game can run with only Python's standard library, but installing
-# these optional packages allows automatic dependency setup and may improve
-# JSON performance.
+# The game can run with only Python's standard library. It requires
+# Python 3.8 or newer. These optional packages allow automatic
+# dependency setup and may improve JSON performance.
 simplejson>=3.19.2
 orjson>=3.9.0
