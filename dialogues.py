@@ -1,5 +1,6 @@
 import json
 import os
+from messages import get_message
 
 
 def _load_dialogues():
@@ -41,6 +42,22 @@ def _personality_code(p):
 
 def greeting(npc, player):
     d = _DIALOGUES.get("greetings", {})
+
+    # 전계국 소속은 통일된 기계적 인사를 사용
+    if (
+        (npc.origin and "전계국" in npc.origin)
+        or (npc.affiliation and "전계국" in npc.affiliation)
+        or (npc.groups and "전계국" in npc.groups)
+    ):
+        line = d.get("origin", {}).get("전계국", "전계국 시스템이 당신을 인식했습니다, {player}.")
+        return line.format(player=player.name, npc=npc.name)
+
+    # 호감도가 낮으면 불친절한 인사말 사용
+    if getattr(npc, "affinity", 50) < 30:
+        bad = get_message("greeting_bad_mood")
+        if bad:
+            return bad.format(player=player.name, npc=npc.name)
+
     parts = []
     if player.fame >= 50 and "famous" in d.get("fame", {}):
         parts.append(d["fame"]["famous"])
@@ -69,6 +86,9 @@ def greeting(npc, player):
         parts.append(d.get("default", "안녕하세요."))
 
     text = " ".join(parts)
+    extra = get_message("greeting_simple")
+    if extra:
+        text += " " + extra
     return text.format(player=player.name, npc=npc.name)
 
 

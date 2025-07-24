@@ -19,11 +19,6 @@ class Equipment(Item):
         self.stat_changes = stat_changes or {}
         self.flags = flags or []
 
-    def __init__(self, name, weight, capacity, can_enter_buildings=True, volume=1):
-        super().__init__(name, weight, volume)
-        self.capacity = capacity
-        self.can_enter_buildings = can_enter_buildings
-
 
 class BodyMod:
     """Cybernetic or biological enhancement."""
@@ -43,6 +38,7 @@ class BodyMod:
         memory_bonus=0,
         wireless=False,
         weapon_range=None,
+        armor=0,
     ):
         self.name = name
         self.slot = slot  # e.g. 'arm', 'eye'
@@ -57,12 +53,7 @@ class BodyMod:
         self.memory_bonus = memory_bonus
         self.wireless = wireless
         self.weapon_range = weapon_range
-    def __init__(self, name, slot, stat_changes=None, skills=None, flags=None):
-        self.name = name
-        self.slot = slot  # e.g. 'arm', 'eye'
-        self.stat_changes = stat_changes or {}
-        self.skills = skills or []
-        self.flags = flags or []
+        self.armor = armor
 
 
 # Default equipment items
@@ -89,6 +80,8 @@ from items import (
     EXO_POWER_PART,
     EXO_AGILITY_PART,
     EXO_JETPACK_PART,
+    STEEL_BONE_PART,
+    ARMORED_SKIN_PART,
 )
 
 WIRELESS_INTERFACE = BodyMod(
@@ -232,6 +225,22 @@ BEAUTY_SKIN = BodyMod(
     required_item=BEAUTY_SKIN_PART,
 )
 
+REINFORCED_SKELETON = BodyMod(
+    "강화 골격",
+    "skeleton",
+    stat_add={"strength": 1},
+    required_item=STEEL_BONE_PART,
+    armor=3,
+)
+
+ARMORED_SKIN = BodyMod(
+    "강화 피부",
+    "skin",
+    stat_add={"endurance": 1},
+    required_item=ARMORED_SKIN_PART,
+    armor=2,
+)
+
 # Exosuit upgrades
 EXO_POWER_UP = BodyMod(
     "엑소슈트 파워 업그레이드",
@@ -296,6 +305,8 @@ BODY_MODS = [
     TAIL_IMPLANT,
     COLD_RESIST_SKIN,
     BEAUTY_SKIN,
+    REINFORCED_SKELETON,
+    ARMORED_SKIN,
     EXO_POWER_UP,
     EXO_AGILITY_UP,
     EXO_JETPACK_MOD,
@@ -321,8 +332,3 @@ EQUIPMENT_BY_NAME = {
 }
 
 BODY_MODS_BY_NAME = {mod.name: mod for mod in BODY_MODS}
-CYBER_EYE = BodyMod("강화 시야", "eye", {"perception": 2}, skills=["야간시"])
-POWER_ARM = BodyMod("강화 팔", "arm", {"strength": 3})
-LIGHT_LEG = BodyMod("경량 다리", "leg", {"agility": 2})
-
-BODY_MODS = [CYBER_EYE, POWER_ARM, LIGHT_LEG]

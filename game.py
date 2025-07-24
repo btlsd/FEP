@@ -23,7 +23,7 @@ from items import (
 )
 from equipment import BODY_MODS
 from gui import draw_screen
-from utils import choose_option, roll_check
+from utils import choose_option, roll_check, progress_bar
 import json
 import os
 
@@ -103,8 +103,18 @@ JOB_PAY = {
     "사회복지사": {"type": "monthly", "rate": 210},
     "탐정": {"type": "hourly", "rate": 40},
     "경비": {"type": "hourly", "rate": 15},
+    "용병": {"type": "hourly", "rate": 50},
 }
-)
+
+# 적성 검사용 직업 추천 목록
+APTITUDE_JOBS = {
+    "strength": ["우주 광부", "군사 요원"],
+    "perception": ["드론 조종사", "탐정"],
+    "endurance": ["환경 정비원", "우주 광부"],
+    "charisma": ["VR 엔터테이너", "사회복지사"],
+    "intelligence": ["데이터 분석가", "로봇 관리자"],
+    "agility": ["고속 배송원", "경비"],
+}
 
 from characters import NPCS, Player
 from items import BROKEN_PART
@@ -115,6 +125,103 @@ class Game:
     def __init__(self, player):
         self.player = player
         self.characters = NPCS
+
+    def prompt(self, options, path=None, allow_back=True):
+        """Wrapper around ``choose_option`` with menu path support."""
+        return choose_option(options, allow_back=allow_back, path=path)
+
+    def travel_effect(self, dest, mode="도보"):
+        """Show travel narration with a progress bar."""
+        start = self.player.location
+        print(f"{start.name} -> {dest.name}")
+        print(start.get_description(self.player.time, self.player.season))
+        print("-" * 30)
+        if mode == "도보":
+            mid = "주변 거리를 천천히 걸어갑니다."
+        elif mode == "정거장":
+            mid = f"{start.nation.transport}을 이용해 이동합니다."
+        elif mode == "제트팩":
+            mid = "제트팩을 가동해 하늘을 날아갑니다."
+        else:
+            mid = f"{start.nation.transport}을 이용해 먼 거리를 이동합니다."
+        print(mid)
+        progress_bar("이동 중 ")
+        print(dest.get_description(self.player.time, self.player.season))
+        print("-" * 30)
+
+    def aptitude_test(self):
+        """Recommend jobs based on the player's current stats."""
+        print("상담가가 간단한 적성 검사를 진행합니다...")
+        p = self.player
+        stats = {
+            "strength": p.strength,
+            "perception": p.perception,
+            "endurance": p.endurance,
+            "charisma": p.charisma,
+            "intelligence": p.intelligence,
+            "agility": p.agility,
+        }
+        ordered = sorted(stats.items(), key=lambda x: x[1], reverse=True)
+        print("추천 직업:")
+        shown = set()
+        for stat, val in ordered:
+            for job in APTITUDE_JOBS.get(stat, []):
+                if job not in shown:
+                    print(f"- {job}")
+                    shown.add(job)
+                    if len(shown) >= 3:
+                        return
+
+    def offer_mercenary(self):
+        """A shady recruiter approaches after leaving the job center."""
+        p = self.player
+        if p.job == "용병" or p.has_flag("mercenary_contact"):
+            return
+        recruiter = Character("모집원 케인", {}, p.location.nation.name, "모집원", {})
+        print(f"\n{recruiter.name}이 다가와 속삭입니다. \"용병 일을 해 볼 생각 없나?\"")
+        choice = choose_option(["수락한다", "거절한다"], allow_back=False)
+        if choice == 0:
+            p.start_job("용병")
+            print("당신은 용병단과 계약했습니다.")
+        else:
+            print("모집원은 연락처를 남기고 자리를 뜹니다. 마음이 바뀌면 연락하라네요.")
+            p.add_flag("mercenary_contact")
+
+    def contact_mercenary(self):
+        """Call the mercenary recruiter for a dangerous test."""
+        p = self.player
+        if not p.has_flag("mercenary_contact"):
+            print("연락처가 없습니다.")
+            return 0
+        print("\n모집원 케인에게 연락해 임무를 요청했습니다. 당신은 혹독한 전투에 투입됩니다.")
+        score = p.strength + p.endurance + p.agility
+        if score < 20:
+            print("압도적인 적에게 순식간에 제압당했습니다!")
+            p.health = -50
+            self.check_health()
+            return 2
+        if score < 35:
+            print("강적에게 밀려 간신히 도망쳤습니다.")
+            p.health = max(1, p.health - 30)
+            print("용병단은 당신의 생존력을 높이 평가하며 정식 스카웃 제의를 보냅니다.")
+            choice = choose_option(["수락한다", "거절한다"], allow_back=False)
+            if choice == 0:
+                p.start_job("용병")
+                p.flags.discard("mercenary_contact")
+                print("당신은 용병단에 합류했습니다.")
+            else:
+                print("언제든 다시 연락하라고 합니다.")
+            return 2
+        print("치열한 싸움 끝에 적을 쓰러뜨렸습니다!")
+        print("용병단은 당신의 실력에 감탄하며 간절히 입단을 요청합니다.")
+        choice = choose_option(["수락한다", "거절한다"], allow_back=False)
+        if choice == 0:
+            p.start_job("용병")
+            print("용병단에 입단했습니다.")
+            p.flags.discard("mercenary_contact")
+        else:
+            print("모집원은 아쉬워하면서도 연락을 기다립니다.")
+        return 3
 
     def hospitalize(self):
         p = self.player
@@ -189,6 +296,7 @@ class Game:
         guard = Character(guard_name, {}, location.nation.name, "경비", {}, agility=agility)
         win, turns = guard.fight(p, ambush="npc")
         seg = self.battle_time(turns)
+        p.fail_noisy_quests()
         if win:
             print(f"{guard_name}을 물리쳤습니다.")
             if entering:
@@ -208,11 +316,32 @@ class Game:
         npc.location = None
         npc.inventory = []
         self.player.killed_npcs.append(npc.name)
+        self.player.record_crime()
+        self.player.process_kill(npc.name)
+        if (
+            npc.is_mechanical()
+            and (
+                "탐랑" in (npc.origin or "")
+                or "탐랑" in (npc.affiliation or "")
+                or (npc.groups and "탐랑" in npc.groups)
+            )
+        ):
+            self.player.adjust_nation_affinity("전계국", 5)
+            print("전계국과의 호감도가 크게 상승했습니다.")
         watchers = [c for c in self.characters if c.location == self.player.location and c.is_alive() and c != npc]
         if watchers:
             self.imprison("murder")
         else:
             self.player.adjust_fame(-5)
+        self.player.fail_noisy_quests()
+
+    def capture_npc(self, npc):
+        npc.alive = False
+        npc.location = None
+        npc.inventory = []
+        self.player.killed_npcs.append(npc.name)
+        self.player.adjust_nation_affinity("전계국", 8)
+        print(f"{npc.name}을(를) 포획해 전계국으로 인도했습니다.")
 
     def save(self, filename="save.json"):
         from items import item_key
@@ -292,30 +421,6 @@ class Game:
         tax = int(income * 0.2)
         net = income - tax
         self.player.add_money(net, currency)
-    def update_characters(self):
-        for npc in self.characters:
-            npc.update_location(self.player.time)
-
-    def advance_time(self):
-        self.player.time += 1
-        if self.player.time > 2:
-            self.player.time = 0
-            self.player.end_day()
-
-    def work(self):
-        if self.player.stamina < 20 or self.player.satiety < 20:
-            print("기력이 부족하거나 너무 허기가 져서 일할 수 없습니다.")
-            return
-        income = 10 + self.player.intelligence // 2 + self.player.strength // 2
-        self.player.money += income
-        stamina_cost = max(10, 20 - self.player.strength)
-        satiety_cost = max(5, 10 - self.player.endurance // 2)
-        self.player.stamina -= stamina_cost
-        self.player.satiety -= satiety_cost
-        self.player.cleanliness -= 5
-        self.player.experience += 1
-        self.player.adjust_fame(1)
-        print(f"일해서 {net}{currency}를 벌었습니다. (세금 {tax}{currency})")
 
     def eat(self):
         price = int(5 * getattr(self.player.location, "cost_mult", 1.0))
@@ -376,7 +481,7 @@ class Game:
 
     def read_book(self):
         opts = ["기초 수리술", "고전 문학"]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "책 읽기"])
         if idx is None:
             return
         self.player.learn_skill(opts[idx])
@@ -387,7 +492,7 @@ class Game:
 
     def study_video(self):
         opts = ["기초 전투술", "기초 프로그래밍"]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "영상 학습"])
         if idx is None:
             return
         if not self.player.spend_money(1, self.player.location.nation.currency):
@@ -401,7 +506,7 @@ class Game:
             print("뇌 인터페이스가 필요합니다.")
             return
         opts = ["고급 설계 데이터", "희귀 지식"]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "데이터 다운로드"])
         if idx is None:
             return
         cost = 10
@@ -429,11 +534,30 @@ class Game:
 
     def explore(self):
         print(f"{self.player.location.name}을 탐험합니다. {self.player.location.description}")
+        if self.player.location.zone == "외부 세계" and roll_check(60):
+            beast = Character(
+                "괴생명체",
+                {},
+                self.player.location.nation.name,
+                "괴수",
+                {},
+                agility=7,
+            )
+            print("기괴한 생명체가 길을 막아섭니다!")
+            win, turns = beast.fight(self.player, ambush="npc")
+            self.player.fail_noisy_quests()
+            seg = self.battle_time(turns)
+            if win:
+                print("괴생명체를 물리쳤습니다.")
+            else:
+                self.check_health()
+            return seg
         if self.player.location.zone == "빈민가" and roll_check(40):
             gang = Character("슬럼 갱단원", {}, self.player.location.nation.name, "갱단원", {}, agility=6)
             gang.weapon = IRON_PIPE
             print("슬럼 갱단원이 시비를 걸어옵니다!")
             win, turns = gang.fight(self.player, ambush="npc")
+            self.player.fail_noisy_quests()
             seg = self.battle_time(turns)
             if not win:
                 self.imprison("pickpocket")
@@ -501,7 +625,7 @@ class Game:
             company = f" [{mod.company}]" if mod.company else ""
             opts.append(f"{mod.name}{company} (부위: {mod.slot}){req}")
             mods.append(mod)
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["행동", "신체 개조"])
         if idx is None:
             return
         self.player.install_mod(mods[idx])
@@ -517,7 +641,7 @@ class Game:
         if not choices:
             print("장비할 수 있는 아이템이 없습니다.")
             return
-        idx = choose_option([it.name for it in choices])
+        idx = self.prompt([it.name for it in choices], path=["행동", "장비 장착"])
         if idx is None:
             return
         item = choices[idx]
@@ -533,6 +657,13 @@ class Game:
         else:
             self.player.equip_weapon(item)
 
+    def measure_stats(self):
+        """Check player's stats with accurate measurement if equipment or facility allows."""
+        if not (self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)):
+            print("정밀 검사 장비가 필요합니다.")
+            return
+        self.player.measure_stats()
+
     def wait(self):
         print("가만히 시간을 보냅니다.")
 
@@ -545,10 +676,11 @@ class Game:
         if not targets:
             print("소매치기할 대상이 없습니다.")
             return
-        idx = choose_option([t.name for t in targets])
+        idx = self.prompt([t.name for t in targets], path=["행동", "소매치기"])
         if idx is None:
             return
         npc = targets[idx]
+        self.player.record_crime()
         chance = 30 + self.player.agility + self.player.perception
         if self.player.has_flag("stealth"):
             chance += 20
@@ -563,6 +695,7 @@ class Game:
                 print(f"{npc.name}에게서 {item.name}을 훔쳤습니다.")
         else:
             print(f"{npc.name}에게 들켰습니다!")
+            self.player.fail_noisy_quests()
             npc.affinity = max(0, npc.affinity - 10)
             if roll_check(50):
                 print("경찰에게 체포되었습니다!")
@@ -575,12 +708,14 @@ class Game:
         if not getattr(loc, "locked_relic", False) or self.player.has_flag("relic_unlocked"):
             print("따야 할 자물쇠가 없습니다.")
             return
+        self.player.record_crime()
         chance = 40 + self.player.agility + self.player.intelligence
         if roll_check(chance):
             print("자물쇠를 따는 데 성공했습니다.")
             self.player.add_flag("relic_unlocked")
         else:
             print("자물쇠따기에 실패했습니다.")
+            self.player.fail_noisy_quests()
             if roll_check(50):
                 print("경찰에게 체포되었습니다!")
                 self.imprison("hack")
@@ -594,6 +729,7 @@ class Game:
         if not self.player.has_flag("wireless"):
             print("무선 기능이 없어 해킹을 시도할 수 없습니다.")
             return
+        self.player.record_crime()
         chance = 30 + self.player.intelligence * 2
         if self.player.has_flag("stealth"):
             chance += 10
@@ -604,6 +740,7 @@ class Game:
             print(f"해킹에 성공해 {gain}{currency}을 얻었습니다.")
         else:
             print("해킹에 실패했습니다.")
+            self.player.fail_noisy_quests()
             if roll_check(50):
                 print("경찰에게 체포되었습니다!")
                 self.imprison()
@@ -619,7 +756,7 @@ class Game:
         if not available:
             print("사용 가능한 설계도가 없습니다.")
             return
-        idx = choose_option([_ITEMS[key].name for key in available])
+        idx = self.prompt([_ITEMS[key].name for key in available], path=["행동", "프린팅"])
         if idx is None:
             return
         key = available[idx]
@@ -640,7 +777,7 @@ class Game:
         if not currencies:
             print("소지한 현금이 없습니다.")
             return
-        idx = choose_option([f"{cur} ({self.player.money[cur]})" for cur in currencies])
+        idx = self.prompt([f"{cur} ({self.player.money[cur]})" for cur in currencies], path=["행동", "입금"])
         if idx is None:
             return
         cur = currencies[idx]
@@ -663,7 +800,7 @@ class Game:
         if not available:
             print("예금된 돈이 없습니다.")
             return
-        idx = choose_option([f"{cur} ({self.player.bank[cur]})" for cur in available])
+        idx = self.prompt([f"{cur} ({self.player.bank[cur]})" for cur in available], path=["행동", "출금"])
         if idx is None:
             return
         cur = available[idx]
@@ -705,7 +842,7 @@ class Game:
         if not options:
             print("거래할 주거지가 없습니다.")
             return
-        idx = choose_option(options)
+        idx = self.prompt(options, path=["행동", "주거지 거래"])
         if idx is None:
             return
         action, house = actions[idx]
@@ -746,16 +883,21 @@ class Game:
         if not getattr(self.player.location, "job_office", False):
             print("이곳에서는 직업을 소개받을 수 없습니다.")
             return
-        idx = choose_option(["단순 노동", "직업 교육 프로그램", "아직 결정하지 않는다"])
-        if idx is None or idx == 2:
+        idx = self.prompt(["적성 검사", "단순 노동", "직업 교육 프로그램", "아직 결정하지 않는다"], path=["행동", "직업 찾기"])
+        if idx is None or idx == 3:
             print("결정을 미루었습니다.")
             return
         if idx == 0:
+            self.aptitude_test()
+            return
+        if idx == 1:
             self.player.start_job("임시 노동자")
             print("당신은 임시 노동자로 등록되었습니다.")
+            self.offer_mercenary()
             return
         # training path
-        cat_idx = choose_option(["정부 소속 직업", "일반 직업"])
+        self.aptitude_test()
+        cat_idx = self.prompt(["정부 소속 직업", "일반 직업"], path=["행동", "직업 찾기", "교육 과정"])
         if cat_idx is None:
             return
         want_gov = cat_idx == 0
@@ -763,7 +905,8 @@ class Game:
         if not jobs:
             print("해당 분류의 과정이 없습니다.")
             return
-        job_idx = choose_option(jobs)
+        selected_cat = "정부 소속 직업" if want_gov else "일반 직업"
+        job_idx = self.prompt(jobs, path=["행동", "직업 찾기", "교육 과정", selected_cat])
         if job_idx is None:
             print("등록을 취소했습니다.")
             return
@@ -783,12 +926,14 @@ class Game:
             req_text = ", ".join(f"{k} {v}+" for k, v in req.items())
             print("교육은 마쳤지만 요구 능력치가 부족해 시험에 불합격했습니다.")
             print(f"필요 능력치: {req_text}. 다음 시험 때 다시 도전하세요.")
+        self.offer_mercenary()
 
     def attempt_enter(self, dest):
         unauthorized = getattr(dest, "restricted", False) and not self.player.has_flag(
             f"access_{getattr(dest,'key',dest.name)}"
         )
         if unauthorized:
+            self.player.record_crime()
             chance = 50 + dest.security * 10
             if self.player.has_flag("stealth"):
                 chance -= 30
@@ -816,7 +961,7 @@ class Game:
         if not options:
             print("이곳에서 이동할 수 있는 장소가 없습니다.")
             return
-        idx = choose_option([d.name for d in options])
+        idx = self.prompt([d.name for d in options], path=["이동", "도보 이동"])
         if idx is None:
             return
         dest = options[idx]
@@ -832,16 +977,16 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != self.player.location:
+            self.travel_effect(dest, "도보")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"도보로 {self.player.location.name}으로 이동했습니다.")
 
     def move_station(self):
         current = self.player.location
         if not current.station or not current.connections:
             print("정거장에서만 사용할 수 있습니다.")
             return
-        idx = choose_option([d.name for d in current.connections])
+        idx = self.prompt([d.name for d in current.connections], path=["이동", "정거장 이동"])
         if idx is None:
             return
         dest = current.connections[idx]
@@ -857,9 +1002,9 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != self.player.location:
+            self.travel_effect(dest, "정거장")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"{dest.name}으로 이동했습니다.")
 
     def move_jetpack(self):
         if not self.player.has_flag("jetpack"):
@@ -874,7 +1019,7 @@ class Game:
         if not options:
             print("이 나라에서 이동할 장소가 없습니다.")
             return
-        idx = choose_option([l.name for l in options])
+        idx = self.prompt([l.name for l in options], path=["이동", "제트팩 비행"])
         if idx is None:
             return
         dest = options[idx]
@@ -890,20 +1035,36 @@ class Game:
         if self.check_home_ambush(dest):
             return
         if dest != current:
+            self.travel_effect(dest, "제트팩")
             self.player.location = dest
             self.player.flags.discard("stealth")
-            print(f"제트팩으로 {dest.name}에 도착했습니다.")
 
     def interact(self):
         nearby = [c for c in self.characters if c.location == self.player.location and c.is_alive()]
         if not nearby:
             print("주변에 대화할 사람이 없습니다.")
             return
-        idx = choose_option([f"{n.name} ({n.job})" for n in nearby])
+        idx = self.prompt([f"{n.name} ({n.job})" for n in nearby], path=["NPC 선택"])
         if idx is None:
             return
         npc = nearby[idx]
-        action_idx = choose_option(["대화", "거래", "돈 빌리기", "전투"])
+        if (
+            "전계국" in (npc.origin or "")
+            or "전계국" in (npc.affiliation or "")
+            or (npc.groups and "전계국" in npc.groups)
+        ):
+            naff = self.player.get_nation_affinity("전계국")
+            if naff < 10:
+                print(f"{npc.name}이(가) 즉시 공격해 옵니다!")
+                win, turns = npc.fight(self.player, ambush="npc")
+                self.player.fail_noisy_quests()
+                if win and npc.health <= 0:
+                    self.handle_npc_death(npc)
+                return self.battle_time(turns)
+            if naff < 20:
+                print(f"{npc.name}은(는) 당신을 무시합니다.")
+                return
+        action_idx = self.prompt(["대화", "거래", "돈 빌리기", "전투"], path=["NPC 선택", npc.name])
         if action_idx is None:
             return
         if self.player.has_flag("stealth") or self.player.has_flag("infiltrating"):
@@ -926,12 +1087,30 @@ class Game:
             npc.lend_money(self.player)
         elif action_idx == 3:
             win, turns = npc.fight(self.player)
+            self.player.fail_noisy_quests()
             if win:
                 if npc.health <= 0:
-                    self.handle_npc_death(npc)
-                scan = choose_option(["잔해 스캔", "그만두기"])
-                if scan == 0:
-                    self.scan_remains(npc)
+                    capture = (
+                        npc.is_mechanical()
+                        and (
+                            "탐랑" in (npc.origin or "")
+                            or "탐랑" in (npc.affiliation or "")
+                            or (npc.groups and "탐랑" in npc.groups)
+                        )
+                    )
+                    if capture:
+                        choice = self.prompt(["포획", "잔해 스캔", "그만두기"], path=["NPC 선택", npc.name, "전투 결과"])
+                        if choice == 0:
+                            self.capture_npc(npc)
+                        else:
+                            self.handle_npc_death(npc)
+                            if choice == 1:
+                                self.scan_remains(npc)
+                    else:
+                        self.handle_npc_death(npc)
+                        choice = self.prompt(["잔해 스캔", "그만두기"], path=["NPC 선택", npc.name, "전투 결과"])
+                        if choice == 0:
+                            self.scan_remains(npc)
                 self.player.adjust_fame(2)
             else:
                 self.player.adjust_fame(-2)
@@ -951,22 +1130,22 @@ class Game:
             print("탑승권이 없어 이동할 수 없습니다.")
             return
         opts = [f"{n.name} - {n.description}" for n in NATIONS]
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["이동", "국가 이동"])
         if idx is None:
             return
         nation = NATIONS[idx]
-        self.player.location = DEFAULT_LOCATION_BY_NATION[nation]
+        dest = DEFAULT_LOCATION_BY_NATION[nation]
+        self.travel_effect(dest, "국가 이동")
+        self.player.location = dest
         if use_ticket:
             self.player.inventory.remove(BOARDING_PASS)
-        print(
-            f"{nation.transport}을 이용해 {nation.name}으로 이동했습니다. 현재 위치는 {self.player.location.name}입니다."
-        )
 
     def kidnap_fight_sequence(self):
         p = self.player
         bot = Character("납치 로봇", {}, p.location.nation.name, "로봇", {}, agility=6)
         bot.health = 40
         win, turns = bot.fight(p, ambush="npc")
+        p.fail_noisy_quests()
         segments = self.battle_time(turns)
         if not win:
             self.resolve_kidnap()
@@ -976,6 +1155,7 @@ class Game:
         strong.health = 60
         print("더 강한 로봇이 나타났습니다!")
         win2, turns2 = strong.fight(p, ambush="npc")
+        p.fail_noisy_quests()
         segments += self.battle_time(turns2)
         if win2:
             commander = Character("지휘관 백", {}, p.location.nation.name, "지휘관", {})
@@ -1038,6 +1218,7 @@ class Game:
         p = self.player
         p.location = JAIL
         print("당신은 체포되어 감옥에 수감되었습니다.")
+        p.fail_noisy_quests()
         nation = p.location.nation.name
         days = 1
         if crime and crime in CRIME_SENTENCES:
@@ -1078,60 +1259,46 @@ class Game:
             if self.player.location.international:
                 opts.append("국가 이동")
                 moves.append(self.travel)
-        idx = choose_option(opts)
+        idx = self.prompt(opts, path=["이동"])
         if idx is None:
             return
         action = moves[idx]
         self.step(action)
 
     def choose_action(self):
-        opts = [
-            "일하기",
-            "식사",
-            "잠자기",
-            "탐험",
-            "소지품 확인",
-            "장비 장착",
-            "씻기",
-            "신체 개조",
-            "미디어 시청",
-            "운동",
-            "책 읽기",
-            "영상 학습",
-            "데이터 다운로드",
-        ]
-        added = []
-        for key in ACTIONS:
-            name = ACTIONS[key]
-            if name not in opts:
-                opts.append(name)
-                added.append(key)
-        if getattr(self.player.location, "printer", False):
-            opts.append("프린팅")
-        if getattr(self.player.location, "job_office", False):
-            opts.append("직업 찾기")
-        if getattr(self.player.location, "housing_office", False) or getattr(self.player.location, "housing_market", False):
-            opts.append("주거지 거래")
-        if getattr(self.player.location, "bank", False):
-            opts.extend(["입금", "출금"])
-        idx = choose_option(opts)
-        if idx is None:
+        if (
+            self.player.location.nation.name == "전계국"
+            and self.player.get_nation_affinity("전계국") < 20
+        ):
+            print("전계국 시스템이 당신의 접근을 거부합니다.")
             return
-        actions = [
-            self.work,
-            self.eat,
-            self.sleep,
-            self.explore,
-            self.player.show_inventory,
-            self.change_equipment,
-            self.wash,
-            self.modify_body,
-            self.watch_media,
-            self.exercise,
-            self.read_book,
-            self.study_video,
-            self.download_data,
-        ]
+
+        opts = []
+        actions = []
+
+        def add(option, func, cond=True):
+            if cond:
+                opts.append(option)
+                actions.append(func)
+
+        add("일하기", self.work, self.player.stamina >= 20 and self.player.satiety >= 20 and self.player.weekday in {0, 1, 3, 4})
+        cost = int(5 * getattr(self.player.location, "cost_mult", 1.0))
+        add("식사", self.eat, self.player.money.get(self.player.location.nation.currency, 0) >= cost)
+        add("잠자기", self.sleep, getattr(self.player.location, "sleep_spot", False))
+        add("탐험", self.explore)
+        add("소지품 확인", self.player.show_inventory)
+        add("장비 장착", self.change_equipment)
+        can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
+        add("스탯 측정", self.measure_stats, can_measure)
+        wash_fee = 2
+        add("씻기", self.wash, getattr(self.player.location, "wash_spot", False) and self.player.money.get(self.player.location.nation.currency, 0) >= wash_fee)
+        add("신체 개조", self.modify_body, getattr(self.player.location, "mod_shop", False))
+        add("미디어 시청", self.watch_media, self.player.money.get(self.player.location.nation.currency, 0) >= 2)
+        add("운동", self.exercise, self.player.stamina >= 10)
+        add("책 읽기", self.read_book)
+        add("영상 학습", self.study_video, self.player.money.get(self.player.location.nation.currency, 0) >= 1)
+        add("데이터 다운로드", self.download_data, self.player.has_flag("interface"))
+        add("용병단 연락", self.contact_mercenary, self.player.has_flag("mercenary_contact") and self.player.job != "용병")
         extra_map = {
             "wait": self.wait,
             "sleep": self.sleep,
@@ -1143,16 +1310,37 @@ class Game:
             "watch_media": self.watch_media,
             "exercise": self.exercise,
         }
-        for key in added:
-            actions.append(extra_map.get(key, self.wait))
+
+        for key in ACTIONS:
+            name = ACTIONS[key]
+            if name not in opts:
+                opts.append(name)
+                actions.append(extra_map.get(key, self.wait))
+
+        from items import _ITEMS
+
         if getattr(self.player.location, "printer", False):
-            actions.append(self.print_item)
+            printable = [k for k, p in self.player.blueprints.items() if p >= 100 and _ITEMS[k].printable]
+            if printable:
+                opts.append("프린팅")
+                actions.append(self.print_item)
         if getattr(self.player.location, "job_office", False):
+            opts.append("직업 찾기")
             actions.append(self.find_job)
         if getattr(self.player.location, "housing_office", False) or getattr(self.player.location, "housing_market", False):
+            opts.append("주거지 거래")
             actions.append(self.housing_trade)
         if getattr(self.player.location, "bank", False):
-            actions.extend([self.deposit_money, self.withdraw_money])
+            if any(self.player.money.values()):
+                opts.append("입금")
+                actions.append(self.deposit_money)
+            if any(self.player.bank.values()):
+                opts.append("출금")
+                actions.append(self.withdraw_money)
+
+        idx = self.prompt(opts, path=["행동"])
+        if idx is None:
+            return
         action = actions[idx]
         if action is self.player.show_inventory:
             action()
@@ -1160,27 +1348,34 @@ class Game:
             self.step(action)
 
     def open_menu(self):
-        options = ["스탯 확인", "소지품 확인", "데이터 확인", "저장", "불러오기", "종료"]
-        idx = choose_option(options)
+        opts = []
+        actions = []
+
+        def add(option, func, cond=True):
+            if cond:
+                opts.append(option)
+                actions.append(func)
+
+        add("스탯 확인", self.player.status)
+        add("소지품 확인", self.player.show_inventory)
+        add("장비 장착", self.change_equipment)
+        can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
+        add("스탯 측정", self.measure_stats, can_measure)
+        add("데이터 확인", self.player.show_data, bool(self.player.blueprints))
+        add("퀘스트 확인", self.player.show_quests, bool(self.player.quests))
+        add("저장", self.save)
+        add("불러오기", self.load)
+        add("종료", None)
+
+        idx = self.prompt(opts, path=["메뉴"])
         if idx is None:
             return True
-        if idx == 0:
-            self.player.status()
-            return True
-        if idx == 1:
-            self.player.show_inventory()
-            return True
-        if idx == 2:
-            self.player.show_data()
-            return True
-        if idx == 3:
-            self.save()
-            return True
-        if idx == 4:
-            self.load()
-            return True
-        print("게임을 종료합니다.")
-        return False
+        action = actions[idx]
+        if action is None:
+            print("게임을 종료합니다.")
+            return False
+        action()
+        return True
 
     def play(self):
         self.running = True
@@ -1191,7 +1386,7 @@ class Game:
                 if not self.running:
                     break
             draw_screen(self.player, self.characters)
-            idx = choose_option(["이동", "NPC 선택", "행동", "메뉴"], allow_back=False)
+            idx = self.prompt(["이동", "NPC 선택", "행동", "메뉴"], allow_back=False, path=["메인 메뉴"])
             if idx == 0:
                 self.choose_move()
             elif idx == 1:
@@ -1235,4 +1430,9 @@ def main():
     game.play()
 
 if __name__ == "__main__":
-    main()
+    print("게임을 시작하려면 Enter 키를 누르세요. 종료하려면 'exit'을 입력하세요.")
+    cmd = input('> ').strip().lower()
+    if cmd != 'exit':
+        main()
+    else:
+        print('프로그램을 종료합니다.')

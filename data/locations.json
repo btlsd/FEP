@@ -1,4 +1,5 @@
 {
+  "_comment": "Nations and locations available in the game.",
   "nations": [
     {"name": "인류연합국", "description": "인간들로 이루어진 연합 국가", "currency": "연화", "transport": "자동운행 차량과 열차"},
     {"name": "거합", "description": "실험을 통해 지능을 얻은 동식물들이 모여 만든 연합 국가", "currency": "거합권", "transport": "거대한 동식물 이용"},
@@ -41,6 +42,22 @@
       "printer": true,
       "open_times": [0,1,2,3,4],
       "cost_mult": 1.2
+    },
+    {
+      "key": "WILDERNESS",
+      "name": "외부 황야",
+      "description": "문명 구역 밖의 거친 황야",
+      "zone": "외부 세계",
+      "descriptions": {
+        "0": "새벽의 황야는 적막하다.",
+        "1": "아침에는 괴생명체의 흔적이 보인다.",
+        "2": "오전엔 먼지바람이 거세다.",
+        "3": "오후가 되면 기계 짐승들의 울음이 들린다.",
+        "4": "저녁엔 서서히 어둠이 내려앉는다.",
+        "5": "밤에는 무언가의 그림자가 어른거린다."
+      },
+      "nation": 0,
+      "danger": 3
     },
     {
       "key": "AIRPORT",
@@ -549,6 +566,7 @@
     ["STATION", "MARKET"],
     ["STATION", "RESIDENTIAL"],
     ["STATION", "AIRPORT"],
+    ["STATION", "WILDERNESS"],
     {"from": "SEWER", "to": "SECRET_LAB", "perception": 7},
     ["RESIDENTIAL", "CLINIC_LEGAL"],
     ["STATION", "EXO_WORKSHOP"],
