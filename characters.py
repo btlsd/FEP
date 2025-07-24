@@ -116,6 +116,10 @@ class Character:
         self.flags = set()
         self.armor = 0
 
+    def is_alive(self):
+        """Return ``True`` if the character still has health remaining."""
+        return self.health > 0
+
     def is_mechanical(self):
         text = f"{self.name} {self.job or ''} {self.affiliation or ''}"
         for kw in ["로봇", "기계", "드론", "안드로이드"]:
