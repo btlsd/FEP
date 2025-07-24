@@ -9,6 +9,14 @@ life simulation game set in a far-future Seoul and beyond. All in-game text is i
 python game.py
 ```
 
+## Requirements
+
+The game mainly relies on Python's standard library and has been tested with
+**Python 3.8** and newer. For convenience a `requirements.txt` file lists a
+couple of JSON helper libraries so that tools like
+`pip install -r requirements.txt` can automatically grab them. Installing these
+packages is optional but can speed up JSON handling.
+
 
 During the game you will be prompted in Korean to choose among four main categories:
 
