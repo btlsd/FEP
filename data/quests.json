@@ -1,0 +1,141 @@
+{
+  "_comment": "Quest definitions used by NPCs.",
+  "quests": [
+    {
+      "id": "deliver_box",
+      "name": "닥터 홍에게 의료 상자 전달",
+      "giver": "은하",
+      "target": "닥터 홍",
+      "min_affinity": 60,
+      "auto": false
+    },
+    {
+      "id": "interface_implant",
+      "name": "뇌 인터페이스 시험 참여",
+      "giver": "닥터 홍",
+      "requires": "deliver_box",
+      "auto": true
+    },
+    {
+      "id": "join_gang",
+      "name": "슬럼 갱단 가입",
+      "giver": "갱단원 칼",
+      "requires_crime": true
+    },
+    {
+      "id": "fix_drone",
+      "name": "정비공 철의 드론 수리",
+      "giver": "기술자 철",
+      "target": "기술자 철",
+      "item": "BATTERY_PACK",
+      "reason": "드론에 장착할 배터리가 필요하지만, 직접 수리해 줄 수 있다면 배터리를 가져올 필요는 없다.",
+      "alt_stats": {"intelligence": 8}
+    },
+    {
+      "id": "quiet_theft",
+      "name": "조용한 귀금속 절도",
+      "giver": "갱단원 칼",
+      "target": "상인 정",
+      "item": "GOLD_NECKLACE",
+      "min_affinity": 40,
+      "fail_on_noise": true,
+      "fail_affinity": -10,
+      "fail_rank": -1,
+      "group": "슬럼 갱단",
+      "reason": "칼은 최대한 조용히 임무를 수행하라고 당부한다. 시끄러워지면 장물을 팔 수 없다고 한다."
+    },
+    {
+      "id": "gang_promotion",
+      "name": "갱단 평판 올리기",
+      "giver": "갱단원 칼",
+      "group": {"name": "슬럼 갱단", "rank": 0},
+      "target": "갱단원 칼",
+      "reward_rank": 1,
+      "requires": "quiet_theft"
+    },
+    {
+      "id": "gang_final",
+      "name": "슬럼 갱단의 두목 되기",
+      "giver": "갱단원 칼",
+      "group": {"name": "슬럼 갱단", "rank": 1},
+      "target": "경쟁 갱단 보스",
+      "kill": true,
+      "reward_rank": 1,
+      "requires": "gang_promotion"
+    },
+    {
+      "id": "darkweb_init",
+      "name": "다크웹단 테스트 해킹",
+      "giver": "해커 신",
+      "requires_crime": true,
+      "group": "다크웹단",
+      "target": "보안 시스템",
+      "reward_rank": 1
+    },
+    {
+      "id": "darkweb_final",
+      "name": "다크웹단 서버 탈환",
+      "giver": "해커 신",
+      "group": {"name": "다크웹단", "rank": 1},
+      "target": "적대 조직 서버",
+      "reward_rank": 1,
+      "requires": "darkweb_init"
+    },
+    {
+      "id": "scam_init",
+      "name": "금융사기단 위조 문서 전달",
+      "giver": "브로커 리",
+      "requires_crime": true,
+      "group": "금융사기단",
+      "target": "은행 직원",
+      "reward_rank": 1
+    },
+    {
+      "id": "scam_final",
+      "name": "금융사기단 대규모 사기",
+      "giver": "브로커 리",
+      "group": {"name": "금융사기단", "rank": 1},
+      "target": "대기업 총수",
+      "kill": true,
+      "reward_rank": 1,
+      "requires": "scam_init"
+    },
+    {
+      "id": "organ_init",
+      "name": "밀매단 의뢰 수행",
+      "giver": "의사 장",
+      "requires_crime": true,
+      "group": "장기밀매단",
+      "target": "시체 확보",
+      "reward_rank": 1
+    },
+    {
+      "id": "organ_final",
+      "name": "장기밀매단 보스 구출",
+      "giver": "의사 장",
+      "group": {"name": "장기밀매단", "rank": 1},
+      "target": "경쟁 조직 수장",
+      "kill": true,
+      "reward_rank": 1,
+      "requires": "organ_init"
+    },
+    {
+      "id": "raon_trial",
+      "name": "라온단 시험 임무",
+      "giver": "모집원 준",
+      "group": "라온단",
+      "target": "위험 지역",
+      "reward_rank": 1
+    },
+    {
+      "id": "raon_final",
+      "name": "라온단을 위기에서 구하기",
+      "giver": "모집원 준",
+      "group": {"name": "라온단", "rank": 1},
+      "target": "적대 세력 지휘관",
+      "kill": true,
+      "reward_rank": 2,
+      "requires": "raon_trial"
+    }
+  ]
+}

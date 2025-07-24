@@ -42,11 +42,20 @@ class Item:
 
 
 def _load_items():
+    """Load item definitions from ``data/items.json``.
+
+    The JSON file may either be a simple mapping of ID to item info or contain
+    an ``items`` object with that mapping. Additional keys such as comments are
+    ignored so anyone can annotate the file freely.
+    """
     path = os.path.join(os.path.dirname(__file__), "data", "items.json")
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
+    data = raw.get("items", raw)
     items = {}
-    for key, val in raw.items():
+    for key, val in data.items():
+        if key.startswith("_"):
+            continue
         items[key] = Item(
             val["name"],
             val["weight"],

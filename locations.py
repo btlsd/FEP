@@ -1,5 +1,6 @@
 import json
 import os
+from messages import get_message
 
 
 class Nation:
@@ -86,6 +87,13 @@ class Location:
             extra = self.season_desc.get(season) or self.season_desc.get(str(season))
             if extra:
                 desc += " " + extra
+        time_msg = get_message(f"time_{time_idx}")
+        if time_msg:
+            desc += " " + time_msg
+        if self.zone != "외부 세계":
+            city_msg = get_message("city_mood")
+            if city_msg:
+                desc += " " + city_msg
         return desc
 
     def connect(self, other, required_perception=None):

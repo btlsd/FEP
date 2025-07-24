@@ -1,5 +1,6 @@
 import random
 from utils import choose_option, roll_check
+from messages import get_message
 
 
 def _active_weapon(combatant):
@@ -22,6 +23,24 @@ def gauge_cost(combatant):
         weight = getattr(weapon, "weight", 0)
         cost = max(10, cost - int(weight * 2))
     return cost
+
+
+def melee_bonus(attacker):
+    """Return damage bonus from stats when using melee weapons."""
+    str_b = getattr(attacker, "strength", 5) // 2
+    agi_b = getattr(attacker, "agility", 5) // 3
+    return str_b + agi_b
+
+
+def crit_check(attacker):
+    """Return True if attacker scores a critical hit."""
+    chance = (
+        getattr(attacker, "agility", 5) * 2
+        + getattr(attacker, "perception", 5)
+        + getattr(attacker, "intelligence", 5)
+    )
+    chance = min(50, chance)
+    return random.randint(1, 100) <= chance
 
 
 def wireless_intrusion(victim):
@@ -52,7 +71,7 @@ def attempt_hack(attacker, defender):
 def attack_hit(attacker, defender, weapon):
     """Determine if an attack hits using stats and weapon weight."""
     base = 70 + getattr(attacker, "agility", 5) * 2 + getattr(attacker, "perception", 5)
-    base -= getattr(defender, "agility", 5) * 2
+    base -= getattr(defender, "agility", 5) * 3
     weight = getattr(weapon, "weight", 0)
     w_range = getattr(weapon, "weapon_range", None)
     if w_range:
@@ -87,7 +106,11 @@ def start_battle(player, npc, ambush=None):
                 weapon = _active_weapon(player)
                 w_dmg = getattr(weapon, "damage", getattr(weapon, "weapon_damage", 0))
                 w_type = getattr(weapon, "weapon_type", None)
-                dmg = random.randint(5, 10) + getattr(player, "strength", 5) + w_dmg
+                dmg = random.randint(3, 7)
+                if w_type == "melee" or getattr(weapon, "weapon_range", None) == "melee":
+                    dmg += w_dmg + melee_bonus(player)
+                else:
+                    dmg += w_dmg
                 extra_msg = ""
                 if w_type == "냉병기" and t_name != "몸통" and random.random() < 0.3:
                     extra_msg = f" {npc.name}의 {t_name}을 절단했습니다!"
@@ -96,6 +119,11 @@ def start_battle(player, npc, ambush=None):
                     extra_msg = f" {npc.name}을 기절시켰습니다!"
                     gauges[npc] += 100
                 if attack_hit(player, npc, weapon):
+                    if crit_check(player):
+                        dmg = int(dmg * 1.5)
+                        # use a random phrase from messages.json when critting
+                        extra_msg += " " + get_message("critical_hit")
+                    dmg = max(0, dmg - getattr(npc, "armor", 0))
                     npc.health -= dmg
                     print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.{extra_msg}")
                 else:
@@ -124,13 +152,24 @@ def start_battle(player, npc, ambush=None):
                 and random.random() < 0.3
             ):
                 attempt_hack(npc, player)
-            dmg = random.randint(5, 10) + getattr(npc, "strength", 5) + w_dmg
+            dmg = random.randint(3, 7)
+            if w_type == "melee" or getattr(weapon, "weapon_range", None) == "melee":
+                dmg += w_dmg + melee_bonus(npc)
+            else:
+                dmg += w_dmg
             if w_type == "둔기" and random.random() < 0.1:
                 print(f"{npc.name}이(가) 머리를 강타하여 당신이 기절합니다!")
                 gauges[player] += 100
             if attack_hit(npc, player, weapon):
+                if crit_check(npc):
+                    dmg = int(dmg * 1.5)
+                    # NPCs also use the critical hit phrases
+                    extra = " " + get_message("critical_hit")
+                else:
+                    extra = ""
+                dmg = max(0, dmg - getattr(player, "armor", 0))
                 player.health -= dmg
-                print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.")
+                print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.{extra}")
             else:
                 print(f"{npc.name}의 공격이 빗나갔습니다.")
             gauges[npc] = 100
@@ -143,34 +182,3 @@ def start_battle(player, npc, ambush=None):
         npc.affinity = max(0, npc.affinity - 20)
         npc.alive = False
         return True, turns
-
-
-def gauge_cost(agility):
-    """Return how much of the turn gauge is consumed per tick."""
-    return min(99, 50 + agility * 5)
-
-
-def start_battle(player, npc):
-    """Run a simple turn-based battle between player and npc."""
-    print(f"{npc.name}과(와) 전투를 시작합니다!")
-    gauges = {player: 100, npc: 100}
-    while player.health > 0 and npc.health > 0:
-        gauges[player] -= gauge_cost(player.agility)
-        gauges[npc] -= gauge_cost(npc.agility)
-        if gauges[player] <= 0:
-            dmg = random.randint(5, 10) + player.strength
-            npc.health -= dmg
-            print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.")
-            gauges[player] = 100
-            if npc.health <= 0:
-                break
-        if gauges[npc] <= 0:
-            dmg = random.randint(5, 10)
-            player.health -= dmg
-            print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.")
-            gauges[npc] = 100
-    if player.health <= 0:
-        print("당신이 쓰러졌습니다...")
-    else:
-        print(f"{npc.name}을(를) 쓰러뜨렸습니다!")
-        npc.affinity = max(0, npc.affinity - 20)
