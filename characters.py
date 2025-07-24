@@ -142,6 +142,7 @@ class Character:
         print(greeting(self, player))
         gain = max(1, player.charisma // 2)
         self.affinity = min(100, self.affinity + gain)
+        player.adjust_nation_affinity(self.origin, gain)
         self.offer_quest(player)
         player.process_quest_completion(self)
 
@@ -439,6 +440,8 @@ class Player:
         # 각 국가별 화폐를 기록한다
         self.money = {NATIONS[0].currency: 20}
         self.bank = {n.currency: 0 for n in NATIONS}
+        # 국가별 호감도 추적
+        self.nation_affinity = {n.name: 50 for n in NATIONS}
         self.experience = 0
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
@@ -524,6 +527,18 @@ class Player:
 
     def has_money(self, amount, currency):
         return self.money.get(currency, 0) >= amount
+
+    # Nation affinity helpers
+    def adjust_nation_affinity(self, nation, delta):
+        """Increase or decrease affinity toward ``nation``."""
+        if not nation:
+            return
+        if nation not in self.nation_affinity:
+            self.nation_affinity[nation] = 50
+        self.nation_affinity[nation] = max(0, min(100, self.nation_affinity[nation] + delta))
+
+    def get_nation_affinity(self, nation):
+        return self.nation_affinity.get(nation, 50)
 
     def describe_stat(self, value):
         if value >= 20:
@@ -1112,6 +1127,7 @@ class Player:
             "satisfaction": self.satisfaction,
             "money": self.money,
             "bank": self.bank,
+            "nation_affinity": self.nation_affinity,
             "experience": self.experience,
             "day": self.day,
             "weekday": self.weekday,
@@ -1172,6 +1188,8 @@ class Player:
         player.money = data.get("money", {})
         player.bank = {n.currency: 0 for n in NATIONS}
         player.bank.update(data.get("bank", {}))
+        player.nation_affinity = {n.name: 50 for n in NATIONS}
+        player.nation_affinity.update(data.get("nation_affinity", {}))
         player.experience = data.get("experience", 0)
         player.day = data.get("day", 1)
         player.weekday = data.get("weekday", 0)

@@ -1030,6 +1030,22 @@ class Game:
         if idx is None:
             return
         npc = nearby[idx]
+        if (
+            "전계국" in (npc.origin or "")
+            or "전계국" in (npc.affiliation or "")
+            or (npc.groups and "전계국" in npc.groups)
+        ):
+            naff = self.player.get_nation_affinity("전계국")
+            if naff < 10:
+                print(f"{npc.name}이(가) 즉시 공격해 옵니다!")
+                win, turns = npc.fight(self.player, ambush="npc")
+                self.player.fail_noisy_quests()
+                if win and npc.health <= 0:
+                    self.handle_npc_death(npc)
+                return self.battle_time(turns)
+            if naff < 20:
+                print(f"{npc.name}은(는) 당신을 무시합니다.")
+                return
         action_idx = self.prompt(["대화", "거래", "돈 빌리기", "전투"], path=["NPC 선택", npc.name])
         if action_idx is None:
             return
@@ -1215,6 +1231,13 @@ class Game:
         self.step(action)
 
     def choose_action(self):
+        if (
+            self.player.location.nation.name == "전계국"
+            and self.player.get_nation_affinity("전계국") < 20
+        ):
+            print("전계국 시스템이 당신의 접근을 거부합니다.")
+            return
+
         opts = []
         actions = []
 
