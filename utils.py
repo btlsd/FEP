@@ -57,6 +57,37 @@ def color_text(text: str, code: str) -> str:
     return f"\033[{code}m{text}\033[0m"
 
 
+def attach_josa(word: str, pair: str) -> str:
+    """Return ``word`` appended with the correct Korean particle from ``pair``.
+
+    ``pair`` should be a string like ``"이/가"`` or ``"은/는"``. The function
+    checks whether ``word`` ends with a final consonant to decide which particle
+    to use.
+    """
+    first, second = pair.split("/")
+    last = word[-1]
+    code = ord(last) - 0xAC00
+    if 0 <= code < 11172 and code % 28 != 0:
+        return word + first
+    return word + second
+
+
+STAT_LABELS = {
+    "strength": "근력",
+    "perception": "지각",
+    "endurance": "인내심",
+    "charisma": "매력",
+    "intelligence": "지능",
+    "agility": "민첩",
+    "intuition": "직감",
+}
+
+
+def stat_label(key: str) -> str:
+    """Return the Korean label for a stat key."""
+    return STAT_LABELS.get(key, key)
+
+
 def find_path(start, goal):
     """Return a list of locations from ``start`` to ``goal`` using BFS."""
     from collections import deque
