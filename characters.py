@@ -17,7 +17,7 @@ from locations import (
     SHELTER,
     APARTMENT,
 )
-from utils import choose_option
+from utils import choose_option, attach_josa, stat_label
 
 LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
@@ -106,6 +106,7 @@ class Character:
         self.inventory = inventory or []
         self.groups = groups or {}
         self.health = 50
+        self.alive = True
         stats = stats or {}
         self.strength = stats.get("strength", 5)
         self.perception = stats.get("perception", 5)
@@ -117,8 +118,8 @@ class Character:
         self.armor = 0
 
     def is_alive(self):
-        """Return ``True`` if the character still has health remaining."""
-        return self.health > 0
+        """Return ``True`` if the character is alive and has health remaining."""
+        return self.alive and self.health > 0
 
     def is_mechanical(self):
         text = f"{self.name} {self.job or ''} {self.affiliation or ''}"
@@ -143,12 +144,32 @@ class Character:
     def talk(self, player):
         from dialogues import greeting
 
+        # NPC greets the player first
         print(greeting(self, player))
+
+        # Let the player choose a reply
+        choice = choose_option(
+            ["'안녕하세요'라고 답한다", "'소식 있어?'라고 묻는다", "대화를 마친다"]
+        )
+        if choice is None or choice == 2:
+            print(f"{attach_josa(self.name, '이/가')} 고개를 끄덕이며 자리를 떠납니다.")
+            return
+        if choice == 0:
+            print(f"{self.name}: 네, 반갑습니다.")
+        else:
+            print(f"{self.name}: 특별한 소식은 없네요.")
+
+        # Small affinity gain for chatting
         gain = max(1, player.charisma // 2)
         self.affinity = min(100, self.affinity + gain)
         player.adjust_nation_affinity(self.origin, gain)
+
+        # Offer quests and process completion
         self.offer_quest(player)
         player.process_quest_completion(self)
+
+        # Conversation ends with the NPC leaving
+        print(f"{attach_josa(self.name, '이/가')} 인사를 남기고 어디론가 떠났습니다.")
 
     def offer_quest(self, player):
         for qid, info in QUESTS.items():
@@ -189,7 +210,7 @@ class Character:
                 if not all(n in player.killed_npcs for n in names):
                     continue
             if info.get("auto"):
-                print(f"{self.name}이(가) 강제로 '{info['name']}' 퀘스트를 시작합니다!")
+                print(f"{attach_josa(self.name, '이/가')} 강제로 '{info['name']}' 퀘스트를 시작합니다!")
                 player.add_quest(
                     info['name'],
                     target=info.get('target'),
@@ -326,9 +347,11 @@ class Character:
             currency = self.location.nation.currency
             player.add_money(amount, currency)
             self.affinity -= 5
-            print(f"{self.name}은(는) {amount}{currency}을 빌려주었습니다.")
+            subj = attach_josa(self.name, "이/가")
+            print(f"{subj} {amount}{currency}을 빌려주었습니다.")
         else:
-            print(f"{self.name}은(는) 돈을 빌려주지 않습니다.")
+            subj = attach_josa(self.name, "이/가")
+            print(f"{subj} 돈을 빌려주지 않습니다.")
 
     def fight(self, player, ambush=None):
         from battle import start_battle
@@ -413,7 +436,7 @@ def describe_affinity_change(npc, delta):
         mood = "얼굴이 굳는다"
     else:
         mood = "약간 실망한 기색을 보인다"
-    print(f"{npc.name}이(가) {mood}.")
+    print(f"{attach_josa(npc.name, '이/가')} {mood}.")
 
 class Player:
     def __init__(self, name, gender="none", stats=None):
@@ -429,8 +452,10 @@ class Player:
         self.charisma = stats.get("charisma", 5)
         self.intelligence = stats.get("intelligence", 5)
         self.agility = stats.get("agility", 5)
-        self.intuition = stats.get("intuition", 5)
-
+        # 직감 수치는 지각에 통합한다
+        intuition = stats.get("intuition")
+        if intuition is not None:
+            self.perception += intuition
         self.base_stats = {
             "strength": self.strength,
             "perception": self.perception,
@@ -438,7 +463,6 @@ class Player:
             "charisma": self.charisma,
             "intelligence": self.intelligence,
             "agility": self.agility,
-            "intuition": self.intuition,
         }
 
         self.max_health = 100 + self.endurance * 10
@@ -458,6 +482,7 @@ class Player:
         # 국가별 호감도 추적
         self.nation_affinity = {n.name: 50 for n in NATIONS}
         self.experience = 0
+        self.fame = 0
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -552,6 +577,11 @@ class Player:
             self.nation_affinity[nation] = 50
         self.nation_affinity[nation] = max(0, min(100, self.nation_affinity[nation] + delta))
 
+    # Fame helpers
+    def adjust_fame(self, delta):
+        """Increase or decrease the player's fame."""
+        self.fame = max(0, self.fame + delta)
+
     def get_nation_affinity(self, nation):
         return self.nation_affinity.get(nation, 50)
 
@@ -603,15 +633,15 @@ class Player:
         if nearby:
             print("주변 인물: " + ", ".join(nearby))
         print()
-        for key, label in [
-            ("strength", "근력"),
-            ("perception", "지각"),
-            ("endurance", "인내심"),
-            ("charisma", "매력"),
-            ("intelligence", "지능"),
-            ("agility", "민첩"),
-            ("intuition", "직감"),
+        for key in [
+            "strength",
+            "perception",
+            "endurance",
+            "charisma",
+            "intelligence",
+            "agility",
         ]:
+            label = stat_label(key)
             val = getattr(self, key)
             if detailed:
                 print(f"{label}: {val}")
@@ -805,7 +835,8 @@ class Player:
             self.inventory.append(item)
             print(f"{item.name}을(를) 획득했습니다.")
         else:
-            print(f"{item.name}은(는) 너무 무거워서 들 수 없습니다.")
+            subj = attach_josa(item.name, "이/가")
+            print(f"{subj} 너무 무거워서 들 수 없습니다.")
 
     def learn_skill(self, skill):
         if skill in self.skills:
@@ -1029,7 +1060,7 @@ class Player:
                     if alt and all(getattr(self, s, 0) >= v for s, v in alt.items()):
                         print(f"{npc.name}의 문제를 직접 해결해 주었습니다.")
                     else:
-                        print(f"{_ITEMS[need].name}이(가) 필요합니다.")
+                        print(f"{attach_josa(_ITEMS[need].name, '이/가')} 필요합니다.")
                         satisfied = False
             if not satisfied:
                 continue
@@ -1060,7 +1091,7 @@ class Player:
                 self.add_item(BRAIN_INTERFACE_CHIP)
                 next_q = QUESTS.get("interface_implant")
                 if next_q:
-                    print(f"{npc.name}이(가) 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
+                    print(f"{attach_josa(npc.name, '이/가')} 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
                     self.add_quest(
                         next_q['name'],
                         target=npc.name,
@@ -1111,7 +1142,7 @@ class Player:
             print("이곳에서는 개조 시술을 받을 수 없습니다.")
             return
         if mod.required_item and mod.required_item not in self.inventory:
-            print(f"{mod.required_item.name}이(가) 없어 개조를 진행할 수 없습니다.")
+            print(f"{attach_josa(mod.required_item.name, '이/가')} 없어 개조를 진행할 수 없습니다.")
             return
         if mod.required_item and mod.required_item in self.inventory:
             self.inventory.remove(mod.required_item)
@@ -1163,6 +1194,7 @@ class Player:
             "money": self.money,
             "bank": self.bank,
             "nation_affinity": self.nation_affinity,
+            "fame": self.fame,
             "experience": self.experience,
             "day": self.day,
             "weekday": self.weekday,
@@ -1225,6 +1257,7 @@ class Player:
         player.bank.update(data.get("bank", {}))
         player.nation_affinity = {n.name: 50 for n in NATIONS}
         player.nation_affinity.update(data.get("nation_affinity", {}))
+        player.fame = data.get("fame", 0)
         player.experience = data.get("experience", 0)
         player.day = data.get("day", 1)
         player.weekday = data.get("weekday", 0)

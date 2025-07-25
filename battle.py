@@ -1,5 +1,5 @@
 import random
-from utils import choose_option, roll_check
+from utils import choose_option, roll_check, attach_josa
 from messages import get_message
 
 
@@ -158,7 +158,7 @@ def start_battle(player, npc, ambush=None):
             else:
                 dmg += w_dmg
             if w_type == "둔기" and random.random() < 0.1:
-                print(f"{npc.name}이(가) 머리를 강타하여 당신이 기절합니다!")
+                print(f"{attach_josa(npc.name, '이/가')} 머리를 강타하여 당신이 기절합니다!")
                 gauges[player] += 100
             if attack_hit(npc, player, weapon):
                 if crit_check(npc):

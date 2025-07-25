@@ -53,7 +53,7 @@ During the game you will be prompted in Korean to choose among four main categor
 
 ### Player Stats
 
-Characters have seven core attributes:
+Characters have six core attributes:
 
 - **Strength**
 - **Perception**
@@ -61,7 +61,6 @@ Characters have seven core attributes:
 - **Charisma**
 - **Intelligence**
 - **Agility** – higher agility lets your turn gauge fill faster in battle
-- **Intuition** – warns you of looming danger before it strikes
 
 A value around 10 is typical for an average human. Scores above 20 are
 considered exceptional. Unless the player installs a brain-interface
@@ -214,9 +213,9 @@ Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 �
 정부 특수부대에 스카우트되는 특별한 전개도 존재합니다.
 숨기에 성공하더라도 안심할 수는 없습니다. 도망친 뒤 집으로 돌아오면
 집 안에 잠복해 있던 로봇들이 다시 납치를 시도합니다. 지각이 높으면
-집 근처에서 수상한 기운을 느끼거나 직감이 높은 경우 어둠 속 그림자나
-낯선 향기를 통해 위험을 예감해 도망칠 수 있지만, 무시하고 들어가면
-또 한 번 전투가 벌어집니다.
+집 근처에서 수상한 기운이나 어둠 속 그림자, 낯선 향기를 감지해
+위험을 예감하고 도망칠 수 있지만, 무시하고 들어가면 또 한 번 전투가
+벌어집니다.
 
 ### 병원 시스템
 
