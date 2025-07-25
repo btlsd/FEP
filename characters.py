@@ -94,6 +94,7 @@ class Character:
         inventory=None,
         groups=None,
         dialogue=None,
+        lie_about=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -119,6 +120,7 @@ class Character:
         self.inventory = inventory or []
         self.groups = groups or {}
         self.dialogue = dialogue or {}
+        self.lie_about = lie_about or {}
         self.health = 50
         self.alive = True
         stats = stats or {}
@@ -181,7 +183,7 @@ class Character:
 
     def _ask(self, player):
         data = getattr(self, "dialogue", {}).get("keywords", {})
-        options = [kw for kw in player.keywords if kw in data]
+        options = [kw for kw in player.keywords if kw in data or kw in ("직업", "소속")]
         if not options:
             print("물어볼 만한 주제가 없습니다.")
             return
@@ -196,7 +198,16 @@ class Character:
             return
         answer = info.get("answer")
         if not answer:
-            answer = KEYWORDS.get(kw, {}).get("description", "")
+            if kw == "직업":
+                val = self.lie_about.get("job", self.job)
+                if val:
+                    answer = f"제 직업은 {val}입니다."
+            elif kw == "소속":
+                val = self.lie_about.get("affiliation", self.affiliation)
+                if val:
+                    answer = f"저는 {val} 소속입니다."
+            if not answer:
+                answer = KEYWORDS.get(kw, {}).get("description", "")
         if answer:
             print(f"{self.name}: {answer}")
         for new_kw in info.get("reveal", []) + KEYWORDS.get(kw, {}).get("related", []):
@@ -463,6 +474,7 @@ def _load_npcs():
                 inventory=inventory,
                 groups=entry.get("groups"),
                 dialogue=entry.get("dialogue"),
+                lie_about=entry.get("lie_about"),
             )
         )
     return npcs
@@ -541,7 +553,7 @@ class Player:
         self.experience = 0
         self.fame = 0
         # Known conversation keywords
-        self.keywords = {"직업", "소식", "여행"}
+        self.keywords = {"직업", "소식", "여행", "소속"}
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -1363,7 +1375,7 @@ class Player:
         player.blueprints = data.get("blueprints", {})
         player.skills = set(data.get("skills", []))
         player.groups = data.get("groups", {})
-        player.keywords = set(data.get("keywords", ["직업", "소식", "여행"]))
+        player.keywords = set(data.get("keywords", ["직업", "소식", "여행", "소속"]))
         player.crime_count = data.get("crime_count", 0)
         player.killed_npcs = data.get("killed", [])
         quests = []

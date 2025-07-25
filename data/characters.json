@@ -218,7 +218,8 @@
       "schedule": {"2": "SLUM_SHACK", "3": "SLUM_SHACK", "4": "SLUM_MARKET"},
       "agility": 6,
       "stats": {"strength": 4, "perception": 7, "endurance": 5, "charisma": 5, "intelligence": 8},
-      "groups": {"인류연합국": 0, "다크웹단": 0}
+      "groups": {"인류연합국": 0, "다크웹단": 0},
+      "lie_about": {"affiliation": "프리랜서"}
     },
     {
       "name": "브로커 리",
@@ -232,7 +233,8 @@
       "schedule": {"1": "MARKET", "2": "MARKET", "3": "MARKET"},
       "agility": 5,
       "stats": {"strength": 4, "perception": 6, "endurance": 5, "charisma": 7, "intelligence": 7},
-      "groups": {"인류연합국": 0, "금융사기단": 0}
+      "groups": {"인류연합국": 0, "금융사기단": 0},
+      "lie_about": {"job": "무역상", "affiliation": "독립 중개인"}
     },
     {
       "name": "의사 장",
