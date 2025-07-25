@@ -432,8 +432,10 @@ class Player:
         self.charisma = stats.get("charisma", 5)
         self.intelligence = stats.get("intelligence", 5)
         self.agility = stats.get("agility", 5)
-        self.intuition = stats.get("intuition", 5)
-
+        # 직감 수치는 지각에 통합한다
+        intuition = stats.get("intuition")
+        if intuition is not None:
+            self.perception += intuition
         self.base_stats = {
             "strength": self.strength,
             "perception": self.perception,
@@ -441,7 +443,6 @@ class Player:
             "charisma": self.charisma,
             "intelligence": self.intelligence,
             "agility": self.agility,
-            "intuition": self.intuition,
         }
 
         self.max_health = 100 + self.endurance * 10
@@ -619,7 +620,6 @@ class Player:
             "charisma",
             "intelligence",
             "agility",
-            "intuition",
         ]:
             label = stat_label(key)
             val = getattr(self, key)

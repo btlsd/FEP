@@ -79,7 +79,6 @@ STAT_LABELS = {
     "charisma": "매력",
     "intelligence": "지능",
     "agility": "민첩",
-    "intuition": "직감",
 }
 
 
