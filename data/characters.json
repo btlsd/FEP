@@ -27,7 +27,19 @@
       "blueprints": {
         "IR_EYE_LEFT_PART": 30
       },
-      "groups": {"인류연합국": 0, "인류연합국 상인조합": 0}
+      "groups": {"인류연합국": 0, "인류연합국 상인조합": 0},
+      "dialogue": {
+        "keywords": {
+          "소식": "요즘 시장 물가가 계속 오르고 있습니다.",
+          "여행": "해외는 가본 적이 없어 잘 모르겠네요."
+        },
+        "persuade": {
+          "options": ["조금 깎아 달라고 부탁한다", "협박한다"],
+          "success": 0,
+          "success_line": "음... 특별히 할인해 드리죠.",
+          "fail_line": "흥정은 사양합니다."
+        }
+      }
     },
     {
       "name": "로봇 42",
@@ -91,7 +103,19 @@
       "agility": 5,
       "stats": {"strength": 4, "perception": 7, "endurance": 5, "charisma": 8, "intelligence": 6},
       "inventory": ["BOARDING_PASS" , "SILVER_RING"],
-      "groups": {"인류연합국": 0, "연합 사회복지국": 0}
+      "groups": {"인류연합국": 0, "연합 사회복지국": 0},
+      "dialogue": {
+        "keywords": {
+          "직업소개소": "일을 찾으시려면 직업소개소에 들러 보세요.",
+          "은하": "저는 사회복지사로서 어려운 분들을 돕고 있습니다."
+        },
+        "persuade": {
+          "options": ["정중히 도움을 청한다", "무례하게 요구한다"],
+          "success": 0,
+          "success_line": "도와드리겠습니다.",
+          "fail_line": "그렇게는 할 수 없어요."
+        }
+      }
     },
     {
       "name": "상담가 민호",

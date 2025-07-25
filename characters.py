@@ -17,7 +17,7 @@ from locations import (
     SHELTER,
     APARTMENT,
 )
-from utils import choose_option
+from utils import choose_option, attach_josa, stat_label
 
 LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
@@ -81,6 +81,7 @@ class Character:
         blueprint_drop=None,
         inventory=None,
         groups=None,
+        dialogue=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -105,7 +106,9 @@ class Character:
         self.blueprint_drop = blueprint_drop
         self.inventory = inventory or []
         self.groups = groups or {}
+        self.dialogue = dialogue or {}
         self.health = 50
+        self.alive = True
         stats = stats or {}
         self.strength = stats.get("strength", 5)
         self.perception = stats.get("perception", 5)
@@ -117,8 +120,8 @@ class Character:
         self.armor = 0
 
     def is_alive(self):
-        """Return ``True`` if the character still has health remaining."""
-        return self.health > 0
+        """Return ``True`` if the character is alive and has health remaining."""
+        return self.alive and self.health > 0
 
     def is_mechanical(self):
         text = f"{self.name} {self.job or ''} {self.affiliation or ''}"
@@ -143,12 +146,63 @@ class Character:
     def talk(self, player):
         from dialogues import greeting
 
+        # NPC greets the player first
         print(greeting(self, player))
-        gain = max(1, player.charisma // 2)
-        self.affinity = min(100, self.affinity + gain)
-        player.adjust_nation_affinity(self.origin, gain)
+
+        while True:
+            idx = choose_option(["질문", "설득", "교감", "종료"], path=[self.name])
+            if idx is None or idx == 3:
+                print(
+                    f"{attach_josa(self.name, '이/가')} 인사를 남기고 어디론가 떠났습니다."
+                )
+                break
+            if idx == 0:
+                self._ask(player)
+            elif idx == 1:
+                self._persuade(player)
+            elif idx == 2:
+                self._rapport(player)
+
+        # After conversation, handle quests
         self.offer_quest(player)
         player.process_quest_completion(self)
+
+    def _ask(self, player):
+        data = getattr(self, "dialogue", {}).get("keywords", {})
+        options = [kw for kw in player.keywords if kw in data]
+        if not options:
+            print("물어볼 만한 주제가 없습니다.")
+            return
+        idx = choose_option(options)
+        if idx is None:
+            return
+        kw = options[idx]
+        print(f"{self.name}: {data[kw]}")
+
+    def _persuade(self, player):
+        info = getattr(self, "dialogue", {}).get("persuade")
+        if not info:
+            print(f"{attach_josa(self.name, '이/가')} 설득에 반응하지 않습니다.")
+            return
+        options = info.get("options", [])
+        if not options:
+            print(f"{attach_josa(self.name, '이/가')} 설득에 반응하지 않습니다.")
+            return
+        idx = choose_option(options)
+        if idx is None:
+            return
+        success_idx = info.get("success")
+        if success_idx is not None and idx == success_idx:
+            print(f"{self.name}: {info.get('success_line', '알겠습니다.')}")
+            self.affinity = min(100, self.affinity + 5)
+        else:
+            print(f"{self.name}: {info.get('fail_line', '안 됩니다.')}")
+            self.affinity = max(0, self.affinity - 2)
+
+    def _rapport(self, player):
+        gain = max(1, player.charisma // 3)
+        self.affinity = min(100, self.affinity + gain)
+        print(f"{self.name}과 서로에 대해 조금 더 알게 되었습니다.")
 
     def offer_quest(self, player):
         for qid, info in QUESTS.items():
@@ -189,7 +243,7 @@ class Character:
                 if not all(n in player.killed_npcs for n in names):
                     continue
             if info.get("auto"):
-                print(f"{self.name}이(가) 강제로 '{info['name']}' 퀘스트를 시작합니다!")
+                print(f"{attach_josa(self.name, '이/가')} 강제로 '{info['name']}' 퀘스트를 시작합니다!")
                 player.add_quest(
                     info['name'],
                     target=info.get('target'),
@@ -326,9 +380,11 @@ class Character:
             currency = self.location.nation.currency
             player.add_money(amount, currency)
             self.affinity -= 5
-            print(f"{self.name}은(는) {amount}{currency}을 빌려주었습니다.")
+            subj = attach_josa(self.name, "이/가")
+            print(f"{subj} {amount}{currency}을 빌려주었습니다.")
         else:
-            print(f"{self.name}은(는) 돈을 빌려주지 않습니다.")
+            subj = attach_josa(self.name, "이/가")
+            print(f"{subj} 돈을 빌려주지 않습니다.")
 
     def fight(self, player, ambush=None):
         from battle import start_battle
@@ -383,6 +439,7 @@ def _load_npcs():
                 blueprint_drop=entry.get("blueprint_drop"),
                 inventory=inventory,
                 groups=entry.get("groups"),
+                dialogue=entry.get("dialogue"),
             )
         )
     return npcs
@@ -413,7 +470,7 @@ def describe_affinity_change(npc, delta):
         mood = "얼굴이 굳는다"
     else:
         mood = "약간 실망한 기색을 보인다"
-    print(f"{npc.name}이(가) {mood}.")
+    print(f"{attach_josa(npc.name, '이/가')} {mood}.")
 
 class Player:
     def __init__(self, name, gender="none", stats=None):
@@ -429,8 +486,10 @@ class Player:
         self.charisma = stats.get("charisma", 5)
         self.intelligence = stats.get("intelligence", 5)
         self.agility = stats.get("agility", 5)
-        self.intuition = stats.get("intuition", 5)
-
+        # 직감 수치는 지각에 통합한다
+        intuition = stats.get("intuition")
+        if intuition is not None:
+            self.perception += intuition
         self.base_stats = {
             "strength": self.strength,
             "perception": self.perception,
@@ -438,7 +497,6 @@ class Player:
             "charisma": self.charisma,
             "intelligence": self.intelligence,
             "agility": self.agility,
-            "intuition": self.intuition,
         }
 
         self.max_health = 100 + self.endurance * 10
@@ -458,6 +516,9 @@ class Player:
         # 국가별 호감도 추적
         self.nation_affinity = {n.name: 50 for n in NATIONS}
         self.experience = 0
+        self.fame = 0
+        # Known conversation keywords
+        self.keywords = {"직업", "소식", "여행"}
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -552,6 +613,11 @@ class Player:
             self.nation_affinity[nation] = 50
         self.nation_affinity[nation] = max(0, min(100, self.nation_affinity[nation] + delta))
 
+    # Fame helpers
+    def adjust_fame(self, delta):
+        """Increase or decrease the player's fame."""
+        self.fame = max(0, self.fame + delta)
+
     def get_nation_affinity(self, nation):
         return self.nation_affinity.get(nation, 50)
 
@@ -603,15 +669,15 @@ class Player:
         if nearby:
             print("주변 인물: " + ", ".join(nearby))
         print()
-        for key, label in [
-            ("strength", "근력"),
-            ("perception", "지각"),
-            ("endurance", "인내심"),
-            ("charisma", "매력"),
-            ("intelligence", "지능"),
-            ("agility", "민첩"),
-            ("intuition", "직감"),
+        for key in [
+            "strength",
+            "perception",
+            "endurance",
+            "charisma",
+            "intelligence",
+            "agility",
         ]:
+            label = stat_label(key)
             val = getattr(self, key)
             if detailed:
                 print(f"{label}: {val}")
@@ -805,7 +871,8 @@ class Player:
             self.inventory.append(item)
             print(f"{item.name}을(를) 획득했습니다.")
         else:
-            print(f"{item.name}은(는) 너무 무거워서 들 수 없습니다.")
+            subj = attach_josa(item.name, "이/가")
+            print(f"{subj} 너무 무거워서 들 수 없습니다.")
 
     def learn_skill(self, skill):
         if skill in self.skills:
@@ -816,6 +883,11 @@ class Player:
             return
         self.skills.add(skill)
         print(f"{skill}을(를) 습득했습니다.")
+
+    def learn_keyword(self, keyword):
+        """Add a conversation keyword to the player's known set."""
+        if keyword not in self.keywords:
+            self.keywords.add(keyword)
 
     # Blueprint helpers
     def add_blueprint_progress(self, item_key, amount):
@@ -1029,7 +1101,7 @@ class Player:
                     if alt and all(getattr(self, s, 0) >= v for s, v in alt.items()):
                         print(f"{npc.name}의 문제를 직접 해결해 주었습니다.")
                     else:
-                        print(f"{_ITEMS[need].name}이(가) 필요합니다.")
+                        print(f"{attach_josa(_ITEMS[need].name, '이/가')} 필요합니다.")
                         satisfied = False
             if not satisfied:
                 continue
@@ -1060,7 +1132,7 @@ class Player:
                 self.add_item(BRAIN_INTERFACE_CHIP)
                 next_q = QUESTS.get("interface_implant")
                 if next_q:
-                    print(f"{npc.name}이(가) 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
+                    print(f"{attach_josa(npc.name, '이/가')} 강제로 '{next_q['name']}' 퀘스트를 시작합니다!")
                     self.add_quest(
                         next_q['name'],
                         target=npc.name,
@@ -1111,7 +1183,7 @@ class Player:
             print("이곳에서는 개조 시술을 받을 수 없습니다.")
             return
         if mod.required_item and mod.required_item not in self.inventory:
-            print(f"{mod.required_item.name}이(가) 없어 개조를 진행할 수 없습니다.")
+            print(f"{attach_josa(mod.required_item.name, '이/가')} 없어 개조를 진행할 수 없습니다.")
             return
         if mod.required_item and mod.required_item in self.inventory:
             self.inventory.remove(mod.required_item)
@@ -1163,6 +1235,7 @@ class Player:
             "money": self.money,
             "bank": self.bank,
             "nation_affinity": self.nation_affinity,
+            "fame": self.fame,
             "experience": self.experience,
             "day": self.day,
             "weekday": self.weekday,
@@ -1225,6 +1298,7 @@ class Player:
         player.bank.update(data.get("bank", {}))
         player.nation_affinity = {n.name: 50 for n in NATIONS}
         player.nation_affinity.update(data.get("nation_affinity", {}))
+        player.fame = data.get("fame", 0)
         player.experience = data.get("experience", 0)
         player.day = data.get("day", 1)
         player.weekday = data.get("weekday", 0)

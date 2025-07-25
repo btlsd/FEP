@@ -23,7 +23,13 @@ from items import (
 )
 from equipment import BODY_MODS
 from gui import draw_screen
-from utils import choose_option, roll_check, progress_bar
+from utils import (
+    choose_option,
+    roll_check,
+    progress_bar,
+    attach_josa,
+    stat_label,
+)
 import json
 import os
 
@@ -251,7 +257,7 @@ class Game:
         if dest != p.home or not p.home_ambush:
             return False
         print("\n집 근처에서 묘한 기운을 느낍니다.")
-        detect = 30 + p.perception * 3 + p.intuition * 3
+        detect = 30 + p.perception * 6
         if roll_check(detect):
             print("익숙하지 않은 냄새와 함께 어둠 속에 그림자가 어른거립니다.")
             choice = choose_option(["도망간다", "무시하고 집에 들어간다"], allow_back=False)
@@ -1055,20 +1061,21 @@ class Game:
         ):
             naff = self.player.get_nation_affinity("전계국")
             if naff < 10:
-                print(f"{npc.name}이(가) 즉시 공격해 옵니다!")
+                print(f"{attach_josa(npc.name, '이/가')} 즉시 공격해 옵니다!")
                 win, turns = npc.fight(self.player, ambush="npc")
                 self.player.fail_noisy_quests()
                 if win and npc.health <= 0:
                     self.handle_npc_death(npc)
                 return self.battle_time(turns)
             if naff < 20:
-                print(f"{npc.name}은(는) 당신을 무시합니다.")
+                subj = attach_josa(npc.name, "이/가")
+                print(f"{subj} 당신을 무시합니다.")
                 return
         action_idx = self.prompt(["대화", "거래", "돈 빌리기", "전투"], path=["NPC 선택", npc.name])
         if action_idx is None:
             return
         if self.player.has_flag("stealth") or self.player.has_flag("infiltrating"):
-            print(f"{npc.name}이(가) 당신의 등장에 깜짝 놀랍니다!")
+            print(f"{attach_josa(npc.name, '이/가')} 당신의 등장에 깜짝 놀랍니다!")
             change = 1 if npc.affinity >= 80 else -5
             npc.affinity = max(0, min(100, npc.affinity + change))
             if change > 0:
@@ -1179,7 +1186,7 @@ class Game:
     def handle_kidnap(self):
         p = self.player
         print("\n정부 요원들이 당신을 은밀히 납치하려 합니다!")
-        detect = 20 + p.perception * 2 + p.intelligence + p.agility + p.intuition * 3
+        detect = 20 + p.perception * 5 + p.intelligence + p.agility
         if roll_check(detect):
             print("어둠 속에서 낯선 그림자가 스치고 익숙하지 않은 향이 느껴집니다.")
             print("불길한 기운을 감지했습니다.")
@@ -1259,6 +1266,10 @@ class Game:
             if self.player.location.international:
                 opts.append("국가 이동")
                 moves.append(self.travel)
+        if len(moves) == 1:
+            # Only walking available, skip the extra prompt
+            self.step(self.move_walk)
+            return
         idx = self.prompt(opts, path=["이동"])
         if idx is None:
             return
@@ -1406,21 +1417,58 @@ def main():
     input("계속하려면 엔터를 누르세요...")
     helper = next((c for c in NPCS if c.name == "은하"), None)
     if helper:
-        print(f"{helper.name}이 당신을 발견해 도와줍니다. 인류연합국 스캔을 시작합니다.")
+        subj = attach_josa(helper.name, "이/가")
+        print(f"{subj} 당신을 발견해 도와줍니다. 인류연합국 스캔을 시작합니다.")
     name = input("새로운 이름을 정하세요: ")
-    gender = input("성별을 입력하세요 (male/female/none): ")
+    gender_map = ["male", "female", "none"]
+    while True:
+        print("성별을 선택하세요:")
+        print("1. 남성")
+        print("2. 여성")
+        print("3. 선택 안 함")
+        choice = input("> ").strip()
+        if choice in {"1", "2", "3"}:
+            gender = gender_map[int(choice) - 1]
+            break
+        print("잘못된 선택입니다.")
     points = 10
-    base = {"strength":5,"perception":5,"endurance":5,"charisma":5,"intelligence":5,"agility":5,"intuition":5}
-    for key in list(base.keys()):
-        while True:
-            val = input(f"{key} 추가 포인트(남은 {points}): ")
-            if val.isdigit():
-                val = int(val)
-                if 0 <= val <= points:
-                    base[key] += val
-                    points -= val
-                    break
-            print("잘못된 입력입니다.")
+    base = {
+        "strength": 5,
+        "perception": 5,
+        "endurance": 5,
+        "charisma": 5,
+        "intelligence": 5,
+        "agility": 5,
+    }
+    keys = list(base.keys())
+    while True:
+        print("현재 스탯:")
+        for i, k in enumerate(keys, 1):
+            label = stat_label(k)
+            print(f"{i}. {label}: {base[k]}")
+        print(f"남은 포인트: {points}")
+        print("0. 완료")
+        choice = input("조정할 스탯을 선택하세요: ").strip()
+        if choice == "0":
+            break
+        if choice.isdigit() and 1 <= int(choice) <= len(keys):
+            key = keys[int(choice) - 1]
+            label = stat_label(key)
+            amt = input(f"{label} 값을 얼마나 조정하시겠습니까? (음수 가능): ").strip()
+            if amt.lstrip("-").isdigit():
+                amt = int(amt)
+                if base[key] + amt < 1:
+                    print("스탯은 최소 1 이상이어야 합니다.")
+                    continue
+                if points - amt < 0:
+                    print("포인트가 부족합니다.")
+                    continue
+                base[key] += amt
+                points -= amt
+            else:
+                print("잘못된 입력입니다.")
+        else:
+            print("잘못된 선택입니다.")
     player = Player(name, gender, base)
     player.location = SHELTER
     if helper:
