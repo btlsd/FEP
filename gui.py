@@ -21,7 +21,10 @@ def health_message(player):
 def draw_screen(player, npcs=NPCS):
     """Print a simple status window and location information."""
     date_text = f"{MONTH_NAMES[player.month-1]} {player.month_day}일"
+    print()
     print("=" * 40)
+    print("[현재 상태]")
+    print()
     print(
         f"{date_text} {SEASONS[player.season]} {player.weather} {WEEKDAYS[player.weekday]}요일 {TIME_OF_DAY[player.time]}"
     )
@@ -41,7 +44,10 @@ def draw_screen(player, npcs=NPCS):
         )
         + f"/{player.carrying_capacity()}"
     )
+    print()
     print("=" * 40)
+    print("[위치 정보]")
+    print()
 
     location = player.location
     print(f"현재 위치: {location.name}")
@@ -56,7 +62,10 @@ def draw_screen(player, npcs=NPCS):
         print("주변 인물: " + ", ".join(nearby))
     else:
         print("주변 인물: 없음")
+    print()
     print("=" * 40)
+    print("[이동 목록]")
+    print()
 
     from locations import LOCATIONS
     foot = [loc for loc in LOCATIONS if loc.zone == location.zone and loc != location]
@@ -70,5 +79,6 @@ def draw_screen(player, npcs=NPCS):
         print("정거장 이동 가능:")
         for dest in location.connections:
             print(f"- {dest.name}")
+    print()
     print("=" * 40)
     print()
