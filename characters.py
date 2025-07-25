@@ -81,6 +81,7 @@ class Character:
         blueprint_drop=None,
         inventory=None,
         groups=None,
+        dialogue=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -105,6 +106,7 @@ class Character:
         self.blueprint_drop = blueprint_drop
         self.inventory = inventory or []
         self.groups = groups or {}
+        self.dialogue = dialogue or {}
         self.health = 50
         self.alive = True
         stats = stats or {}
@@ -147,29 +149,60 @@ class Character:
         # NPC greets the player first
         print(greeting(self, player))
 
-        # Let the player choose a reply
-        choice = choose_option(
-            ["'안녕하세요'라고 답한다", "'소식 있어?'라고 묻는다", "대화를 마친다"]
-        )
-        if choice is None or choice == 2:
-            print(f"{attach_josa(self.name, '이/가')} 고개를 끄덕이며 자리를 떠납니다.")
-            return
-        if choice == 0:
-            print(f"{self.name}: 네, 반갑습니다.")
-        else:
-            print(f"{self.name}: 특별한 소식은 없네요.")
+        while True:
+            idx = choose_option(["질문", "설득", "교감", "종료"], path=[self.name])
+            if idx is None or idx == 3:
+                print(
+                    f"{attach_josa(self.name, '이/가')} 인사를 남기고 어디론가 떠났습니다."
+                )
+                break
+            if idx == 0:
+                self._ask(player)
+            elif idx == 1:
+                self._persuade(player)
+            elif idx == 2:
+                self._rapport(player)
 
-        # Small affinity gain for chatting
-        gain = max(1, player.charisma // 2)
-        self.affinity = min(100, self.affinity + gain)
-        player.adjust_nation_affinity(self.origin, gain)
-
-        # Offer quests and process completion
+        # After conversation, handle quests
         self.offer_quest(player)
         player.process_quest_completion(self)
 
-        # Conversation ends with the NPC leaving
-        print(f"{attach_josa(self.name, '이/가')} 인사를 남기고 어디론가 떠났습니다.")
+    def _ask(self, player):
+        data = getattr(self, "dialogue", {}).get("keywords", {})
+        options = [kw for kw in player.keywords if kw in data]
+        if not options:
+            print("물어볼 만한 주제가 없습니다.")
+            return
+        idx = choose_option(options)
+        if idx is None:
+            return
+        kw = options[idx]
+        print(f"{self.name}: {data[kw]}")
+
+    def _persuade(self, player):
+        info = getattr(self, "dialogue", {}).get("persuade")
+        if not info:
+            print(f"{attach_josa(self.name, '이/가')} 설득에 반응하지 않습니다.")
+            return
+        options = info.get("options", [])
+        if not options:
+            print(f"{attach_josa(self.name, '이/가')} 설득에 반응하지 않습니다.")
+            return
+        idx = choose_option(options)
+        if idx is None:
+            return
+        success_idx = info.get("success")
+        if success_idx is not None and idx == success_idx:
+            print(f"{self.name}: {info.get('success_line', '알겠습니다.')}")
+            self.affinity = min(100, self.affinity + 5)
+        else:
+            print(f"{self.name}: {info.get('fail_line', '안 됩니다.')}")
+            self.affinity = max(0, self.affinity - 2)
+
+    def _rapport(self, player):
+        gain = max(1, player.charisma // 3)
+        self.affinity = min(100, self.affinity + gain)
+        print(f"{self.name}과 서로에 대해 조금 더 알게 되었습니다.")
 
     def offer_quest(self, player):
         for qid, info in QUESTS.items():
@@ -406,6 +439,7 @@ def _load_npcs():
                 blueprint_drop=entry.get("blueprint_drop"),
                 inventory=inventory,
                 groups=entry.get("groups"),
+                dialogue=entry.get("dialogue"),
             )
         )
     return npcs
@@ -483,6 +517,8 @@ class Player:
         self.nation_affinity = {n.name: 50 for n in NATIONS}
         self.experience = 0
         self.fame = 0
+        # Known conversation keywords
+        self.keywords = {"직업", "소식", "여행"}
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -847,6 +883,11 @@ class Player:
             return
         self.skills.add(skill)
         print(f"{skill}을(를) 습득했습니다.")
+
+    def learn_keyword(self, keyword):
+        """Add a conversation keyword to the player's known set."""
+        if keyword not in self.keywords:
+            self.keywords.add(keyword)
 
     # Blueprint helpers
     def add_blueprint_progress(self, item_key, amount):
