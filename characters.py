@@ -50,6 +50,18 @@ def _load_quests():
 
 QUESTS = _load_quests()
 
+# Load conversation keyword definitions
+def _load_keywords():
+    path = os.path.join(os.path.dirname(__file__), "data", "keywords.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}
+    return {k["name"]: k for k in data.get("keywords", [])}
+
+KEYWORDS = _load_keywords()
+
 # 새벽, 아침, 오전, 오후, 저녁, 밤의 여섯 구간
 TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
 WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
@@ -177,7 +189,18 @@ class Character:
         if idx is None:
             return
         kw = options[idx]
-        print(f"{self.name}: {data[kw]}")
+        info = data.get(kw, {})
+        min_aff = info.get("min_affinity", 0)
+        if self.affinity < min_aff:
+            print(f"{self.name}: 아직 그 이야기를 나눌 만큼 친하지 않습니다.")
+            return
+        answer = info.get("answer")
+        if not answer:
+            answer = KEYWORDS.get(kw, {}).get("description", "")
+        if answer:
+            print(f"{self.name}: {answer}")
+        for new_kw in info.get("reveal", []) + KEYWORDS.get(kw, {}).get("related", []):
+            player.learn_keyword(new_kw)
 
     def _persuade(self, player):
         info = getattr(self, "dialogue", {}).get("persuade")
@@ -888,6 +911,7 @@ class Player:
         """Add a conversation keyword to the player's known set."""
         if keyword not in self.keywords:
             self.keywords.add(keyword)
+            print(f"새로운 키워드 '{keyword}'을(를) 배웠습니다.")
 
     # Blueprint helpers
     def add_blueprint_progress(self, item_key, amount):
@@ -1261,6 +1285,7 @@ class Player:
             "blueprints": self.blueprints,
             "skills": list(self.skills),
             "groups": self.groups,
+            "keywords": list(self.keywords),
             "crime_count": self.crime_count,
             "killed": self.killed_npcs,
             "quests": [
@@ -1338,6 +1363,7 @@ class Player:
         player.blueprints = data.get("blueprints", {})
         player.skills = set(data.get("skills", []))
         player.groups = data.get("groups", {})
+        player.keywords = set(data.get("keywords", ["직업", "소식", "여행"]))
         player.crime_count = data.get("crime_count", 0)
         player.killed_npcs = data.get("killed", [])
         quests = []
