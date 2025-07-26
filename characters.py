@@ -18,6 +18,7 @@ from locations import (
     APARTMENT,
 )
 from utils import choose_option, attach_josa, stat_label
+from messages import get_message
 
 LOCATIONS_BY_KEY = {getattr(loc, "key", loc.name): loc for loc in LOCATIONS}
 
@@ -234,9 +235,18 @@ class Character:
             self.affinity = max(0, self.affinity - 2)
 
     def _rapport(self, player):
-        gain = max(1, player.charisma // 3)
-        self.affinity = min(100, self.affinity + gain)
-        print(f"{self.name}과 서로에 대해 조금 더 알게 되었습니다.")
+        """Attempt to build rapport with random outcomes."""
+        if random.random() < 0.2:
+            line = get_message("rapport_negative") or "선넘는 농담으로 분위기가 안 좋아졌습니다."
+            self.affinity = max(0, self.affinity - 2)
+            print(line)
+            print("호감도가 떨어졌습니다.")
+        else:
+            line = get_message("rapport_positive") or "사소한 이야기를 나누었습니다."
+            gain = max(1, player.charisma // 3)
+            self.affinity = min(100, self.affinity + gain)
+            print(line)
+            print("호감도가 약간 올랐습니다.")
 
     def offer_quest(self, player):
         for qid, info in QUESTS.items():

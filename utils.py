@@ -44,12 +44,14 @@ import time
 
 
 def progress_bar(prefix: str = "", length: int = 10, delay: float = 0.2) -> None:
-    """Print a simple text progress bar."""
+    """Print a simple text progress bar that updates on one line."""
     for i in range(length):
         bar = "#" * (i + 1) + "-" * (length - i - 1)
-        print(f"\r{prefix}[{bar}]", end="", flush=True)
+        sys.stdout.write("\033[2K\r" + f"{prefix}[{bar}]")
+        sys.stdout.flush()
         time.sleep(delay)
-    print(f"\r{prefix}[{'#' * length}]")
+    sys.stdout.write("\033[2K\r" + f"{prefix}[{'#' * length}]\n")
+    sys.stdout.flush()
 
 
 def color_text(text: str, code: str) -> str:
