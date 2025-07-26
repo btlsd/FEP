@@ -59,36 +59,38 @@ def greeting(npc, player):
             return bad.format(player=player.name, npc=npc.name)
 
     parts = []
+
+    def add(line):
+        if line and line not in parts:
+            parts.append(line)
+
     if player.fame >= 50 and "famous" in d.get("fame", {}):
-        parts.append(d["fame"]["famous"])
+        add(d["fame"]["famous"])
     if npc.gender and npc.gender in d.get("gender", {}):
-        parts.append(d["gender"][npc.gender])
+        add(d["gender"][npc.gender])
 
     if npc.age is not None:
         group = _age_group(npc.age)
         if group in d.get("age", {}):
-            parts.append(d["age"][group])
+            add(d["age"][group])
 
     if npc.job and npc.job in d.get("job", {}):
-        parts.append(d["job"][npc.job])
+        add(d["job"][npc.job])
 
     if npc.origin and npc.origin in d.get("origin", {}):
-        parts.append(d["origin"][npc.origin])
+        add(d["origin"][npc.origin])
 
     if npc.status and npc.status in d.get("status", {}):
-        parts.append(d["status"][npc.status])
-
-    code = _personality_code(npc.personality)
-    if code and code in d.get("personality", {}):
-        parts.append(d["personality"][code])
+        add(d["status"][npc.status])
 
     if not parts:
-        parts.append(d.get("default", "안녕하세요."))
+        add(d.get("default", "안녕하세요."))
 
-    text = " ".join(parts)
     extra = get_message("greeting_simple")
     if extra:
-        text += " " + extra
+        add(extra)
+
+    text = " ".join(parts[:2])
     return text.format(player=player.name, npc=npc.name)
 
 
