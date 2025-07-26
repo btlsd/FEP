@@ -636,7 +636,7 @@ class Game:
             return
         self.player.install_mod(mods[idx])
 
-    def change_equipment(self):
+    def change_equipment(self, path=None):
         from equipment import Equipment
 
         choices = [
@@ -647,7 +647,8 @@ class Game:
         if not choices:
             print("장비할 수 있는 아이템이 없습니다.")
             return
-        idx = self.prompt([it.name for it in choices], path=["행동", "장비 장착"])
+        default_path = ["행동", "장비 장착"]
+        idx = self.prompt([it.name for it in choices], path=path or default_path)
         if idx is None:
             return
         item = choices[idx]
@@ -1310,8 +1311,6 @@ class Game:
         add("식사", self.eat, self.player.money.get(self.player.location.nation.currency, 0) >= cost)
         add("잠자기", self.sleep, getattr(self.player.location, "sleep_spot", False))
         add("탐험", self.explore)
-        add("소지품 확인", self.player.show_inventory)
-        add("장비 장착", self.change_equipment)
         can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
         add("스탯 측정", self.measure_stats, can_measure)
         wash_fee = 2
@@ -1368,10 +1367,15 @@ class Game:
         if idx is None:
             return
         action = actions[idx]
-        if action is self.player.show_inventory:
-            action()
-        else:
-            self.step(action)
+        self.step(action)
+
+    def open_inventory_menu(self):
+        """Sub menu for inventory related actions."""
+        opts = ["소지품 확인", "장비 장착"]
+        actions = [self.player.show_inventory, lambda: self.change_equipment(path=["메뉴", "소지품", "장비 장착"])]
+        idx = self.prompt(opts, path=["메뉴", "소지품"])
+        if idx is not None:
+            actions[idx]()
 
     def open_menu(self):
         opts = []
@@ -1383,8 +1387,7 @@ class Game:
                 actions.append(func)
 
         add("스탯 확인", self.player.status)
-        add("소지품 확인", self.player.show_inventory)
-        add("장비 장착", self.change_equipment)
+        add("소지품", self.open_inventory_menu)
         can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
         add("스탯 측정", self.measure_stats, can_measure)
         add("데이터 확인", self.player.show_data, bool(self.player.blueprints))
