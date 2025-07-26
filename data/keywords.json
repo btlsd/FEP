@@ -1,0 +1,11 @@
+{
+  "_comment": "Descriptions and relations for conversation keywords.",
+  "keywords": [
+    {"name": "직업", "description": "상대의 직업을 묻는 기본 질문입니다.", "related": []},
+    {"name": "소속", "description": "상대가 속한 조직이나 국가를 묻습니다.", "related": []},
+    {"name": "소식", "description": "최근 들은 이야기나 소문을 물어봅니다.", "related": []},
+    {"name": "여행", "description": "다른 지역을 방문한 경험을 묻습니다.", "related": []},
+    {"name": "직업소개소", "description": "연합 정부가 운영하는 취업 지원 기관.", "related": ["은하"]},
+    {"name": "은하", "description": "연합 사회복지국에서 일하는 따뜻한 복지사.", "related": []}
+  ]
+}

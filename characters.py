@@ -50,6 +50,18 @@ def _load_quests():
 
 QUESTS = _load_quests()
 
+# Load conversation keyword definitions
+def _load_keywords():
+    path = os.path.join(os.path.dirname(__file__), "data", "keywords.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}
+    return {k["name"]: k for k in data.get("keywords", [])}
+
+KEYWORDS = _load_keywords()
+
 # 새벽, 아침, 오전, 오후, 저녁, 밤의 여섯 구간
 TIME_OF_DAY = ["새벽", "아침", "오전", "오후", "저녁", "밤"]
 WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
@@ -81,6 +93,8 @@ class Character:
         blueprint_drop=None,
         inventory=None,
         groups=None,
+        dialogue=None,
+        lie_about=None,
     ):
         self.name = name
         self.personality = personality or {}
@@ -105,6 +119,8 @@ class Character:
         self.blueprint_drop = blueprint_drop
         self.inventory = inventory or []
         self.groups = groups or {}
+        self.dialogue = dialogue or {}
+        self.lie_about = lie_about or {}
         self.health = 50
         self.alive = True
         stats = stats or {}
@@ -144,12 +160,83 @@ class Character:
     def talk(self, player):
         from dialogues import greeting
 
+        # NPC greets the player first
         print(greeting(self, player))
-        gain = max(1, player.charisma // 2)
-        self.affinity = min(100, self.affinity + gain)
-        player.adjust_nation_affinity(self.origin, gain)
+
+        while True:
+            idx = choose_option(["질문", "설득", "교감", "종료"], path=[self.name])
+            if idx is None or idx == 3:
+                print(
+                    f"{attach_josa(self.name, '이/가')} 인사를 남기고 어디론가 떠났습니다."
+                )
+                break
+            if idx == 0:
+                self._ask(player)
+            elif idx == 1:
+                self._persuade(player)
+            elif idx == 2:
+                self._rapport(player)
+
+        # After conversation, handle quests
         self.offer_quest(player)
         player.process_quest_completion(self)
+
+    def _ask(self, player):
+        data = getattr(self, "dialogue", {}).get("keywords", {})
+        options = [kw for kw in player.keywords if kw in data or kw in ("직업", "소속")]
+        if not options:
+            print("물어볼 만한 주제가 없습니다.")
+            return
+        idx = choose_option(options)
+        if idx is None:
+            return
+        kw = options[idx]
+        info = data.get(kw, {})
+        min_aff = info.get("min_affinity", 0)
+        if self.affinity < min_aff:
+            print(f"{self.name}: 아직 그 이야기를 나눌 만큼 친하지 않습니다.")
+            return
+        answer = info.get("answer")
+        if not answer:
+            if kw == "직업":
+                val = self.lie_about.get("job", self.job)
+                if val:
+                    answer = f"제 직업은 {val}입니다."
+            elif kw == "소속":
+                val = self.lie_about.get("affiliation", self.affiliation)
+                if val:
+                    answer = f"저는 {val} 소속입니다."
+            if not answer:
+                answer = KEYWORDS.get(kw, {}).get("description", "")
+        if answer:
+            print(f"{self.name}: {answer}")
+        for new_kw in info.get("reveal", []) + KEYWORDS.get(kw, {}).get("related", []):
+            player.learn_keyword(new_kw)
+
+    def _persuade(self, player):
+        info = getattr(self, "dialogue", {}).get("persuade")
+        if not info:
+            print(f"{attach_josa(self.name, '이/가')} 설득에 반응하지 않습니다.")
+            return
+        options = info.get("options", [])
+        if not options:
+            print(f"{attach_josa(self.name, '이/가')} 설득에 반응하지 않습니다.")
+            return
+        idx = choose_option(options)
+        if idx is None:
+            return
+        success_idx = info.get("success")
+        if success_idx is not None and idx == success_idx:
+            print(f"{self.name}: {info.get('success_line', '알겠습니다.')}")
+            self.affinity = min(100, self.affinity + 5)
+        else:
+            print(f"{self.name}: {info.get('fail_line', '안 됩니다.')}")
+            self.affinity = max(0, self.affinity - 2)
+
+    def _rapport(self, player):
+        gain = max(1, player.charisma // 3)
+        self.affinity = min(100, self.affinity + gain)
+        print(f"{self.name}과 서로에 대해 조금 더 알게 되었습니다.")
 
     def offer_quest(self, player):
         for qid, info in QUESTS.items():
@@ -386,6 +473,8 @@ def _load_npcs():
                 blueprint_drop=entry.get("blueprint_drop"),
                 inventory=inventory,
                 groups=entry.get("groups"),
+                dialogue=entry.get("dialogue"),
+                lie_about=entry.get("lie_about"),
             )
         )
     return npcs
@@ -432,8 +521,10 @@ class Player:
         self.charisma = stats.get("charisma", 5)
         self.intelligence = stats.get("intelligence", 5)
         self.agility = stats.get("agility", 5)
-        self.intuition = stats.get("intuition", 5)
-
+        # 직감 수치는 지각에 통합한다
+        intuition = stats.get("intuition")
+        if intuition is not None:
+            self.perception += intuition
         self.base_stats = {
             "strength": self.strength,
             "perception": self.perception,
@@ -441,7 +532,6 @@ class Player:
             "charisma": self.charisma,
             "intelligence": self.intelligence,
             "agility": self.agility,
-            "intuition": self.intuition,
         }
 
         self.max_health = 100 + self.endurance * 10
@@ -462,6 +552,8 @@ class Player:
         self.nation_affinity = {n.name: 50 for n in NATIONS}
         self.experience = 0
         self.fame = 0
+        # Known conversation keywords
+        self.keywords = {"직업", "소식", "여행", "소속"}
         self.day = 1
         self.weekday = 0  # 0=월,1=화,2=수,3=목,4=금,5=토,6=일
         self.location = DEFAULT_LOCATION_BY_NATION[NATIONS[0]]
@@ -619,7 +711,6 @@ class Player:
             "charisma",
             "intelligence",
             "agility",
-            "intuition",
         ]:
             label = stat_label(key)
             val = getattr(self, key)
@@ -827,6 +918,12 @@ class Player:
             return
         self.skills.add(skill)
         print(f"{skill}을(를) 습득했습니다.")
+
+    def learn_keyword(self, keyword):
+        """Add a conversation keyword to the player's known set."""
+        if keyword not in self.keywords:
+            self.keywords.add(keyword)
+            print(f"새로운 키워드 '{keyword}'을(를) 배웠습니다.")
 
     # Blueprint helpers
     def add_blueprint_progress(self, item_key, amount):
@@ -1200,6 +1297,7 @@ class Player:
             "blueprints": self.blueprints,
             "skills": list(self.skills),
             "groups": self.groups,
+            "keywords": list(self.keywords),
             "crime_count": self.crime_count,
             "killed": self.killed_npcs,
             "quests": [
@@ -1277,6 +1375,7 @@ class Player:
         player.blueprints = data.get("blueprints", {})
         player.skills = set(data.get("skills", []))
         player.groups = data.get("groups", {})
+        player.keywords = set(data.get("keywords", ["직업", "소식", "여행", "소속"]))
         player.crime_count = data.get("crime_count", 0)
         player.killed_npcs = data.get("killed", [])
         quests = []

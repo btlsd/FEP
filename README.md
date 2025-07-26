@@ -53,7 +53,7 @@ During the game you will be prompted in Korean to choose among four main categor
 
 ### Player Stats
 
-Characters have seven core attributes:
+Characters have six core attributes:
 
 - **Strength**
 - **Perception**
@@ -61,7 +61,6 @@ Characters have seven core attributes:
 - **Charisma**
 - **Intelligence**
 - **Agility** – higher agility lets your turn gauge fill faster in battle
-- **Intuition** – warns you of looming danger before it strikes
 
 A value around 10 is typical for an average human. Scores above 20 are
 considered exceptional. Unless the player installs a brain-interface
@@ -97,6 +96,13 @@ The maximum values and recovery rates of these secondary stats scale with the pr
 이때 구입 가능한 품목과 가격은 `characters.json`의 `shop` 항목으로
 관리됩니다.
 각 NPC는 간단한 인벤토리를 갖고 있어 소매치기의 대상이 되기도 합니다.
+
+NPC와 대화할 때는 "질문"을 선택해 키워드를 고를 수 있습니다. 처음에는
+"직업", "소식", "여행", "소속" 정도만 알고 있지만, 답변을 듣다 보면 새로운
+키워드를 배워 더 많은 주제로 대화를 이어 갈 수 있습니다.
+키워드 설명과 연관 관계는 `data/keywords.json` 파일에 정리되어
+있어 손쉽게 추가하거나 수정할 수 있습니다.
+일부 NPC는 직업이나 소속을 묻는 질문에 거짓으로 대답하기도 합니다.
 
 ### 유명세 시스템
 
@@ -214,9 +220,9 @@ Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 �
 정부 특수부대에 스카우트되는 특별한 전개도 존재합니다.
 숨기에 성공하더라도 안심할 수는 없습니다. 도망친 뒤 집으로 돌아오면
 집 안에 잠복해 있던 로봇들이 다시 납치를 시도합니다. 지각이 높으면
-집 근처에서 수상한 기운을 느끼거나 직감이 높은 경우 어둠 속 그림자나
-낯선 향기를 통해 위험을 예감해 도망칠 수 있지만, 무시하고 들어가면
-또 한 번 전투가 벌어집니다.
+집 근처에서 수상한 기운이나 어둠 속 그림자, 낯선 향기를 감지해
+위험을 예감하고 도망칠 수 있지만, 무시하고 들어가면 또 한 번 전투가
+벌어집니다.
 
 ### 병원 시스템
 
@@ -269,9 +275,11 @@ Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 �
 ### GUI
 
 `gui.py`는 플레이어의 상태와 현재 위치 정보를 보기 좋게 출력해 주는
-간단한 텍스트 인터페이스를 제공합니다. 화면의 상단에는 건강 상태와
-기본 스탯이 표시되고, 구분선 아래에는 장소 묘사와 주변 인물 목록,
-또 다른 구분선 아래에는 이동 가능한 다른 장소가 나열됩니다.
+간단한 텍스트 인터페이스를 제공합니다. 화면에는 세 구역이 있으며
+각 구역은 빈 줄과 구분선으로 나뉘어 있습니다. 첫 구역인 `[현재 상태]`
+에서는 날짜와 건강, 스탯 요약을 보여 줍니다. 두 번째 구역 `[위치 정보]`
+에는 현재 장소 설명과 주변 인물이 정리되고, 마지막으로 `[이동 목록]`
+구역에서는 도보나 정거장 이동 가능 장소가 표시됩니다.
 
 ### 인벤토리
 
