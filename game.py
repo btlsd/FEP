@@ -1334,11 +1334,21 @@ class Game:
             "exercise": self.exercise,
         }
 
+        extra_cond = {
+            "sleep": lambda: getattr(self.player.location, "sleep_spot", False),
+            "lockpick": lambda: getattr(self.player.location, "locked_relic", False) and not self.player.has_flag("relic_unlocked"),
+            "hack": lambda: self.player.has_flag("interface") and self.player.has_flag("wireless"),
+            "watch_media": lambda: self.player.money.get(self.player.location.nation.currency, 0) >= 2,
+            "exercise": lambda: self.player.stamina >= 10,
+            "stealth": lambda: not self.player.has_flag("stealth"),
+        }
+
         for key in ACTIONS:
             if key == "pickpocket":
                 continue  # NPC 상호작용 메뉴에서만 선택
             name = ACTIONS[key]
-            if name not in opts:
+            cond = extra_cond.get(key, lambda: True)
+            if name not in opts and cond():
                 opts.append(name)
                 actions.append(extra_map.get(key, self.wait))
 
