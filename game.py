@@ -1438,7 +1438,7 @@ def main():
         "endurance": 5,
         "charisma": 5,
         "intelligence": 5,
-        "agility": 5,
+        "agility": 5
     }
     keys = list(base.keys())
     while True:
