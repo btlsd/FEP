@@ -677,15 +677,25 @@ class Game:
         self.player.add_flag("stealth")
         print("은신 상태로 주변을 살핍니다.")
 
-    def pickpocket(self):
-        targets = [c for c in self.characters if c.location == self.player.location and c.inventory and c.is_alive()]
-        if not targets:
-            print("소매치기할 대상이 없습니다.")
-            return
-        idx = self.prompt([t.name for t in targets], path=["행동", "소매치기"])
-        if idx is None:
-            return
-        npc = targets[idx]
+    def pickpocket(self, target=None):
+        """Attempt to steal a small item from ``target``.
+
+        If ``target`` is ``None`` a list of nearby NPCs is presented first.
+        """
+        npc = target
+        if npc is None:
+            targets = [
+                c
+                for c in self.characters
+                if c.location == self.player.location and c.inventory and c.is_alive()
+            ]
+            if not targets:
+                print("소매치기할 대상이 없습니다.")
+                return
+            idx = self.prompt([t.name for t in targets], path=["행동", "소매치기"])
+            if idx is None:
+                return
+            npc = targets[idx]
         self.player.record_crime()
         chance = 30 + self.player.agility + self.player.perception
         if self.player.has_flag("stealth"):
@@ -1071,7 +1081,8 @@ class Game:
                 subj = attach_josa(npc.name, "이/가")
                 print(f"{subj} 당신을 무시합니다.")
                 return
-        action_idx = self.prompt(["대화", "거래", "돈 빌리기", "전투"], path=["NPC 선택", npc.name])
+        options = ["대화", "거래", "돈 빌리기", "전투", "소매치기"]
+        action_idx = self.prompt(options, path=["NPC 선택", npc.name])
         if action_idx is None:
             return
         if self.player.has_flag("stealth") or self.player.has_flag("infiltrating"):
@@ -1123,6 +1134,8 @@ class Game:
                 self.player.adjust_fame(-2)
             segments = self.battle_time(turns)
             return segments
+        elif action_idx == 4:
+            self.pickpocket(npc)
 
     def travel(self):
         if not self.player.location.station or not self.player.location.international:
@@ -1323,6 +1336,8 @@ class Game:
         }
 
         for key in ACTIONS:
+            if key == "pickpocket":
+                continue  # NPC 상호작용 메뉴에서만 선택
             name = ACTIONS[key]
             if name not in opts:
                 opts.append(name)
