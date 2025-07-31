@@ -104,3 +104,53 @@ def find_path(start, goal):
                 visited.add(nxt)
                 queue.append((nxt, path + [nxt]))
     return None
+
+import datetime
+import subprocess
+import os
+from contextlib import contextmanager
+
+
+@contextmanager
+def log_run():
+    """Log all console output to a timestamped file under ``test``.
+
+    The file name includes the current time and the short git commit hash.
+    """
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    try:
+        version = (
+            subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+            .decode()
+            .strip()
+        )
+    except Exception:
+        version = 'unknown'
+    os.makedirs('test', exist_ok=True)
+    path = os.path.join('test', f'{timestamp}_{version}.txt')
+
+    class Tee:
+        def __init__(self, *streams):
+            self.streams = streams
+
+        def write(self, data):
+            for s in self.streams:
+                s.write(data)
+
+        def flush(self):
+            for s in self.streams:
+                s.flush()
+
+    tee = Tee(sys.stdout, open(path, 'w', encoding='utf-8'))
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    sys.stdout = tee
+    sys.stderr = tee
+    try:
+        yield
+        print(f'log saved to {path}')
+    finally:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+        tee.flush()
+        tee.streams[1].close()

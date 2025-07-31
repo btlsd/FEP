@@ -11,6 +11,9 @@ python game.py
 When launched, the script shows a short prompt. Press **Enter** to begin or
 type `exit` to leave immediately.
 
+All console output is also recorded to a timestamped file in the `test`
+directory. The name follows `<YYYYMMDD_HHMMSS>_<git_version>.txt`.
+
 ## Requirements
 
 The game mainly relies on Python's standard library and has been tested with

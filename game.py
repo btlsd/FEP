@@ -29,6 +29,7 @@ from utils import (
     progress_bar,
     attach_josa,
     stat_label,
+    log_run,
 )
 import json
 import os
@@ -1506,9 +1507,10 @@ def main():
     game.play()
 
 if __name__ == "__main__":
-    print("게임을 시작하려면 Enter 키를 누르세요. 종료하려면 'exit'을 입력하세요.")
-    cmd = input('> ').strip().lower()
-    if cmd != 'exit':
-        main()
-    else:
-        print('프로그램을 종료합니다.')
+    with log_run():
+        print("게임을 시작하려면 Enter 키를 누르세요. 종료하려면 'exit'을 입력하세요.")
+        cmd = input('> ').strip().lower()
+        if cmd != 'exit':
+            main()
+        else:
+            print('프로그램을 종료합니다.')
