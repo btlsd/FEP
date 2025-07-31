@@ -133,6 +133,8 @@ class Character:
         self.agility = agility
         self.flags = set()
         self.armor = 0
+        self.last_meet_day = None
+        self.last_meet_time = None
 
     def is_alive(self):
         """Return ``True`` if the character is alive and has health remaining."""
@@ -158,11 +160,32 @@ class Character:
     def has_flag(self, flag):
         return flag in self.flags
 
-    def talk(self, player):
+    def maybe_greet(self, player):
+        """Print an appropriate greeting depending on recent interactions."""
         from dialogues import greeting
+        from messages import get_message
 
-        # NPC greets the player first
-        print(greeting(self, player))
+        day = player.day
+        time_idx = player.time
+
+        line = None
+        if self.last_meet_day != day:
+            line = greeting(self, player)
+        elif self.last_meet_time is not None and time_idx != self.last_meet_time:
+            msg = get_message("greeting_revisit")
+            if msg:
+                line = msg.format(player=player.name, npc=self.name)
+            else:
+                line = greeting(self, player)
+
+        self.last_meet_day = day
+        self.last_meet_time = time_idx
+        if line:
+            print(line)
+
+    def talk(self, player):
+        # NPC greets only when appropriate
+        self.maybe_greet(player)
 
         while True:
             idx = choose_option(["질문", "설득", "교감", "종료"], path=[self.name])
@@ -341,6 +364,7 @@ class Character:
 
         from dialogues import merchant_intro
 
+        self.maybe_greet(player)
         print(merchant_intro(self, player))
         items = list(self.shop.items())
         bp_items = list(self.blueprints.items())
