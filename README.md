@@ -19,6 +19,16 @@ couple of JSON helper libraries so that tools like
 `pip install -r requirements.txt` can automatically grab them. Installing these
 packages is optional but can speed up JSON handling.
 
+## Testing
+
+Run the helper script to compile all Python files and execute any unit tests. A
+log file will be created in the `test` directory with a timestamp and the
+current git version:
+
+```bash
+python test/run_tests.py
+```
+
 ## Requirements
 
 The game mainly relies on Python's standard library and has been tested with
