@@ -14,6 +14,12 @@ type `exit` to leave immediately.
 All console output is also recorded to a timestamped file in the `test`
 directory. The name follows `<YYYYMMDD_HHMMSS>_<git_version>.txt`.
 
+### Web Browser
+
+The game can also run in modern browsers through [Pyodide](https://pyodide.org).
+Open `web/index.html` in a browser and click **게임 시작** to load the Python
+files and play without installing Python.
+
 ## Requirements
 
 The game mainly relies on Python's standard library and has been tested with
