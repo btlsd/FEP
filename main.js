@@ -8,30 +8,30 @@ function write(text) {
 
 async function loadGame(pyodide) {
   const files = [
-    "../battle.py",
-    "../characters.py",
-    "../dialogues.py",
-    "../equipment.py",
-    "../game.py",
-    "../gui.py",
-    "../items.py",
-    "../locations.py",
-    "../messages.py",
-    "../utils.py",
-    "../data/actions.json",
-    "../data/characters.json",
-    "../data/dialogues.json",
-    "../data/groups.json",
-    "../data/items.json",
-    "../data/keywords.json",
-    "../data/locations.json",
-    "../data/messages.json",
-    "../data/quests.json",
+    "battle.py",
+    "characters.py",
+    "dialogues.py",
+    "equipment.py",
+    "game.py",
+    "gui.py",
+    "items.py",
+    "locations.py",
+    "messages.py",
+    "utils.py",
+    "data/actions.json",
+    "data/characters.json",
+    "data/dialogues.json",
+    "data/groups.json",
+    "data/items.json",
+    "data/keywords.json",
+    "data/locations.json",
+    "data/messages.json",
+    "data/quests.json",
   ];
   for (const file of files) {
     const resp = await fetch(file);
     const data = await resp.text();
-    const path = file.replace("../", "");
+    const path = file;
     const dir = path.substring(0, path.lastIndexOf("/"));
     if (dir) {
       pyodide.FS.mkdirTree(dir);

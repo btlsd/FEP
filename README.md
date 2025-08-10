@@ -17,8 +17,10 @@ directory. The name follows `<YYYYMMDD_HHMMSS>_<git_version>.txt`.
 ### Web Browser
 
 The game can also run in modern browsers through [Pyodide](https://pyodide.org).
-Open `web/index.html` in a browser and click **게임 시작** to load the Python
-files and play without installing Python.
+The repository is ready for GitHub Pages. After enabling Pages on the
+repository, visit `https://<your-username>.github.io/FEP/` to play directly in
+the browser. To run locally without publishing, open `index.html` in a browser
+and click **게임 시작** to load the Python files and start.
 
 ## Requirements
 
