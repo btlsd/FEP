@@ -29,6 +29,7 @@ from utils import (
     progress_bar,
     attach_josa,
     stat_label,
+    log_run,
 )
 import json
 import os
@@ -636,7 +637,7 @@ class Game:
             return
         self.player.install_mod(mods[idx])
 
-    def change_equipment(self):
+    def change_equipment(self, path=None):
         from equipment import Equipment
 
         choices = [
@@ -647,7 +648,8 @@ class Game:
         if not choices:
             print("장비할 수 있는 아이템이 없습니다.")
             return
-        idx = self.prompt([it.name for it in choices], path=["행동", "장비 장착"])
+        default_path = ["행동", "장비 장착"]
+        idx = self.prompt([it.name for it in choices], path=path or default_path)
         if idx is None:
             return
         item = choices[idx]
@@ -1310,8 +1312,6 @@ class Game:
         add("식사", self.eat, self.player.money.get(self.player.location.nation.currency, 0) >= cost)
         add("잠자기", self.sleep, getattr(self.player.location, "sleep_spot", False))
         add("탐험", self.explore)
-        add("소지품 확인", self.player.show_inventory)
-        add("장비 장착", self.change_equipment)
         can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
         add("스탯 측정", self.measure_stats, can_measure)
         wash_fee = 2
@@ -1335,11 +1335,21 @@ class Game:
             "exercise": self.exercise,
         }
 
+        extra_cond = {
+            "sleep": lambda: getattr(self.player.location, "sleep_spot", False),
+            "lockpick": lambda: getattr(self.player.location, "locked_relic", False) and not self.player.has_flag("relic_unlocked"),
+            "hack": lambda: self.player.has_flag("interface") and self.player.has_flag("wireless"),
+            "watch_media": lambda: self.player.money.get(self.player.location.nation.currency, 0) >= 2,
+            "exercise": lambda: self.player.stamina >= 10,
+            "stealth": lambda: not self.player.has_flag("stealth"),
+        }
+
         for key in ACTIONS:
             if key == "pickpocket":
                 continue  # NPC 상호작용 메뉴에서만 선택
             name = ACTIONS[key]
-            if name not in opts:
+            cond = extra_cond.get(key, lambda: True)
+            if name not in opts and cond():
                 opts.append(name)
                 actions.append(extra_map.get(key, self.wait))
 
@@ -1368,10 +1378,15 @@ class Game:
         if idx is None:
             return
         action = actions[idx]
-        if action is self.player.show_inventory:
-            action()
-        else:
-            self.step(action)
+        self.step(action)
+
+    def open_inventory_menu(self):
+        """Sub menu for inventory related actions."""
+        opts = ["소지품 확인", "장비 장착"]
+        actions = [self.player.show_inventory, lambda: self.change_equipment(path=["메뉴", "소지품", "장비 장착"])]
+        idx = self.prompt(opts, path=["메뉴", "소지품"])
+        if idx is not None:
+            actions[idx]()
 
     def open_menu(self):
         opts = []
@@ -1383,8 +1398,7 @@ class Game:
                 actions.append(func)
 
         add("스탯 확인", self.player.status)
-        add("소지품 확인", self.player.show_inventory)
-        add("장비 장착", self.change_equipment)
+        add("소지품", self.open_inventory_menu)
         can_measure = self.player.has_flag("interface") or getattr(self.player.location, "hospital", False)
         add("스탯 측정", self.measure_stats, can_measure)
         add("데이터 확인", self.player.show_data, bool(self.player.blueprints))
@@ -1493,9 +1507,10 @@ def main():
     game.play()
 
 if __name__ == "__main__":
-    print("게임을 시작하려면 Enter 키를 누르세요. 종료하려면 'exit'을 입력하세요.")
-    cmd = input('> ').strip().lower()
-    if cmd != 'exit':
-        main()
-    else:
-        print('프로그램을 종료합니다.')
+    with log_run():
+        print("게임을 시작하려면 Enter 키를 누르세요. 종료하려면 'exit'을 입력하세요.")
+        cmd = input('> ').strip().lower()
+        if cmd != 'exit':
+            main()
+        else:
+            print('프로그램을 종료합니다.')

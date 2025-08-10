@@ -11,6 +11,17 @@ python game.py
 When launched, the script shows a short prompt. Press **Enter** to begin or
 type `exit` to leave immediately.
 
+All console output is also recorded to a timestamped file in the `test`
+directory. The name follows `<YYYYMMDD_HHMMSS>_<git_version>.txt`.
+
+### Web Browser
+
+The game can also run in modern browsers through [Pyodide](https://pyodide.org).
+The repository is ready for GitHub Pages. After enabling Pages on the
+repository, visit `https://<your-username>.github.io/FEP/` to play directly in
+the browser. To run locally without publishing, open `index.html` in a browser
+and click **게임 시작** to load the Python files and start.
+
 ## Requirements
 
 The game mainly relies on Python's standard library and has been tested with
@@ -18,6 +29,16 @@ The game mainly relies on Python's standard library and has been tested with
 couple of JSON helper libraries so that tools like
 `pip install -r requirements.txt` can automatically grab them. Installing these
 packages is optional but can speed up JSON handling.
+
+## Testing
+
+Run the helper script to compile all Python files and execute any unit tests. A
+log file will be created in the `test` directory with a timestamp and the
+current git version:
+
+```bash
+python test/run_tests.py
+```
 
 ## Requirements
 
@@ -142,6 +163,10 @@ NPC의 체력과 공격력은 `stats` 항목에 정의된 능력치를 기반으
 `data/dialogues.json`에는 성별, 나이대, 직업, 출신 국가, 지위별 문구는 물론
 Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 대사가 준비돼
 있습니다. `dialogues.py`가 이를 읽어 NPC 특성에 맞는 인사말을 만들어 줍니다.
+
+NPC는 하루 중 처음 만났을 때만 기본 인사를 건넵니다. 같은 시간에 연속으로
+대화하면 인사가 생략되고, 시간이 조금 지난 뒤 다시 만나면 "또 뵙네요"와 같이
+재회 인사가 출력됩니다.
 
 ### 장소
 
@@ -294,10 +319,12 @@ Big Five 다섯 항목의 높고 낮음을 조합한 32가지 성격 유형별 �
 훨씬 많은 물건을 운반할 수 있습니다. 카트의 경우 크기에 따라 건물 내부로
 들어갈 수 있는지 여부가 달라집니다(대형 카트는 실내 진입이 어렵습니다).
 아이템마다 무게가 정해져 있어 현재 들고 있는 총 무게가 용량을 초과하면
-새로운 물건을 넣을 수 없습니다. `행동` 메뉴에서 **소지품 확인**이나
-**씻기** 등을 선택해 일상적인 관리도 할 수 있습니다. `장비 장착`을 선택하면
+새로운 물건을 넣을 수 없습니다. `메뉴`의 **소지품** 하위 메뉴에서
+**소지품 확인**이나 `장비 장착`을 이용해 장비를 교체하고,
+`행동` 메뉴에서는 **씻기** 등 일상적인 관리를 할 수 있습니다.
 가방이나 옷, 배지 같은 장비를 갈아입어 각종 플래그를 얻거나 잃을 수 있습니다.
 잠자기와 씻기는 해당 시설이 있는 장소에서만 가능하므로, 거주지나 병원 등에서 시도해야 합니다.
+또한 메뉴에는 현재 조건을 만족하는 행동만 표시됩니다.
 아이템 정보는 `data/items.json`에 정리되어 있어 무게나 이름을 손쉽게
 수정하거나 새로운 아이템을 추가할 수 있습니다. 파일 상단의 `_comment`
 항목에 기본 구조가 설명돼 있으니 참고하면 됩니다. 특히 무기류는 `material`
@@ -386,7 +413,8 @@ NPC와 싸우게 되면 전투는 턴제로 진행됩니다. 각 참여자는 "�
 냉병기, 화기, 레이저 무기 등이 존재하며 각 무기는 고유의 `damage` 값을
 지닙니다. 일부 무기는 `concealable` 속성이 있어 신체 개조로 제공되는
 **은닉 무기 슬롯**을 설치하면 눈에 띄지 않게 숨길 수도 있습니다. 무기는
-`장비 장착` 메뉴에서 선택하여 착용할 수 있으며, 장착 중인 무기는 상태창과
+`메뉴`의 **소지품** 하위 메뉴에서 `장비 장착`을 선택해 착용할 수 있으며,
+장착 중인 무기는 상태창과
 소지품 목록에 표시됩니다.
 
 둔기와 냉병기류는 `material`과 `quality` 값을 사용해 성능이 결정됩니다.
