@@ -584,7 +584,12 @@ class Player:
         self.bank = {n.currency: 0 for n in NATIONS}
         # 국가별 호감도 추적
         self.nation_affinity = {n.name: 50 for n in NATIONS}
+        # Experience and level tracking
+        self.level = 1
+        # experience toward next level
         self.experience = 0
+        # cumulative experience earned
+        self.total_experience = 0
         self.fame = 0
         # Known conversation keywords
         self.keywords = {"직업", "소식", "여행", "소속"}
@@ -708,6 +713,33 @@ class Player:
         bonus = sum(getattr(m, "memory_bonus", 0) for m in self.mods.values())
         self.max_skills = base + bonus
 
+    # Experience helpers
+    def xp_to_next_level(self):
+        return 100 * self.level
+
+    def gain_experience(self, amount):
+        """Add experience and handle level-ups.
+
+        Returns True if at least one level was gained.
+        """
+        if amount <= 0:
+            return False
+        self.total_experience += amount
+        self.experience += amount
+        leveled = False
+        while self.experience >= self.xp_to_next_level():
+            self.experience -= self.xp_to_next_level()
+            self.level += 1
+            leveled = True
+        return leveled
+
+    def xp_bar(self, length=20):
+        need = self.xp_to_next_level()
+        if need == 0:
+            need = 1
+        filled = int(length * self.experience / need)
+        return "[" + "#" * filled + "." * (length - filled) + "]" + f" {self.experience}/{need}"
+
     def status(self, detailed=None):
         if detailed is None:
             detailed = self.has_flag("interface") or self.accurate_stats
@@ -724,7 +756,9 @@ class Player:
         bank_str = ", ".join(f"{amt}{cur}" for cur, amt in self.bank.items() if amt)
         if bank_str:
             print(f"은행 예금: {bank_str}")
-        print(f"경험치: {self.experience}")
+        print(
+            f"경험치: {self.experience}/{self.xp_to_next_level()} (총 {self.total_experience}, 레벨 {self.level})"
+        )
         print(f"현재 위치: {self.location.name} ({self.location.nation.name})")
         print(f"거주지: {self.home.name}")
         if self.loan_balance:
@@ -1306,7 +1340,9 @@ class Player:
             "bank": self.bank,
             "nation_affinity": self.nation_affinity,
             "fame": self.fame,
+            "level": self.level,
             "experience": self.experience,
+            "total_experience": self.total_experience,
             "day": self.day,
             "weekday": self.weekday,
             "time": self.time,
@@ -1370,7 +1406,9 @@ class Player:
         player.nation_affinity = {n.name: 50 for n in NATIONS}
         player.nation_affinity.update(data.get("nation_affinity", {}))
         player.fame = data.get("fame", 0)
+        player.level = data.get("level", 1)
         player.experience = data.get("experience", 0)
+        player.total_experience = data.get("total_experience", player.experience)
         player.day = data.get("day", 1)
         player.weekday = data.get("weekday", 0)
         player.time = data.get("time", 0)

@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 from utils import choose_option, roll_check, attach_josa
 from messages import get_message
 
@@ -43,29 +44,38 @@ def crit_check(attacker):
     return random.randint(1, 100) <= chance
 
 
-def wireless_intrusion(victim):
-    """Random chance for wireless hacking damage."""
+def wireless_intrusion(victim, logger=print):
+    """Random chance for wireless hacking damage.
+
+    Returns the damage inflicted for logging purposes.
+    """
     if getattr(victim, "has_flag", lambda x: False)("wireless"):
         if random.random() < 0.1:
             dmg = 5
             victim.health -= dmg
-            print(f"{victim.name}의 무선 인터페이스가 해킹당해 {dmg}의 피해!")
+            logger(f"{victim.name}의 무선 인터페이스가 해킹당해 {dmg}의 피해!")
+            return dmg
+    return 0
 
 
-def attempt_hack(attacker, defender):
-    """Try to hack the opponent, returning True if action consumed."""
+def attempt_hack(attacker, defender, logger=print):
+    """Try to hack the opponent.
+
+    Returns (consumed:bool, damage:int).
+    """
     if not getattr(attacker, "has_flag", lambda x: False)("wireless"):
-        return False
+        return False, 0
     if not getattr(defender, "has_flag", lambda x: False)("wireless"):
-        return False
+        return False, 0
     chance = 40 + getattr(attacker, "intelligence", 5) * 5 - getattr(defender, "intelligence", 5) * 5
     if roll_check(max(5, min(95, chance))):
         dmg = random.randint(10, 20)
         defender.health -= dmg
-        print(f"{attacker.name}의 해킹 성공! {defender.name}에게 {dmg}의 피해를 주었습니다.")
+        logger(f"{attacker.name}의 해킹 성공! {defender.name}에게 {dmg}의 피해를 주었습니다.")
+        return True, dmg
     else:
-        print(f"{attacker.name}의 해킹이 실패했습니다.")
-    return True
+        logger(f"{attacker.name}의 해킹이 실패했습니다.")
+        return True, 0
 
 
 def attack_hit(attacker, defender, weapon):
@@ -87,16 +97,44 @@ def start_battle(player, npc, ambush=None):
     by both sides combined.
     """
     print(f"{npc.name}과(와) 전투를 시작합니다!")
+    print("전투 전 경험치:")
+    print(player.xp_bar())
+
     gauges = {
         player: 0 if ambush == "player" else 100,
         npc: 0 if ambush == "npc" else 100,
     }
     turns = 0
+    npc_max = getattr(npc, "max_health", npc.health)
+    stats = {
+        "damage_dealt": 0,
+        "damage_taken": 0,
+        "skills_used": defaultdict(int),
+        "skill_damage": defaultdict(int),
+        "log": [],
+    }
+
+    def log(msg):
+        stats["log"].append(msg)
+        print(f"[로그] {msg}")
+
+    skills = [
+        {"name": "해킹", "cost": 10, "resource": "기력", "func": attempt_hack}
+    ]
+
     while player.health > 0 and npc.health > 0:
+        print(f"{npc.name} HP {npc.health}/{npc_max}")
+        print(f"{player.name} HP {player.health}/{player.max_health}")
         gauges[player] -= gauge_cost(player)
         gauges[npc] -= gauge_cost(npc)
-        wireless_intrusion(player)
-        wireless_intrusion(npc)
+        dmg = wireless_intrusion(player, log)
+        if dmg:
+            stats["damage_taken"] += dmg
+            print("\033[101m화면이 빨갛게 번쩍입니다!\033[0m")
+        dmg = wireless_intrusion(npc, log)
+        if dmg:
+            stats["damage_dealt"] += dmg
+            print("\033[107m화면이 하얗게 번쩍입니다!\033[0m")
         if gauges[player] <= 0:
             action = choose_option(["공격", "기술", "도주"], allow_back=False)
             if action == 0:
@@ -121,23 +159,37 @@ def start_battle(player, npc, ambush=None):
                 if attack_hit(player, npc, weapon):
                     if crit_check(player):
                         dmg = int(dmg * 1.5)
-                        # use a random phrase from messages.json when critting
                         extra_msg += " " + get_message("critical_hit")
                     dmg = max(0, dmg - getattr(npc, "armor", 0))
                     npc.health -= dmg
-                    print(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.{extra_msg}")
+                    stats["damage_dealt"] += dmg
+                    log(f"당신의 공격! {npc.name}에게 {dmg}의 피해를 주었습니다.{extra_msg}")
+                    print("\033[107m화면이 하얗게 번쩍입니다!\033[0m")
                 else:
-                    print("공격이 빗나갔습니다!")
+                    log("공격이 빗나갔습니다!")
             elif action == 1:
-                if not attempt_hack(player, npc):
-                    print("사용 가능한 기술이 없습니다.")
+                skill_options = [f"{s['name']}({s['resource']} {s['cost']})" for s in skills]
+                idx = choose_option(skill_options, allow_back=False)
+                skill = skills[idx]
+                if getattr(player, 'stamina', 0) >= skill['cost']:
+                    player.stamina -= skill['cost']
+                    used, dmg = skill['func'](player, npc, log)
+                    stats['skills_used'][skill['name']] += 1
+                    stats['skill_damage'][skill['name']] += dmg
+                    if dmg > 0:
+                        stats['damage_dealt'] += dmg
+                        print("\033[107m화면이 하얗게 번쩍입니다!\033[0m")
+                    if not used:
+                        log("사용 가능한 기술이 없습니다.")
+                else:
+                    log("기력이 부족합니다.")
             else:
                 flee_chance = 50 + player.agility * 5 - npc.agility * 5
                 if random.randint(1, 100) <= flee_chance:
-                    print("성공적으로 도망쳤습니다!")
-                    return True
+                    log("성공적으로 도망쳤습니다!")
+                    return True, turns
                 else:
-                    print("도주에 실패했습니다!")
+                    log("도주에 실패했습니다!")
             gauges[player] = 100
             turns += 1
             if npc.health <= 0:
@@ -151,34 +203,58 @@ def start_battle(player, npc, ambush=None):
                 and player.has_flag("wireless")
                 and random.random() < 0.3
             ):
-                attempt_hack(npc, player)
+                used, dmg = attempt_hack(npc, player, log)
+                if dmg > 0:
+                    stats["damage_taken"] += dmg
+                    print("\033[101m화면이 빨갛게 번쩍입니다!\033[0m")
             dmg = random.randint(3, 7)
             if w_type == "melee" or getattr(weapon, "weapon_range", None) == "melee":
                 dmg += w_dmg + melee_bonus(npc)
             else:
                 dmg += w_dmg
             if w_type == "둔기" and random.random() < 0.1:
-                print(f"{attach_josa(npc.name, '이/가')} 머리를 강타하여 당신이 기절합니다!")
+                log(f"{attach_josa(npc.name, '이/가')} 머리를 강타하여 당신이 기절합니다!")
                 gauges[player] += 100
             if attack_hit(npc, player, weapon):
                 if crit_check(npc):
                     dmg = int(dmg * 1.5)
-                    # NPCs also use the critical hit phrases
                     extra = " " + get_message("critical_hit")
                 else:
                     extra = ""
                 dmg = max(0, dmg - getattr(player, "armor", 0))
                 player.health -= dmg
-                print(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.{extra}")
+                stats["damage_taken"] += dmg
+                log(f"{npc.name}의 공격! {dmg}의 피해를 받았습니다.{extra}")
+                print("\033[101m화면이 빨갛게 번쩍입니다!\033[0m")
             else:
-                print(f"{npc.name}의 공격이 빗나갔습니다.")
+                log(f"{npc.name}의 공격이 빗나갔습니다.")
             gauges[npc] = 100
             turns += 1
-    if player.health <= 0:
-        print("당신이 쓰러졌습니다...")
-        return False, turns
-    else:
-        print(f"{npc.name}을(를) 쓰러뜨렸습니다!")
+
+    win = player.health > 0
+    if win:
+        log(f"{npc.name}을(를) 쓰러뜨렸습니다!")
         npc.affinity = max(0, npc.affinity - 20)
         npc.alive = False
-        return True, turns
+    else:
+        log("당신이 쓰러졌습니다...")
+
+    xp_gain = 10 if win else 0
+    if xp_gain:
+        leveled = player.gain_experience(xp_gain)
+    else:
+        leveled = False
+
+    print("전투 후 경험치:")
+    print(player.xp_bar())
+    if leveled:
+        print(f"레벨 업! 현재 레벨 {player.level}")
+
+    print("\n=== 전투 종료 ===")
+    print(f"총 가한 피해: {stats['damage_dealt']}")
+    print(f"총 받은 피해: {stats['damage_taken']}")
+    for sk, cnt in stats['skills_used'].items():
+        dmg = stats['skill_damage'][sk]
+        print(f"{sk}: 사용 {cnt}회, 총 피해 {dmg}")
+    print(f"획득 경험치: {xp_gain}")
+    return win, turns
